@@ -14,8 +14,7 @@ class HelloMojo : AbstractMojo() {
     @Parameter(property = "msg", defaultValue = "from maven")
     var msg: String? = null
 
-    @Throws(MojoExecutionException::class)
-    fun execute() {
+    override fun execute() {
         getLog().info("Hello " + msg!!)
     }
 }
