@@ -6,13 +6,11 @@ import org.junit.jupiter.api.Test
 
 class HelloMojoTest : AbstractMojoTestCase() {
 
-
-    protected override fun setUp() {
+    override fun setUp() {
         super.setUp()
     }
 
-
-    protected override fun tearDown() {
+    override fun tearDown() {
         super.tearDown()
     }
 
