@@ -1,5 +1,6 @@
 package org.osguima3
 
+import junit.framework.Assert.assertEquals
 import org.apache.maven.plugin.AbstractMojo
 import org.apache.maven.plugin.descriptor.PluginDescriptor
 import org.apache.maven.plugins.annotations.LifecyclePhase
@@ -9,10 +10,14 @@ import org.apache.maven.plugins.annotations.ResolutionScope
 import org.apache.maven.project.MavenProject
 import org.jooq.codegen.GenerationTool
 import org.jooq.meta.jaxb.Configuration
+import org.osguima3.jooqdsl.model.ClassFromScript
+import org.osguima3.jooqdsl.model.ModelDefinition
+import org.osguima3.jooqdsl.plugin.visitor.DefinitionVisitorImpl
 import org.testcontainers.containers.BindMode
 import java.io.File
 import java.net.URI
-import java.net.URLClassLoader
+import java.nio.file.Files
+import java.nio.file.Paths
 
 @Mojo(
     name = "generate-jooq", defaultPhase = LifecyclePhase.GENERATE_SOURCES,
@@ -45,37 +50,38 @@ class JooqDslGenrateMojo : AbstractMojo() {
 
     override fun execute() {
 
-        val oldCL = Thread.currentThread().contextClassLoader
-        val pluginClassLoader = getClassLoader()
+        val path = mavenProject.basedir.absolutePath
 
-        try {
-            Thread.currentThread().contextClassLoader = pluginClassLoader
+        val classRealm = descriptor.classRealm
 
-            val path = mavenProject.basedir.absolutePath
-
-            log.info("Absolute path: $path/$scriptsPath")
-            val postgresContainer = PostgresContainer(postgresContainerImage)
-                .withDatabaseName(databaseName)
-                .withUsername(jdbc.user)
-                .withPassword(jdbc.password)
-                .withFileSystemBind("$path/$scriptsPath", "/docker-entrypoint-initdb.d/", BindMode.READ_ONLY)
-                .apply { start() }
-
-            val configuration = Configuration().also {
-                it.jdbc = jdbc.apply { url = postgresContainer.jdbcUrl }
-                it.generator = generator.apply { target.directory = "$path/${target.directory}" }
+        mavenProject.runtimeClasspathElements
+            .map(::File)
+            .map(File::toURI)
+            .map(URI::toURL)
+            .forEach {
+                classRealm.addURL(it)
             }
 
-            GenerationTool().run(configuration)
-        } finally {
-            Thread.currentThread().contextClassLoader = oldCL
-            pluginClassLoader.close()
-        }
-    }
+        val scriptReader = Files.newBufferedReader(Paths.get("$path/src/main/resources/db/model_definition.kts"))
+        val loadedModelDefinition: ModelDefinition = KtsObjectLoader().load(scriptReader)
 
-    private fun getClassLoader() = mavenProject.runtimeClasspathElements
-        .map(::File)
-        .map(File::toURI)
-        .map(URI::toURL)
-        .toTypedArray().let { URLClassLoader(it, javaClass.classLoader) }
+
+
+        log.info("Absolute path: $path/$scriptsPath")
+        val postgresContainer = PostgresContainer(postgresContainerImage)
+            .withDatabaseName(databaseName)
+            .withUsername(jdbc.user)
+            .withPassword(jdbc.password)
+            .withFileSystemBind("$path/$scriptsPath", "/docker-entrypoint-initdb.d/", BindMode.READ_ONLY)
+            .apply { start() }
+
+        val configuration = Configuration().also {
+            it.jdbc = jdbc.apply { url = postgresContainer.jdbcUrl }
+            it.generator = generator.apply { target.directory = "$path/${target.directory}" }
+        }
+
+        loadedModelDefinition.accept(DefinitionVisitorImpl(configuration))
+
+        GenerationTool().run(configuration)
+    }
 }
