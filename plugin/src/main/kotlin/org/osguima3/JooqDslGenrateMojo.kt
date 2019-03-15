@@ -1,7 +1,6 @@
 package org.osguima3
 
 import org.apache.maven.plugin.AbstractMojo
-import org.apache.maven.plugin.MojoExecutionException
 import org.apache.maven.plugin.descriptor.PluginDescriptor
 import org.apache.maven.plugins.annotations.LifecyclePhase
 import org.apache.maven.plugins.annotations.Mojo
@@ -12,7 +11,7 @@ import org.jooq.codegen.GenerationTool
 import org.jooq.meta.jaxb.Configuration
 import org.testcontainers.containers.BindMode
 import java.io.File
-import java.net.URL
+import java.net.URI
 import java.net.URLClassLoader
 import java.nio.file.Paths
 
@@ -74,21 +73,9 @@ class JooqDslGenrateMojo : AbstractMojo() {
         }
     }
 
-    @Throws(MojoExecutionException::class)
-    private fun getClassLoader(): URLClassLoader {
-        try {
-            val classpathElements = mavenProject.runtimeClasspathElements
-            mavenProject.build.resources.forEach {
-                classpathElements.add(it.directory)
-            }
-            val urls = arrayOfNulls<URL>(classpathElements.size)
-            for (i in urls.indices) {
-                urls[i] = File(classpathElements[i]).toURI().toURL()
-            }
-
-            return URLClassLoader(urls, javaClass.classLoader)
-        } catch (e: Exception) {
-            throw MojoExecutionException("Couldn't create a classloader.", e)
-        }
-    }
+    private fun getClassLoader() = mavenProject.runtimeClasspathElements
+        .map(::File)
+        .map(File::toURI)
+        .map(URI::toURL)
+        .toTypedArray().let { URLClassLoader(it, javaClass.classLoader) }
 }
