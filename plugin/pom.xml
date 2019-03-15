@@ -14,8 +14,6 @@
     <packaging>maven-plugin</packaging>
 
     <dependencies>
-
-
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>
             <artifactId>kotlin-script-runtime</artifactId>
@@ -31,11 +29,6 @@
             <artifactId>kotlin-compiler-embeddable</artifactId>
             <version>${kotlin.version}</version>
         </dependency>
-
-
-
-
-
 
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>
@@ -103,11 +96,6 @@
         <dependency>
             <groupId>org.apache.maven</groupId>
             <artifactId>maven-compat</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.jetbrains.kotlin</groupId>
-            <artifactId>kotlin-script-runtime</artifactId>
         </dependency>
     </dependencies>
 
