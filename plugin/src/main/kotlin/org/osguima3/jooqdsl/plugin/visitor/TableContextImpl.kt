@@ -6,6 +6,8 @@ import org.osguima3.jooqdsl.model.converter.Converter
 import org.osguima3.jooqdsl.model.converter.InstantTinyTypeConverter
 import org.osguima3.jooqdsl.model.definition.ConverterContext
 import org.osguima3.jooqdsl.model.definition.TableContext
+import java.lang.reflect.Method
+import java.time.Instant
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
 import kotlin.reflect.full.declaredMemberProperties
@@ -27,46 +29,42 @@ class TableContextImpl(private val configuration: Configuration, private val nam
      */
     override infix fun String.withTinyType(tinyType: KClass<*>) {
         val field = tinyType.declaredMemberProperties.mapNotNull(KProperty<*>::javaGetter).single()
-        val userClass = tinyType.simpleName
-        val dbClass = field.returnType.canonicalName
         registerForcedType(
             userClass = tinyType,
-            converter = "org.jooq.Converter.ofNullable($dbClass.class, $userClass.class, " +
-                "$userClass::new, $userClass::${field.name})"
-        )
-    }
-
-    override infix fun String.withInstantTinyType(tinyType: KClass<*>) {
-        val field = tinyType.declaredMemberProperties.mapNotNull(KProperty<*>::javaGetter).single()
-        val userClass = tinyType.simpleName
-        registerForcedType(
-            userClass = tinyType,
-            converter = "new ${InstantTinyTypeConverter::class.qualifiedName}<>($userClass.class, " +
-                "$userClass::new, $userClass::${field.name})"
-        )
-    }
-
-    override infix fun String.withStringEnum(enum: KClass<out Enum<*>>) {
-        registerForcedType(
-            userClass = enum,
-            converter = "new org.jooq.impl.EnumConverter<>(String.class, ${enum.simpleName}.class)"
+            converter = buildTinyTypeConverter(tinyType.simpleName, field)
         )
     }
 
     override infix fun String.withEnum(enum: KClass<out Enum<*>>) {
         registerForcedType(
             userClass = enum,
-            converter = "new org.jooq.impl.EnumConverter<>(" +
-                "$targetPackage.enums.${enum.simpleName}.class, ${enum.simpleName}.class)"
+            converter = buildEnumConverter("$targetPackage.enums.${enum.simpleName}", enum)
         )
     }
+
+    override infix fun String.withStringEnum(enum: KClass<out Enum<*>>) {
+        registerForcedType(
+            userClass = enum,
+            converter = buildEnumConverter("String", enum)
+        )
+    }
+
+    private fun buildTinyTypeConverter(userClass: String?, field: Method): String = when (field.returnType) {
+        Instant::class -> "new ${InstantTinyTypeConverter::class.qualifiedName}<>(" +
+            "$userClass.class, $userClass::new, $userClass::${field.name})"
+        else -> "org.jooq.Converter.ofNullable(${field.returnType.canonicalName}.class, " +
+            "$userClass.class, $userClass::new, $userClass::${field.name})"
+    }
+
+    private fun buildEnumConverter(type: String, enum: KClass<out Enum<*>>) =
+        "new org.jooq.impl.EnumConverter<>($type.class, ${enum.simpleName}.class)"
 
     /**
      * The indicated converter will be used for this field. Used for fields where any conversion is needed
      * between the database type and the user type that is not covered in the other generators
      */
-    override fun <T : Any, U : Any> String.withCustomConverter(converterClass: KClass<out Converter<T, U>>) =
-        ConverterContextImpl(this, converterClass)
+    override fun <T : Any, U : Any> String.withCustomConverter(converter: KClass<out Converter<T, U>>) =
+        ConverterContextImpl(this, converter)
 
     inner class ConverterContextImpl<T : Any, U : Any>(
         private val name: String,

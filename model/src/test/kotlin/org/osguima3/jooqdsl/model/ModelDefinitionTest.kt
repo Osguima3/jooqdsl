@@ -10,12 +10,10 @@ import org.osguima3.jooqdsl.model.definition.ConverterContext
 import org.osguima3.jooqdsl.model.definition.TableContext
 import org.osguima3.jooqdsl.model.definition.TestDefinitionVisitor
 import org.osguima3.jooqdsl.model.definition.withCustomConverter
-import java.time.Instant
 
 class ModelDefinitionTest {
 
     data class TestTinyType(val value: Int)
-    data class TestInstantTinyType(val value: Instant)
     enum class TestEnum
     abstract class TestConverter : Converter<Int, String>
 
@@ -38,21 +36,6 @@ class ModelDefinitionTest {
         definition.accept(visitor)
 
         verify(tableContext).run { "tiny_field" withTinyType TestTinyType::class }
-    }
-
-    @Test
-    fun testInstantTinyType() {
-        val definition = ModelDefinition {
-            tables {
-                table("foo") {
-                    "instant_field" withInstantTinyType TestInstantTinyType::class
-                }
-            }
-        }
-
-        definition.accept(visitor)
-
-        verify(tableContext).run { "instant_field" withInstantTinyType TestInstantTinyType::class }
     }
 
     @Test
