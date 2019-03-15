@@ -28,6 +28,8 @@
         <assertj.version>3.12.1</assertj.version>
         <maven-plugin.version>3.6.0</maven-plugin.version>
         <maven-plugin-annotations.version>3.4</maven-plugin-annotations.version>
+        <jooq.version>3.11.9</jooq.version>
+        <testcontainers.version>1.10.6</testcontainers.version>
     </properties>
 
     <dependencyManagement>
@@ -53,6 +55,40 @@
                 <artifactId>maven-plugin-annotations</artifactId>
                 <version>${maven-plugin.version}</version>
                 <scope>provided</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jooq</groupId>
+                <artifactId>jooq</artifactId>
+                <version>${jooq.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jooq</groupId>
+                <artifactId>jooq-meta</artifactId>
+                <version>${jooq.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jooq</groupId>
+                <artifactId>jooq-codegen</artifactId>
+                <version>${jooq.version}</version>
+            </dependency>
+
+            <!--not used, just for reference-->
+            <dependency>
+                <groupId>org.jooq</groupId>
+                <artifactId>jooq-codegen-maven</artifactId>
+                <version>${jooq.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.testcontainers</groupId>
+                <artifactId>testcontainers</artifactId>
+                <version>${testcontainers.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.testcontainers</groupId>
+                <artifactId>postgresql</artifactId>
+                <version>${testcontainers.version}</version>
             </dependency>
 
             <!-- Test dependencies -->
@@ -87,12 +123,6 @@
                 <version>${maven-plugin.version}</version>
                 <scope>test</scope>
             </dependency>
-            <dependency>
-                <groupId>org.apache.maven.plugin-testing</groupId>
-                <artifactId>maven-plugin-testing-harness</artifactId>
-                <version>3.3.0</version>
-                <scope>test</scope>
-            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -125,7 +155,52 @@
                         <jvmTarget>1.8</jvmTarget>
                     </configuration>
                 </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-plugin-plugin</artifactId>
+                    <version>${maven-plugin.version}</version>
+                    <configuration>
+                        <goalPrefix>jooq-dsl</goalPrefix>
+                        <skipErrorNoDescriptorsFound>true</skipErrorNoDescriptorsFound>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>mojo-descriptor</id>
+                            <goals>
+                                <goal>descriptor</goal>
+                            </goals>
+                        </execution>
+                        <execution>
+                            <id>help-goal</id>
+                            <goals>
+                                <goal>helpmojo</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-invoker-plugin</artifactId>
+                    <version>3.2.0</version>
+                    <configuration>
+                        <postBuildHookScript>verify</postBuildHookScript>
+                        <showVersion>true</showVersion>
+                        <streamLogs>true</streamLogs>
+                        <noLog>false</noLog>
+                        <showErrors>true</showErrors>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>integration-test</id>
+                            <goals>
+                                <goal>install</goal>
+                                <goal>run</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
             </plugins>
         </pluginManagement>
     </build>
+
 </project>
