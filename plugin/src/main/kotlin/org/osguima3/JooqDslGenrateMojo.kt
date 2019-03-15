@@ -13,8 +13,6 @@ import org.testcontainers.containers.BindMode
 import java.io.File
 import java.net.URI
 import java.net.URLClassLoader
-import java.nio.file.Paths
-
 
 @Mojo(
     name = "generate-jooq", defaultPhase = LifecyclePhase.GENERATE_SOURCES,
@@ -27,14 +25,14 @@ class JooqDslGenrateMojo : AbstractMojo() {
     @Parameter(defaultValue = "\${project}", readonly = true)
     private lateinit var mavenProject: MavenProject
 
-    @Parameter(required = true)
-    lateinit var jdbc: org.jooq.meta.jaxb.Jdbc
-
-    @Parameter(required = true)
-    lateinit var generator: org.jooq.meta.jaxb.Generator
-
     @Parameter(defaultValue = "\${plugin}", readonly = true)
     private lateinit var descriptor: PluginDescriptor
+
+    @Parameter(required = true)
+    private lateinit var jdbc: org.jooq.meta.jaxb.Jdbc
+
+    @Parameter(required = true)
+    private lateinit var generator: org.jooq.meta.jaxb.Generator
 
     @Parameter
     private lateinit var databaseName: String
@@ -52,19 +50,21 @@ class JooqDslGenrateMojo : AbstractMojo() {
 
         try {
             Thread.currentThread().contextClassLoader = pluginClassLoader
+
+            val path = mavenProject.basedir.absolutePath
+
+            log.info("Absolute path: $path/$scriptsPath")
             val postgresContainer = PostgresContainer(postgresContainerImage)
                 .withDatabaseName(databaseName)
                 .withUsername(jdbc.user)
                 .withPassword(jdbc.password)
-                .withFileSystemBind(
-                    Paths.get(scriptsPath).toAbsolutePath().toString(),
-                    "/docker-entrypoint-initdb.d/", BindMode.READ_ONLY
-                )
-            postgresContainer.start()
-            val configuration = Configuration()
-            jdbc.withUrl(postgresContainer.jdbcUrl)
-            configuration.jdbc = jdbc
-            configuration.generator = generator
+                .withFileSystemBind("$path/$scriptsPath", "/docker-entrypoint-initdb.d/", BindMode.READ_ONLY)
+                .apply { start() }
+
+            val configuration = Configuration().also {
+                it.jdbc = jdbc.apply { url = postgresContainer.jdbcUrl }
+                it.generator = generator.apply { target.directory = "$path/${target.directory}" }
+            }
 
             GenerationTool().run(configuration)
         } finally {
