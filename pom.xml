@@ -132,6 +132,14 @@
                 <version>${maven-plugin.version}</version>
                 <scope>test</scope>
             </dependency>
+
+            <!-- Used only for autocompletion in the test project -->
+            <dependency>
+                <groupId>org.jetbrains.kotlin</groupId>
+                <artifactId>kotlin-script-runtime</artifactId>
+                <version>${kotlin.version}</version>
+                <scope>test</scope>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
