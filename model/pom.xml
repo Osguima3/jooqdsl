@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>es.osguima3</groupId>
+        <groupId>org.osguima3</groupId>
         <artifactId>jooq-dsl-maven-parent</artifactId>
         <version>1.0-SNAPSHOT</version>
     </parent>
@@ -12,10 +12,6 @@
     <artifactId>jooq-dsl-model</artifactId>
     <name>Jooq DSL model</name>
     <packaging>jar</packaging>
-
-    <properties>
-
-    </properties>
 
     <dependencies>
         <dependency>
@@ -31,6 +27,14 @@
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.nhaarman.mockitokotlin2</groupId>
+            <artifactId>mockito-kotlin</artifactId>
         </dependency>
     </dependencies>
 
