@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>es.osguima3</groupId>
+        <groupId>org.osguima3</groupId>
         <artifactId>jooq-dsl-maven-parent</artifactId>
         <version>1.0-SNAPSHOT</version>
     </parent>
@@ -17,6 +17,16 @@
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>
             <artifactId>kotlin-stdlib-jdk8</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jetbrains.kotlin</groupId>
+            <artifactId>kotlin-reflect</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.osguima3</groupId>
+            <artifactId>jooq-dsl-model</artifactId>
+            <version>${project.parent.version}</version>
         </dependency>
 
         <dependency>
@@ -54,7 +64,6 @@
             <artifactId>postgresql</artifactId>
         </dependency>
 
-
         <!-- Test dependencies -->
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>
@@ -63,6 +72,10 @@
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
         </dependency>
         <dependency>
             <groupId>org.apache.maven</groupId>
