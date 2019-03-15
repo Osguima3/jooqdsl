@@ -31,6 +31,7 @@
                     <!-- Specify the MyMojo parameter -->
                     <databaseName>accountdb</databaseName>
                     <postgresContainerImage>postgres:10.3</postgresContainerImage>
+                    <scriptsPath>src/main/resources/db/migration</scriptsPath>
                     <jdbc>
                         <driver>org.postgresql.Driver</driver>
                         <user>test_user</user>
@@ -55,11 +56,6 @@
                         </target>
                     </generator>
                 </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-site-plugin</artifactId>
-                <version>3.7.1</version>
             </plugin>
         </plugins>
     </build>

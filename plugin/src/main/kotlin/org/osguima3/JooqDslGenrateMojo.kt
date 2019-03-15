@@ -43,6 +43,9 @@ class JooqDslGenrateMojo : AbstractMojo() {
     @Parameter
     private lateinit var postgresContainerImage: String
 
+    @Parameter
+    private lateinit var scriptsPath: String
+
     override fun execute() {
 
         val oldCL = Thread.currentThread().contextClassLoader
@@ -55,7 +58,7 @@ class JooqDslGenrateMojo : AbstractMojo() {
                 .withUsername(jdbc.user)
                 .withPassword(jdbc.password)
                 .withFileSystemBind(
-                    Paths.get("src/main/resources/db/migration").toAbsolutePath().toString(),
+                    Paths.get(scriptsPath).toAbsolutePath().toString(),
                     "/docker-entrypoint-initdb.d/", BindMode.READ_ONLY
                 )
             postgresContainer.start()
