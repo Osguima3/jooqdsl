@@ -30,17 +30,16 @@
 
         <!-- Database -->
         <dependency>
+            <groupId>org.jooq</groupId>
+            <artifactId>jooq</artifactId>
+        </dependency>
+        <dependency>
             <groupId>@project.groupId@</groupId>
             <artifactId>jooq-dsl-model</artifactId>
         </dependency>
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>@project.groupId@</groupId>
-            <artifactId>jooq-dsl-model</artifactId>
-            <version>@project.version@</version>
         </dependency>
     </dependencies>
 
@@ -51,10 +50,8 @@
                 <artifactId>@project.artifactId@</artifactId>
                 <version>@project.version@</version>
                 <configuration>
-                    <!-- Specify the MyMojo parameter -->
-                    <databaseName>accountdb</databaseName>
                     <postgresContainerImage>postgres:10.3</postgresContainerImage>
-                    <scriptsPath>src/main/resources/db/migration</scriptsPath>
+                    <migrationPath>src/main/resources/db/migration</migrationPath>
                     <jdbc>
                         <driver>org.postgresql.Driver</driver>
                         <user>test_user</user>
@@ -89,7 +86,52 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>add-source</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>add-source</goal>
+                        </goals>
+                        <configuration>
+                            <sources>
+                                <source>${project.build.directory}/generated-sources/jooq/</source>
+                            </sources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.jetbrains.kotlin</groupId>
+                <artifactId>kotlin-maven-plugin</artifactId>
+            </plugin>
+
+            <!-- This is used so that the plugin project also knows about generated classes and doesn't freak out. -->
+            <plugin>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>2.6</version>
+                <executions>
+                    <execution>
+                        <id>copy-resources</id>
+                        <phase>process-classes</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/../../../../generated-sources</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${project.build.directory}/generated-sources/</directory>
+                                    <filtering>true</filtering>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
-
 </project>
