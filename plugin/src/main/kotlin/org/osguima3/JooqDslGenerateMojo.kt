@@ -1,6 +1,5 @@
 package org.osguima3
 
-import junit.framework.Assert.assertEquals
 import org.apache.maven.plugin.AbstractMojo
 import org.apache.maven.plugin.descriptor.PluginDescriptor
 import org.apache.maven.plugins.annotations.LifecyclePhase
@@ -10,7 +9,8 @@ import org.apache.maven.plugins.annotations.ResolutionScope
 import org.apache.maven.project.MavenProject
 import org.jooq.codegen.GenerationTool
 import org.jooq.meta.jaxb.Configuration
-import org.osguima3.jooqdsl.model.ClassFromScript
+import org.jooq.meta.jaxb.Generator
+import org.jooq.meta.jaxb.Jdbc
 import org.osguima3.jooqdsl.model.ModelDefinition
 import org.osguima3.jooqdsl.plugin.visitor.DefinitionVisitorImpl
 import org.testcontainers.containers.BindMode
@@ -22,10 +22,8 @@ import java.nio.file.Paths
 @Mojo(
     name = "generate-jooq", defaultPhase = LifecyclePhase.GENERATE_SOURCES,
     requiresDependencyResolution = ResolutionScope.TEST
-    //,threadSafe = true
-
 )
-class JooqDslGenrateMojo : AbstractMojo() {
+class JooqDslGenerateMojo : AbstractMojo() {
 
     @Parameter(defaultValue = "\${project}", readonly = true)
     private lateinit var mavenProject: MavenProject
@@ -34,45 +32,36 @@ class JooqDslGenrateMojo : AbstractMojo() {
     private lateinit var descriptor: PluginDescriptor
 
     @Parameter(required = true)
-    private lateinit var jdbc: org.jooq.meta.jaxb.Jdbc
+    private lateinit var jdbc: Jdbc
 
     @Parameter(required = true)
-    private lateinit var generator: org.jooq.meta.jaxb.Generator
-
-    @Parameter
-    private lateinit var databaseName: String
+    private lateinit var generator: Generator
 
     @Parameter
     private lateinit var postgresContainerImage: String
 
     @Parameter
-    private lateinit var scriptsPath: String
+    private lateinit var migrationPath: String
 
     override fun execute() {
 
         val path = mavenProject.basedir.absolutePath
-
         val classRealm = descriptor.classRealm
 
         mavenProject.runtimeClasspathElements
             .map(::File)
             .map(File::toURI)
             .map(URI::toURL)
-            .forEach {
-                classRealm.addURL(it)
-            }
+            .forEach(classRealm::addURL)
 
         val scriptReader = Files.newBufferedReader(Paths.get("$path/src/main/resources/db/model_definition.kts"))
         val loadedModelDefinition: ModelDefinition = KtsObjectLoader().load(scriptReader)
 
-
-
-        log.info("Absolute path: $path/$scriptsPath")
+        log.info("Absolute path: $path/$migrationPath")
         val postgresContainer = PostgresContainer(postgresContainerImage)
-            .withDatabaseName(databaseName)
             .withUsername(jdbc.user)
             .withPassword(jdbc.password)
-            .withFileSystemBind("$path/$scriptsPath", "/docker-entrypoint-initdb.d/", BindMode.READ_ONLY)
+            .withFileSystemBind("$path/$migrationPath", "/docker-entrypoint-initdb.d/", BindMode.READ_ONLY)
             .apply { start() }
 
         val configuration = Configuration().also {
