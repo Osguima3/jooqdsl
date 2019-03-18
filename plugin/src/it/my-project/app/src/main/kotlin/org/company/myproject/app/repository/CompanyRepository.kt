@@ -12,7 +12,7 @@ class CompanyRepository(private val context: DSLContext) {
             .from(COMPANY)
             .fetch(::toCompany)
 
-    private fun toCompany(record: Record) = Company(
+    private fun toCompany(record: Record): Company = Company(
         record[COMPANY.NAME]!!,
         record[COMPANY.CREATION_DATE]!!,
         record[COMPANY.EMPLOYEES]!!,
