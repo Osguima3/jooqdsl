@@ -17,6 +17,7 @@
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>
             <artifactId>kotlin-script-runtime</artifactId>
+            <scope>runtime</scope>
             <version>${kotlin.version}</version>
         </dependency>
         <dependency>
@@ -94,6 +95,10 @@
             <artifactId>assertj-core</artifactId>
         </dependency>
         <dependency>
+            <groupId>com.nhaarman.mockitokotlin2</groupId>
+            <artifactId>mockito-kotlin</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.apache.maven</groupId>
             <artifactId>maven-compat</artifactId>
         </dependency>
@@ -112,6 +117,24 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-invoker-plugin</artifactId>
+                <version>3.2.0</version>
+                <configuration>
+                    <goals>clean install</goals>
+                    <postBuildHookScript>verify</postBuildHookScript>
+                    <showVersion>true</showVersion>
+                    <streamLogs>true</streamLogs>
+                    <noLog>false</noLog>
+                    <showErrors>true</showErrors>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>integration-test</id>
+                        <goals>
+                            <goal>install</goal>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
