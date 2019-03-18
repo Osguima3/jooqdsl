@@ -6,7 +6,7 @@ CREATE TYPE legal_entity_type AS ENUM (
 
 CREATE TABLE company
 (
-  id            INT PRIMARY KEY,
+  id            UUID PRIMARY KEY,
   name          TEXT,
   creation_date TIMESTAMP WITH TIME ZONE,
   employees     INT,
