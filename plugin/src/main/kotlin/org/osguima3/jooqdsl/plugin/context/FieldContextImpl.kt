@@ -3,6 +3,8 @@ package org.osguima3.jooqdsl.plugin.context
 import org.osguima3.jooqdsl.model.context.FieldContext
 import org.osguima3.jooqdsl.model.context.FieldDefinition
 import org.osguima3.jooqdsl.model.converter.Converter
+import org.osguima3.jooqdsl.plugin.context.TemplateFile.SIMPLE
+import org.osguima3.jooqdsl.plugin.context.TemplateFile.TINY_TYPE
 import java.lang.reflect.Method
 import java.time.Instant
 import java.time.OffsetDateTime
@@ -18,43 +20,46 @@ class FieldContextImpl(
     private val name: String
 ) : FieldContext {
 
-    override fun <T : Enum<T>> enum(fromType: String?, toType: KClass<T>): FieldDefinition<T> =
-        registerEnum(fromType, toType)
+    override fun <U : Enum<U>> enum(databaseType: String?, userType: KClass<U>): FieldDefinition<U> =
+        register(userType, enumString(databaseType, userType))
 
-    override fun <T : Any> tinyType(toType: KClass<T>): FieldDefinition<T> = if (isTinyType(toType))
-        registerTinyType(toType)
-    else
-        throw IllegalArgumentException("Type $toType is not a tiny type.")
+    override fun <U : Any> tinyType(userType: KClass<U>): FieldDefinition<U> = if (isTinyType(userType)) {
+        resolveTinyType(userType)
+    } else {
+        throw IllegalArgumentException("Type $userType is not a tiny type.")
+    }
 
-    override fun <T : Any, U, V : Any> tinyType(
-        converter: KClass<out Converter<T, U>>,
-        fromType: KClass<T>,
-        toType: KClass<V>
-    ): FieldDefinition<V> = if (isTinyType(toType))
-        registerCustomTinyType(fromType, toType, toType.singleField, converter.qualifiedName!!)
-    else
-        throw IllegalArgumentException("Type $toType is not a tiny type.")
+    override fun <T : Any, U : Any> tinyType(
+        converter: KClass<out Converter<T, *>>,
+        databaseType: KClass<T>,
+        userType: KClass<U>
+    ): FieldDefinition<U> = if (isTinyType(userType)) {
+        registerTinyType(databaseType, userType, constructorString(converter))
+    } else {
+        throw IllegalArgumentException("Type $userType is not a tiny type.")
+    }
 
     override fun <T : Any, U : Any> custom(
         converter: KClass<out Converter<T, U>>,
-        fromType: KClass<T>,
-        toType: KClass<U>
-    ) = registerConverter(fromType, toType, converter.qualifiedName!!)
+        databaseType: KClass<T>,
+        userType: KClass<U>
+    ): FieldDefinition<U> = registerSimple(databaseType, userType, constructorString(converter))
 
-//    override fun <T : Any, U : Any> custom(
-//        from: (T) -> U,
-//        to: (U) -> T,
-//        fromType: KClass<T>,
-//        toType: KClass<U>
-//    ): FieldDefinition<U> = TODO("Not implemented yet!")
-
-    @Suppress("UNCHECKED_CAST")
     internal fun <U : Any> resolve(userType: KClass<U>): FieldDefinition<U> = when {
         isSimple(userType) -> EmptyDefinition() // No need to register
-        isInstant(userType) -> registerInstant() as FieldDefinition<U>
-        isEnum(userType) -> registerEnum(null, userType)
-        isTinyType(userType) -> registerTinyType(userType)
+        isInstant(userType) -> register(userType, instantString())
+        isEnum(userType) -> register(userType, enumString(null, userType))
+        isTinyType(userType) -> resolveTinyType(userType)
         else -> throw IllegalArgumentException("No default mapper available for $userType")
+    }
+
+    private fun <U : Any> resolveTinyType(userType: KClass<U>): FieldDefinition<U> {
+        val fieldType = userType.singleField.returnType.kotlin
+        return when {
+            isSimple(fieldType) -> register(userType, tinyTypeString(userType))
+            isInstant(fieldType) -> registerTinyType(OffsetDateTime::class, userType, instantString(), setOf(SIMPLE))
+            else -> throw IllegalArgumentException("No default mapper available for $userType")
+        }
     }
 
     private fun isSimple(type: KClass<*>) = type.javaPrimitiveType != null || type == String::class
@@ -65,83 +70,61 @@ class FieldContextImpl(
 
     private fun isTinyType(type: KClass<*>) = type.isData && type.declaredMemberProperties.size == 1
 
-    private fun registerInstant(): FieldDefinition<Instant> {
-        context.generateConverter("InstantConverter")
-        return registerForcedType(
-            userType = Instant::class,
-            converter = "${context.converterPackage}.InstantConverter"
-        )
-    }
+    private fun <T : Any, U : Any> registerSimple(
+        databaseType: KClass<T>,
+        userType: KClass<U>,
+        converter: String,
+        templates: Set<TemplateFile> = emptySet()
+    ): FieldDefinition<U> = register(
+        userType = userType,
+        templates = templates + setOf(SIMPLE),
+        converter = simpleString(databaseType, userType, converter)
+    )
 
-    private fun <U : Any> registerEnum(databaseType: String?, userType: KClass<U>): FieldDefinition<U> =
-        registerForcedType(
-            userType = userType,
-            converter = "new org.jooq.impl.EnumConverter<>(" +
-                    "${databaseType ?: "${context.targetPackage}.enums.${userType.simpleName}"}.class, " +
-                    "${userType.simpleName}.class)"
-        )
+    private fun <T : Any, U : Any> registerTinyType(
+        databaseType: KClass<T>,
+        userType: KClass<U>,
+        converter: String,
+        templates: Set<TemplateFile> = emptySet()
+    ): FieldDefinition<U> = register(
+        userType = userType,
+        templates = templates + setOf(TINY_TYPE),
+        converter = tinyTypeString(databaseType, userType, converter)
+    )
 
-    private fun <U : Any> registerTinyType(userType: KClass<U>): FieldDefinition<U> {
-        val field = userType.singleField
-        return when {
-            isSimple(field.returnType.kotlin) -> registerSimpleTinyType(userType, field)
-            isInstant(field.returnType.kotlin) -> registerInstantTinyType(userType, field)
-            else -> throw IllegalArgumentException("No default mapper available for $userType")
+    private fun <U : Any> register(userType: KClass<U>, converter: String, templates: Set<TemplateFile> = emptySet()) =
+        EmptyDefinition<U>().also {
+            context.addTemplates(templates).registerForcedType(".*\\.$tableName\\.$name", userType, converter)
         }
-    }
 
-    private fun <U : Any> registerSimpleTinyType(userType: KClass<U>, field: Method): FieldDefinition<U> =
-        registerForcedType(
-            userType = userType,
-            converter = "org.jooq.Converter.ofNullable(${field.returnType.canonicalName}.class, " +
-                    "${userType.simpleName}.class, ${userType.simpleName}::new, ${userType.simpleName}::${field.name})"
-        )
+    private fun constructorString(converter: KClass<*>) =
+        "new ${converter.qualifiedName}()"
 
-    private fun <U : Any> registerInstantTinyType(userType: KClass<U>, field: Method): FieldDefinition<U> {
-        context.generateConverter("InstantConverter")
-        return registerCustomTinyType(
-            databaseType = OffsetDateTime::class,
-            userType = userType,
-            field = field,
-            converter = "${context.converterPackage}.InstantConverter"
-        )
-    }
+    private fun instantString() =
+        "org.jooq.Converter.ofNullable(java.time.OffsetDateTime.class, java.time.Instant.class, " +
+            "java.time.OffsetDateTime::toInstant, i -> java.time.OffsetDateTime.ofInstant(i, java.time.ZoneOffset.UTC))"
 
-    private fun <D : Any, U : Any> registerCustomTinyType(
-        databaseType: KClass<D>,
-        userType: KClass<U>,
-        field: Method,
-        converter: String
-    ): FieldDefinition<U> {
-        context.generateConverter("TinyTypeConverter")
-        return registerForcedType(
-            userType = userType,
-            converter = "new ${context.converterPackage}.TinyTypeConverter<>(new $converter(), " +
-                    "${userType.simpleName}::new, ${userType.simpleName}::${field.name}, " +
-                    "${databaseType.qualifiedName}.class, ${userType.simpleName}.class)"
-        )
-    }
+    private fun enumString(databaseType: String?, userType: KClass<*>) =
+        "new org.jooq.impl.EnumConverter<>(" +
+            "${databaseType ?: "${context.targetPackage}.enums.${userType.simpleName}"}.class, " +
+            "${userType.simpleName}.class)"
 
-    private fun <D : Any, U : Any> registerConverter(
-        databaseType: KClass<D>,
-        userType: KClass<U>,
-        converter: String
-    ): FieldDefinition<U> {
-        context.generateConverter("SimpleConverter")
-        return registerForcedType(
-            userType = userType,
-            converter = "new ${context.converterPackage}.SimpleConverter<>($converter, " +
-                    "${databaseType.qualifiedName}.class, ${userType.simpleName}.class)"
-        )
-    }
+    private fun simpleString(databaseType: KClass<*>, userType: KClass<*>, converter: String) =
+        "new ${context.converterPackage}.SimpleConverter<>($converter, " +
+            "${databaseType.qualifiedName}.class, ${userType.simpleName}.class)"
 
-    private fun <U> registerForcedType(userType: KClass<*>, converter: String): FieldDefinition<U> = context
-        .registerForcedType(".*\\.$tableName\\.$name", userType, converter)
-        .let { return EmptyDefinition() }
+    private fun tinyTypeString(userType: KClass<*>, field: Method = userType.singleField) =
+        "org.jooq.Converter.ofNullable(${field.returnType.canonicalName}.class, ${userType.simpleName}.class, " +
+            "${userType.simpleName}::new, ${userType.simpleName}::${field.name})"
+
+    private fun tinyTypeString(databaseType: KClass<*>, userType: KClass<*>, converter: String) =
+        "new ${context.converterPackage}.TinyTypeConverter<>($converter, " +
+            "${userType.simpleName}::new, ${userType.simpleName}::${userType.singleField.name}, " +
+            "${databaseType.qualifiedName}.class, ${userType.simpleName}.class)"
 
     private val <U : Any> KClass<U>.singleField
         get() = declaredMemberProperties.mapNotNull(KProperty<*>::javaGetter).single()
 
     // In the future we could make this more configurable
-    inner class EmptyDefinition<T> : FieldDefinition<T>
+    inner class EmptyDefinition<U> : FieldDefinition<U>
 }
