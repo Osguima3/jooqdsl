@@ -73,8 +73,10 @@ class JooqDslGenerateMojo : AbstractMojo() {
             }
         }
 
-        ModelContextImpl(configuration).run(definition.configure)
-
-        GenerationTool().run(configuration)
+        ModelContextImpl(configuration).run {
+            (definition.configure)()
+            GenerationTool().run(configuration)
+            generateConverters()
+        }
     }
 }
