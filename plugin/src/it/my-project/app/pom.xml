@@ -5,11 +5,11 @@
 
     <parent>
         <groupId>org.company.my-project</groupId>
-        <artifactId>parent</artifactId>
+        <artifactId>my-project-parent</artifactId>
         <version>1.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>app</artifactId>
+    <artifactId>my-project-app</artifactId>
     <name>My Project's app</name>
     <packaging>jar</packaging>
 
@@ -22,9 +22,10 @@
             <groupId>org.jetbrains.kotlin</groupId>
             <artifactId>kotlin-script-runtime</artifactId>
         </dependency>
+
         <dependency>
             <groupId>org.company.my-project</groupId>
-            <artifactId>model</artifactId>
+            <artifactId>my-project-model</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
 
@@ -89,6 +90,7 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>build-helper-maven-plugin</artifactId>
+                <version>3.0.0</version>
                 <executions>
                     <execution>
                         <id>add-source</id>
@@ -107,30 +109,6 @@
             <plugin>
                 <groupId>org.jetbrains.kotlin</groupId>
                 <artifactId>kotlin-maven-plugin</artifactId>
-            </plugin>
-
-            <!-- This is used so that the plugin project also knows about generated classes and doesn't freak out. -->
-            <plugin>
-                <artifactId>maven-resources-plugin</artifactId>
-                <version>2.6</version>
-                <executions>
-                    <execution>
-                        <id>copy-resources</id>
-                        <phase>process-classes</phase>
-                        <goals>
-                            <goal>copy-resources</goal>
-                        </goals>
-                        <configuration>
-                            <outputDirectory>${project.build.directory}/../../../../generated-sources</outputDirectory>
-                            <resources>
-                                <resource>
-                                    <directory>${project.build.directory}/generated-sources/</directory>
-                                    <filtering>true</filtering>
-                                </resource>
-                            </resources>
-                        </configuration>
-                    </execution>
-                </executions>
             </plugin>
         </plugins>
     </build>

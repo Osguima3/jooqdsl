@@ -1,121 +1,159 @@
 package org.osguima3.jooqdsl.model
 
-import com.nhaarman.mockitokotlin2.mock
-import com.nhaarman.mockitokotlin2.times
-import com.nhaarman.mockitokotlin2.verify
-import com.nhaarman.mockitokotlin2.whenever
+import com.nhaarman.mockitokotlin2.*
 import org.junit.jupiter.api.Test
+import org.osguima3.jooqdsl.model.context.*
 import org.osguima3.jooqdsl.model.converter.Converter
-import org.osguima3.jooqdsl.model.definition.ConverterContext
-import org.osguima3.jooqdsl.model.definition.TableContext
-import org.osguima3.jooqdsl.model.definition.TestDefinitionVisitor
-import org.osguima3.jooqdsl.model.definition.withCustomConverter
+
+typealias ConverterConfig = (FieldContext) -> FieldDefinition<Int>
 
 class ModelDefinitionTest {
 
     data class TestTinyType(val value: Int)
+    data class TestStringTinyType(val value: String)
     enum class TestEnum
     abstract class TestConverter : Converter<Int, String>
 
-    private val converterContext = mock<ConverterContext<Int, String>>()
+    private val converterContext = mock<FieldContext>()
+    private val tableContext = mock<TableContext>().apply {
+        whenever(field(eq("field"), any<ConverterConfig>()))
+            .then { it.getArgument<ConverterConfig>(1).invoke(converterContext) }
+    }
 
-    private val tableContext = mock<TableContext>()
-
-    private val visitor = TestDefinitionVisitor { tableContext }
+    private val context = TestModelContext { tableContext }
 
     @Test
-    fun testTinyType() {
+    fun testField() {
         val definition = ModelDefinition {
             tables {
-                table("foo") {
-                    "tiny_field" withTinyType TestTinyType::class
+                table("table") {
+                    field("field", TestTinyType::class)
                 }
             }
         }
 
-        definition.accept(visitor)
+        context.run(definition.configure)
 
-        verify(tableContext).run { "tiny_field" withTinyType TestTinyType::class }
+        verify(tableContext).run { field("field", TestTinyType::class) }
     }
 
     @Test
-    fun testEnum() {
+    fun testCustom_Enum() {
         val definition = ModelDefinition {
             tables {
-                table("foo") {
-                    "enum_field" withEnum TestEnum::class
+                table("table") {
+                    field("field") { enum("String", TestEnum::class) }
                 }
             }
         }
 
-        definition.accept(visitor)
+        context.run(definition.configure)
 
-        verify(tableContext).run { "enum_field" withEnum TestEnum::class }
+        verify(converterContext).enum("String", TestEnum::class)
     }
 
     @Test
-    fun testStringEnum() {
+    fun testCustom_TinyType() {
         val definition = ModelDefinition {
             tables {
-                table("foo") {
-                    "string_enum_field" withStringEnum TestEnum::class
+                table("table") {
+                    field("field") { tinyType(TestTinyType::class) }
                 }
             }
         }
 
-        definition.accept(visitor)
+        context.run(definition.configure)
 
-        verify(tableContext).run { "string_enum_field" withStringEnum TestEnum::class }
+        verify(converterContext).tinyType(TestTinyType::class)
     }
 
     @Test
-    fun testCustomReified() {
-        val definition = setupCustomConverter("custom_field") {
-            withCustomConverter("custom_field", TestConverter::class)
-        }
-
-        definition.accept(visitor)
-
-        verifyCustomConverter("custom_field")
-    }
-
-    @Test
-    fun testCustomInfix() {
-        val definition = setupCustomConverter("custom_field") {
-            "custom_field" withCustomConverter TestConverter::class from Int::class to String::class
-        }
-
-        definition.accept(visitor)
-
-        verifyCustomConverter("custom_field")
-    }
-
-    @Test
-    fun testCustomInfixReversed() {
-        val definition = setupCustomConverter("custom_field") {
-            "custom_field" withCustomConverter TestConverter::class to String::class from Int::class
-        }
-
-        definition.accept(visitor)
-
-        verifyCustomConverter("custom_field")
-    }
-
-    private fun setupCustomConverter(name: String, configure: TableContext.() -> Unit): ModelDefinition {
-        whenever(tableContext.run { name.withCustomConverter(TestConverter::class) }).thenReturn(converterContext)
-        whenever(converterContext from Int::class).thenReturn(converterContext)
-        whenever(converterContext to String::class).thenReturn(converterContext)
-
-        return ModelDefinition {
+    fun testCustom_TinyTypeConverter() {
+        val definition = ModelDefinition {
             tables {
-                table("foo", configure)
+                table("table") {
+                    field("field") { tinyType(TestConverter::class, Int::class, TestStringTinyType::class) }
+                }
             }
         }
+
+        context.run(definition.configure)
+
+        verify(converterContext).tinyType(TestConverter::class, Int::class, TestStringTinyType::class)
     }
 
-    private fun verifyCustomConverter(name: String) {
-        verify(tableContext).run { name withCustomConverter TestConverter::class }
-        verify(converterContext, times(1)).run { from(Int::class) }
-        verify(converterContext, times(1)).run { to(String::class) }
+    @Test
+    fun testCustom_TinyTypeConverterReified() {
+        val definition = ModelDefinition {
+            tables {
+                table("table") {
+                    field("field") { tinyType(TestConverter::class, TestStringTinyType::class) }
+                }
+            }
+        }
+
+        context.run(definition.configure)
+
+        verify(converterContext).tinyType(TestConverter::class, Int::class, TestStringTinyType::class)
     }
+
+    @Test
+    fun testField_CustomConverter() {
+        val definition = ModelDefinition {
+            tables {
+                table("table") {
+                    field("field") { custom(TestConverter::class, Int::class, String::class) }
+                }
+            }
+        }
+
+        context.run(definition.configure)
+
+        verify(converterContext).custom(TestConverter::class, Int::class, String::class)
+    }
+
+    @Test
+    fun testField_CustomConverterReified() {
+        val definition = ModelDefinition {
+            tables {
+                table("table") {
+                    field("field") { custom(TestConverter::class) }
+                }
+            }
+        }
+
+        context.run(definition.configure)
+
+        verify(converterContext).custom(TestConverter::class, Int::class, String::class)
+    }
+
+//    @Test
+//    fun testCustom_CustomFromTo() {
+//        val definition = ModelDefinition {
+//            tables {
+//                table("table") {
+//                    field("field") { custom(Int::toString, Integer::valueOf, Int::class, String::class) }
+//                }
+//            }
+//        }
+//
+//        context.run(definition.configure)
+//
+//        verify(converterContext).custom(Int::toString, Integer::valueOf)
+//    }
+//
+//    @Test
+//    fun testField_CustomFromToReified() {
+//        val definition = ModelDefinition {
+//            tables {
+//                table("table") {
+//                    field("field") { custom(Int::toString, Integer::valueOf) }
+//                }
+//            }
+//        }
+//
+//        context.run(definition.configure)
+//
+//        verify(converterContext).custom(Int::toString, Integer::valueOf)
+//    }
 }

@@ -7,13 +7,16 @@ import org.jooq.Record
 
 class CompanyRepository(private val context: DSLContext) {
 
-    fun findAll(): List<Company> = context
-        .select(COMPANY.fields().toList())
-        .from(COMPANY)
-        .fetch(::toCompany)
+    fun findAll(): List<Company> =
+        context.select(COMPANY.fields().toList())
+            .from(COMPANY)
+            .fetch(::toCompany)
 
-    private fun toCompany(record: Record): Company = Company(
+    private fun toCompany(record: Record) = Company(
         record[COMPANY.NAME]!!,
-        record[COMPANY.CREATION_DATE]!!
+        record[COMPANY.CREATION_DATE]!!,
+        record[COMPANY.EMPLOYEES]!!,
+        record[COMPANY.LEGAL_TYPE]!!,
+        record[COMPANY.INDUSTRY]!!
     )
 }
