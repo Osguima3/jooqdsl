@@ -17,6 +17,7 @@ import org.osguima3.jooqdsl.model.converter.Converter
 import org.osguima3.jooqdsl.plugin.context.TemplateFile.SIMPLE
 import org.osguima3.jooqdsl.plugin.context.TemplateFile.TINY_TYPE
 import java.time.Instant
+import java.util.UUID
 
 class ModelContextImplTest {
 
@@ -80,6 +81,22 @@ class ModelContextImplTest {
                 tables {
                     table("table") {
                         field("field", String::class)
+                    }
+                }
+            }
+
+            context.run(definition.configure)
+
+            verifyZeroInteractions(forcedTypes)
+            assertThat(context.pendingTemplates).isEmpty()
+        }
+
+        @Test
+        fun testUUID() {
+            val definition = ModelDefinition {
+                tables {
+                    table("table") {
+                        field("field", UUID::class)
                     }
                 }
             }

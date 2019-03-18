@@ -8,6 +8,7 @@ import org.osguima3.jooqdsl.plugin.context.TemplateFile.TINY_TYPE
 import java.lang.reflect.Method
 import java.time.Instant
 import java.time.OffsetDateTime
+import java.util.UUID
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
 import kotlin.reflect.full.declaredMemberProperties
@@ -62,7 +63,8 @@ class FieldContextImpl(
         }
     }
 
-    private fun isSimple(type: KClass<*>) = type.javaPrimitiveType != null || type == String::class
+    private fun isSimple(type: KClass<*>) = type.javaPrimitiveType != null ||
+        type == String::class || type == UUID::class
 
     private fun isInstant(type: KClass<*>) = type == Instant::class
 
