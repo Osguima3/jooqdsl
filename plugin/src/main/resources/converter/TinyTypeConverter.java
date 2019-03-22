@@ -25,7 +25,7 @@ public class TinyTypeConverter<T, U, V> implements org.jooq.Converter<T, V> {
     public TinyTypeConverter(
             Converter<T, U> converter, Function<U, V> fromTinyType, Function<V, U> toTinyType,
             Class<T> fromType, Class<V> toType) {
-        this(new SimpleConverter<T, U>(converter, fromType, null), fromTinyType, toTinyType, fromType, toType);
+        this(new ConverterAdapter<T, U>(converter, fromType, null), fromTinyType, toTinyType, fromType, toType);
     }
 
     public TinyTypeConverter(

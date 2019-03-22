@@ -20,23 +20,8 @@
  * For more information, please visit: http://www.jooq.org/licenses
  */
 
-package org.osguima3.jooqdsl.plugin.converter
+package org.company.myproject.model.types
 
-import org.jooq.tools.reflect.Reflect
+import java.math.BigDecimal
 
-typealias JooqConverter<T, U> = org.jooq.Converter<T, U>
-typealias JavaFunction<T, U> = java.util.function.Function<T, U>
-
-fun <T, U> Any.loadConverter(template: TemplateFile, vararg args: Any): JooqConverter<T, U> {
-    val classLoader = this::class.java.classLoader
-    return Reflect.compile(
-        template.className,
-        classLoader
-            .getResourceAsStream("converter/${template.className}.java")
-            .reader().use { it.readText() }
-    ).create(*args)
-        .get()
-}
-
-val <T, U> Function1<T, U>.java
-    get() = JavaFunction<T, U> { this(it) }
+data class CompanyValuation(val valuation: BigDecimal)

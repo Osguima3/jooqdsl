@@ -1,11 +1,32 @@
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * Other licenses:
+ * -----------------------------------------------------------------------------
+ * Commercial licenses for this work are available. These replace the above
+ * ASL 2.0 and offer limited warranties, support, maintenance, and commercial
+ * database integrations.
+ *
+ * For more information, please visit: http://www.jooq.org/licenses
+ */
+
 package org.osguima3.jooqdsl.plugin.context
 
 import org.osguima3.jooqdsl.model.context.FieldContext
-import org.osguima3.jooqdsl.model.context.FieldDefinition
 import org.osguima3.jooqdsl.model.converter.Converter
-import org.osguima3.jooqdsl.plugin.context.TemplateFile.SIMPLE
-import org.osguima3.jooqdsl.plugin.context.TemplateFile.TINY_TYPE
-import java.lang.reflect.Method
+import org.osguima3.jooqdsl.plugin.converter.ConverterBuilder
+import org.osguima3.jooqdsl.plugin.converter.TemplateFile
+import java.math.BigDecimal
 import java.time.Instant
 import java.time.OffsetDateTime
 import java.util.UUID
@@ -21,112 +42,99 @@ class FieldContextImpl(
     private val name: String
 ) : FieldContext {
 
-    override fun <U : Enum<U>> enum(databaseType: String?, userType: KClass<U>): FieldDefinition<U> =
-        register(userType, enumString(databaseType, userType))
+    private val builder = ConverterBuilder(context)
 
-    override fun <U : Any> tinyType(userType: KClass<U>): FieldDefinition<U> = if (isTinyType(userType)) {
-        resolveTinyType(userType)
+    private var initialized = false
+
+    fun doConfigure(configure: FieldContext.() -> Unit) = if (initialized) {
+        throw IllegalStateException("Field already initialized")
     } else {
-        throw IllegalArgumentException("Type $userType is not a tiny type.")
+        configure()
+        initialized = true
     }
 
+    override fun type(userType: KClass<*>) =
+        resolve(userType)
+
+    override fun enum(userType: KClass<out Enum<*>>, databaseType: String?) =
+        register(userType, builder.enum(userType, databaseType))
+
     override fun <T : Any, U : Any> tinyType(
-        converter: KClass<out Converter<T, *>>,
+        converter: KClass<out Converter<T, U>>,
+        userType: KClass<*>,
         databaseType: KClass<T>,
-        userType: KClass<U>
-    ): FieldDefinition<U> = if (isTinyType(userType)) {
-        registerTinyType(databaseType, userType, constructorString(converter))
-    } else {
+        fieldType: KClass<U>
+    ) = if (!userType.isTinyType) {
         throw IllegalArgumentException("Type $userType is not a tiny type.")
+    } else if (fieldType != userType.fieldType) {
+        throw IllegalArgumentException("$userType.${userType.singleField.name}(): ${userType.fieldType} " +
+            "is not of type $fieldType.")
+    } else {
+        registerTinyType(databaseType, userType, builder.simple(converter), emptySet())
     }
 
     override fun <T : Any, U : Any> custom(
         converter: KClass<out Converter<T, U>>,
-        databaseType: KClass<T>,
-        userType: KClass<U>
-    ): FieldDefinition<U> = registerSimple(databaseType, userType, constructorString(converter))
+        userType: KClass<U>,
+        databaseType: KClass<T>
+    ) = registerAdapter(databaseType, userType, builder.simple(converter))
 
-    internal fun <U : Any> resolve(userType: KClass<U>): FieldDefinition<U> = when {
-        isSimple(userType) -> EmptyDefinition() // No need to register
-        isInstant(userType) -> register(userType, instantString())
-        isEnum(userType) -> register(userType, enumString(null, userType))
-        isTinyType(userType) -> resolveTinyType(userType)
+    private fun resolve(userType: KClass<*>) = when {
+        userType.isPrimitive -> Unit // No need to register
+        userType.isEnum -> register(userType, builder.enum(userType))
+        userType.isTinyType -> resolveTinyType(userType)
+        userType == Instant::class -> register(userType, builder.instant())
         else -> throw IllegalArgumentException("No default mapper available for $userType")
     }
 
-    private fun <U : Any> resolveTinyType(userType: KClass<U>): FieldDefinition<U> {
-        val fieldType = userType.singleField.returnType.kotlin
-        return when {
-            isSimple(fieldType) -> register(userType, tinyTypeString(userType))
-            isInstant(fieldType) -> registerTinyType(OffsetDateTime::class, userType, instantString(), setOf(SIMPLE))
-            else -> throw IllegalArgumentException("No default mapper available for $userType")
-        }
+    private fun resolveTinyType(userType: KClass<*>, fieldType: KClass<*> = userType.fieldType) = when {
+        fieldType.isPrimitive -> register(userType, builder.tinyType(userType.javaObjectType.kotlin))
+        fieldType == Instant::class -> registerTinyType(OffsetDateTime::class, userType, builder.instant())
+        else -> throw IllegalArgumentException("No default mapper available for $userType")
     }
 
-    private fun isSimple(type: KClass<*>) = type.javaPrimitiveType != null ||
-        type == String::class || type == UUID::class
+    private fun registerTinyType(
+        databaseType: KClass<*>,
+        userType: KClass<*>,
+        converter: String,
+        templates: Set<TemplateFile> = setOf(TemplateFile.ADAPTER)
+    ) = register(
+        userType = userType,
+        templates = templates + setOf(TemplateFile.TINY_TYPE),
+        converter = builder.tinyType(userType, databaseType, converter)
+    )
 
-    private fun isInstant(type: KClass<*>) = type == Instant::class
-
-    private fun isEnum(type: KClass<*>) = type.isSubclassOf(Enum::class)
-
-    private fun isTinyType(type: KClass<*>) = type.isData && type.declaredMemberProperties.size == 1
-
-    private fun <T : Any, U : Any> registerSimple(
+    private fun <T : Any, U : Any> registerAdapter(
         databaseType: KClass<T>,
         userType: KClass<U>,
         converter: String,
         templates: Set<TemplateFile> = emptySet()
-    ): FieldDefinition<U> = register(
+    ) = register(
         userType = userType,
-        templates = templates + setOf(SIMPLE),
-        converter = simpleString(databaseType, userType, converter)
+        templates = templates + setOf(TemplateFile.ADAPTER),
+        converter = builder.adapter(userType, databaseType, converter)
     )
 
-    private fun <T : Any, U : Any> registerTinyType(
-        databaseType: KClass<T>,
-        userType: KClass<U>,
-        converter: String,
-        templates: Set<TemplateFile> = emptySet()
-    ): FieldDefinition<U> = register(
-        userType = userType,
-        templates = templates + setOf(TINY_TYPE),
-        converter = tinyTypeString(databaseType, userType, converter)
-    )
+    private fun register(userType: KClass<*>, converter: String, templates: Set<TemplateFile> = emptySet()) {
+        context.addTemplates(templates)
+        context.registerForcedType(".*\\.$tableName\\.$name", userType, converter)
+    }
 
-    private fun <U : Any> register(userType: KClass<U>, converter: String, templates: Set<TemplateFile> = emptySet()) =
-        EmptyDefinition<U>().also {
-            context.addTemplates(templates).registerForcedType(".*\\.$tableName\\.$name", userType, converter)
+    private val KClass<*>.isPrimitive
+        get() = when (this) {
+            BigDecimal::class, String::class, UUID::class -> true
+            else -> javaPrimitiveType != null
         }
 
-    private fun constructorString(converter: KClass<*>) =
-        "new ${converter.qualifiedName}()"
+    private val KClass<*>.isEnum
+        get() = isSubclassOf(Enum::class)
 
-    private fun instantString() =
-        "org.jooq.Converter.ofNullable(java.time.OffsetDateTime.class, java.time.Instant.class, " +
-            "java.time.OffsetDateTime::toInstant, i -> java.time.OffsetDateTime.ofInstant(i, java.time.ZoneOffset.UTC))"
+    private val KClass<*>.isTinyType
+        get() = isData && declaredMemberProperties.size == 1
 
-    private fun enumString(databaseType: String?, userType: KClass<*>) =
-        "new org.jooq.impl.EnumConverter<>(" +
-            "${databaseType ?: "${context.targetPackage}.enums.${userType.simpleName}"}.class, " +
-            "${userType.simpleName}.class)"
-
-    private fun simpleString(databaseType: KClass<*>, userType: KClass<*>, converter: String) =
-        "new ${context.converterPackage}.SimpleConverter<>($converter, " +
-            "${databaseType.qualifiedName}.class, ${userType.simpleName}.class)"
-
-    private fun tinyTypeString(userType: KClass<*>, field: Method = userType.singleField) =
-        "org.jooq.Converter.ofNullable(${field.returnType.canonicalName}.class, ${userType.simpleName}.class, " +
-            "${userType.simpleName}::new, ${userType.simpleName}::${field.name})"
-
-    private fun tinyTypeString(databaseType: KClass<*>, userType: KClass<*>, converter: String) =
-        "new ${context.converterPackage}.TinyTypeConverter<>($converter, " +
-            "${userType.simpleName}::new, ${userType.simpleName}::${userType.singleField.name}, " +
-            "${databaseType.qualifiedName}.class, ${userType.simpleName}.class)"
-
-    private val <U : Any> KClass<U>.singleField
+    private val KClass<*>.singleField
         get() = declaredMemberProperties.mapNotNull(KProperty<*>::javaGetter).single()
 
-    // In the future we could make this more configurable
-    inner class EmptyDefinition<U> : FieldDefinition<U>
+    private val KClass<*>.fieldType
+        get() = singleField.returnType.kotlin
 }
