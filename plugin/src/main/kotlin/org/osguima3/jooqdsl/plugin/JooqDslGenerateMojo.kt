@@ -1,3 +1,25 @@
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * Other licenses:
+ * -----------------------------------------------------------------------------
+ * Commercial licenses for this work are available. These replace the above
+ * ASL 2.0 and offer limited warranties, support, maintenance, and commercial
+ * database integrations.
+ *
+ * For more information, please visit: http://www.jooq.org/licenses
+ */
+
 package org.osguima3.jooqdsl.plugin
 
 import org.apache.maven.plugin.AbstractMojo
@@ -60,18 +82,15 @@ class JooqDslGenerateMojo : AbstractMojo() {
         val definition: ModelDefinition = FileLoader()
             .loadScript("$path/src/main/resources/db/definition/model_definition.kts")
 
-        val postgresContainer = PostgresContainer(postgresContainerImage)
-            .withFileSystemBind("$path/$migrationPath", "/docker-entrypoint-initdb.d/", BindMode.READ_ONLY)
-            .apply { jdbc?.let { withUsername(it.user).withPassword(it.password) } }
-            .apply { start() }
-
         val configuration = Configuration().also {
             it.logging = logging
-            it.jdbc = (jdbc ?: Jdbc()).apply { url = postgresContainer.jdbcUrl }
+            it.jdbc = jdbc
             it.generator = generator.apply {
                 target.directory = "$path/${target.directory ?: DEFAULT_TARGET_DIRECTORY}"
             }
         }
+
+        startContainer(configuration, "$path/$migrationPath")
 
         ModelContextImpl(configuration).run {
             (definition.configure)()
@@ -79,4 +98,16 @@ class JooqDslGenerateMojo : AbstractMojo() {
             generateConverters()
         }
     }
+
+    private fun startContainer(configuration: Configuration, path: String) = PostgresContainer(postgresContainerImage)
+        .withFileSystemBind(path, "/docker-entrypoint-initdb.d/", BindMode.READ_ONLY)
+        .run {
+            val jdbc = configuration.jdbc ?: Jdbc()
+            jdbc.user?.let(::withUsername)
+            jdbc.password?.let(::withPassword)
+
+            start()
+
+            configuration.jdbc = jdbc.apply { url = jdbcUrl }
+        }
 }

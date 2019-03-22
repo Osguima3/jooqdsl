@@ -20,23 +20,26 @@
  * For more information, please visit: http://www.jooq.org/licenses
  */
 
-package org.osguima3.jooqdsl.plugin.converter
+package org.osguima3.jooqdsl.model.context
 
-import org.jooq.tools.reflect.Reflect
+import org.osguima3.jooqdsl.model.converter.Converter
+import kotlin.reflect.KClass
 
-typealias JooqConverter<T, U> = org.jooq.Converter<T, U>
-typealias JavaFunction<T, U> = java.util.function.Function<T, U>
+/**
+ * Maps this field to the specified user tiny type using the specified converter to map
+ * the child field to the database type.
+ * @param converter The converter used to map between the child field and the database type
+ * @param userType The tiny type class
+ */
+inline fun <reified T : Any, reified U : Any> FieldContext.tinyType(
+    converter: KClass<out Converter<T, U>>,
+    userType: KClass<*>
+) = tinyType(converter, userType, T::class, U::class)
 
-fun <T, U> Any.loadConverter(template: TemplateFile, vararg args: Any): JooqConverter<T, U> {
-    val classLoader = this::class.java.classLoader
-    return Reflect.compile(
-        template.className,
-        classLoader
-            .getResourceAsStream("converter/${template.className}.java")
-            .reader().use { it.readText() }
-    ).create(*args)
-        .get()
-}
-
-val <T, U> Function1<T, U>.java
-    get() = JavaFunction<T, U> { this(it) }
+/**
+ * Maps this field to the specified user type using a custom converter.
+ * @param converter The converter used to map between the user type and the database type
+ */
+inline fun <reified T : Any, reified U : Any> FieldContext.custom(
+    converter: KClass<out Converter<T, U>>
+) = custom(converter, U::class, T::class)

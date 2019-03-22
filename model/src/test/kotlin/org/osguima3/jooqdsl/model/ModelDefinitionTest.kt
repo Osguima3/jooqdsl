@@ -1,11 +1,40 @@
+/*
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * Other licenses:
+ * -----------------------------------------------------------------------------
+ * Commercial licenses for this work are available. These replace the above
+ * ASL 2.0 and offer limited warranties, support, maintenance, and commercial
+ * database integrations.
+ *
+ * For more information, please visit: http://www.jooq.org/licenses
+ */
+
 package org.osguima3.jooqdsl.model
 
-import com.nhaarman.mockitokotlin2.*
+import com.nhaarman.mockitokotlin2.any
+import com.nhaarman.mockitokotlin2.eq
+import com.nhaarman.mockitokotlin2.mock
+import com.nhaarman.mockitokotlin2.verify
+import com.nhaarman.mockitokotlin2.whenever
 import org.junit.jupiter.api.Test
-import org.osguima3.jooqdsl.model.context.*
+import org.osguima3.jooqdsl.model.context.FieldContext
+import org.osguima3.jooqdsl.model.context.TableContext
+import org.osguima3.jooqdsl.model.context.custom
+import org.osguima3.jooqdsl.model.context.tinyType
 import org.osguima3.jooqdsl.model.converter.Converter
 
-typealias ConverterConfig = (FieldContext) -> FieldDefinition<Int>
+typealias ConverterConfig = (FieldContext) -> Unit
 
 class ModelDefinitionTest {
 
@@ -38,52 +67,52 @@ class ModelDefinitionTest {
     }
 
     @Test
-    fun testCustom_Enum() {
+    fun testBlock_Type() {
         val definition = ModelDefinition {
             tables {
                 table("table") {
-                    field("field") { enum("String", TestEnum::class) }
+                    field("field") { type(TestTinyType::class) }
                 }
             }
         }
 
         context.run(definition.configure)
 
-        verify(converterContext).enum("String", TestEnum::class)
+        verify(converterContext).type(TestTinyType::class)
     }
 
     @Test
-    fun testCustom_TinyType() {
+    fun testBlock_Enum() {
         val definition = ModelDefinition {
             tables {
                 table("table") {
-                    field("field") { tinyType(TestTinyType::class) }
+                    field("field") { enum(TestEnum::class, "String") }
                 }
             }
         }
 
         context.run(definition.configure)
 
-        verify(converterContext).tinyType(TestTinyType::class)
+        verify(converterContext).enum(TestEnum::class, "String")
     }
 
     @Test
-    fun testCustom_TinyTypeConverter() {
+    fun testBlock_TinyType() {
         val definition = ModelDefinition {
             tables {
                 table("table") {
-                    field("field") { tinyType(TestConverter::class, Int::class, TestStringTinyType::class) }
+                    field("field") { tinyType(TestConverter::class, TestStringTinyType::class, Int::class, String::class) }
                 }
             }
         }
 
         context.run(definition.configure)
 
-        verify(converterContext).tinyType(TestConverter::class, Int::class, TestStringTinyType::class)
+        verify(converterContext).tinyType(TestConverter::class, TestStringTinyType::class, Int::class, String::class)
     }
 
     @Test
-    fun testCustom_TinyTypeConverterReified() {
+    fun testBlock_TinyTypeReified() {
         val definition = ModelDefinition {
             tables {
                 table("table") {
@@ -94,26 +123,26 @@ class ModelDefinitionTest {
 
         context.run(definition.configure)
 
-        verify(converterContext).tinyType(TestConverter::class, Int::class, TestStringTinyType::class)
+        verify(converterContext).tinyType(TestConverter::class, TestStringTinyType::class, Int::class, String::class)
     }
 
     @Test
-    fun testField_CustomConverter() {
+    fun testBlock_Custom() {
         val definition = ModelDefinition {
             tables {
                 table("table") {
-                    field("field") { custom(TestConverter::class, Int::class, String::class) }
+                    field("field") { custom(TestConverter::class, String::class, Int::class) }
                 }
             }
         }
 
         context.run(definition.configure)
 
-        verify(converterContext).custom(TestConverter::class, Int::class, String::class)
+        verify(converterContext).custom(TestConverter::class, String::class, Int::class)
     }
 
     @Test
-    fun testField_CustomConverterReified() {
+    fun testBlock_CustomReified() {
         val definition = ModelDefinition {
             tables {
                 table("table") {
@@ -124,36 +153,6 @@ class ModelDefinitionTest {
 
         context.run(definition.configure)
 
-        verify(converterContext).custom(TestConverter::class, Int::class, String::class)
+        verify(converterContext).custom(TestConverter::class, String::class, Int::class)
     }
-
-//    @Test
-//    fun testCustom_CustomFromTo() {
-//        val definition = ModelDefinition {
-//            tables {
-//                table("table") {
-//                    field("field") { custom(Int::toString, Integer::valueOf, Int::class, String::class) }
-//                }
-//            }
-//        }
-//
-//        context.run(definition.configure)
-//
-//        verify(converterContext).custom(Int::toString, Integer::valueOf)
-//    }
-//
-//    @Test
-//    fun testField_CustomFromToReified() {
-//        val definition = ModelDefinition {
-//            tables {
-//                table("table") {
-//                    field("field") { custom(Int::toString, Integer::valueOf) }
-//                }
-//            }
-//        }
-//
-//        context.run(definition.configure)
-//
-//        verify(converterContext).custom(Int::toString, Integer::valueOf)
-//    }
 }
