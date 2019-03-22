@@ -22,21 +22,7 @@
 
 package org.osguima3.jooqdsl.plugin.converter
 
-import org.jooq.tools.reflect.Reflect
-
-typealias JooqConverter<T, U> = org.jooq.Converter<T, U>
-typealias JavaFunction<T, U> = java.util.function.Function<T, U>
-
-fun <T, U> Any.loadConverter(template: TemplateFile, vararg args: Any): JooqConverter<T, U> {
-    val classLoader = this::class.java.classLoader
-    return Reflect.compile(
-        template.className,
-        classLoader
-            .getResourceAsStream("converter/${template.className}.java")
-            .reader().use { it.readText() }
-    ).create(*args)
-        .get()
+enum class TemplateFile(val className: String) {
+    TINY_TYPE("TinyTypeConverter"),
+    ADAPTER("ConverterAdapter")
 }
-
-val <T, U> Function1<T, U>.java
-    get() = JavaFunction<T, U> { this(it) }
