@@ -20,8 +20,12 @@
  * For more information, please visit: http://www.jooq.org/licenses
  */
 
-package org.osguima3.jooqdsl.plugin.container
+import org.osguima3.jooqdsl.model.ModelDefinition
 
-import org.testcontainers.containers.PostgreSQLContainer
-
-class PostgresContainer(imageVersion: String) : PostgreSQLContainer<PostgresContainer>(imageVersion)
+ModelDefinition {
+    tables {
+        table("table") {
+            field("field", String::class)
+        }
+    }
+}

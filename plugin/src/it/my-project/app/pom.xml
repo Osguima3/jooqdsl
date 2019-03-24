@@ -50,9 +50,28 @@
                 <groupId>@project.groupId@</groupId>
                 <artifactId>@project.artifactId@</artifactId>
                 <version>@project.version@</version>
+                <executions>
+                    <execution>
+                        <id>generate-jooq</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>generate-jooq</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.testcontainers</groupId>
+                        <artifactId>postgresql</artifactId>
+                        <version>${testcontainers.version}</version>
+                    </dependency>
+                </dependencies>
                 <configuration>
-                    <postgresContainerImage>postgres:10.3</postgresContainerImage>
-                    <migrationPath>src/main/resources/db/migration</migrationPath>
+                    <container>
+                        <provider>org.testcontainers.containers.PostgreSQLContainerProvider</provider>
+                        <version>10.3</version>
+                        <migrationPath>src/main/resources/db/migration</migrationPath>
+                    </container>
                     <jdbc>
                         <driver>org.postgresql.Driver</driver>
                         <user>test_user</user>
@@ -77,15 +96,6 @@
                         </target>
                     </generator>
                 </configuration>
-                <executions>
-                    <execution>
-                        <id>generate-jooq</id>
-                        <phase>generate-sources</phase>
-                        <goals>
-                            <goal>generate-jooq</goal>
-                        </goals>
-                    </execution>
-                </executions>
             </plugin>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>

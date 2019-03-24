@@ -20,27 +20,41 @@
  * For more information, please visit: http://www.jooq.org/licenses
  */
 
-package org.osguima3.jooqdsl.plugin
+package org.osguima3.jooqdsl.plugin.mojo
 
-import javafx.fxml.LoadException
+import org.apache.maven.plugin.MojoExecutionException
+import org.apache.maven.plugin.MojoFailureException
+import java.io.File
 import java.io.Reader
-import java.nio.file.Files
 import java.nio.file.Paths
 import javax.script.ScriptEngineManager
 
-class FileLoader(classLoader: ClassLoader? = Thread.currentThread().contextClassLoader) {
+class ScriptLoader(classLoader: ClassLoader? = Thread.currentThread().contextClassLoader) {
 
-    private val engine = ScriptEngineManager(classLoader).getEngineByExtension("kts")
+    init {
+        System.setProperty("idea.io.use.fallback", "true")
+    }
 
-    inline fun <reified T> loadScript(file: String): T = { eval(file) }() as T
+    private val engine = ScriptEngineManager(classLoader).getEngineByExtension("kts").also {
+        if (it == null) throw MojoFailureException("KTS engine not found")
+    }
 
-    fun readFile(file: String) = Files.newBufferedReader(Paths.get(file))
+    inline fun <reified T> loadScript(file: String): T = eval(readFile(file)) as T
 
-    fun eval(file: String) = eval(readFile(file))
+    inline fun <reified T> loadScript(reader: Reader): T = eval(reader) as T
 
     fun eval(reader: Reader): Any = try {
-        engine.eval(reader)
+        { engine.eval(reader) }()
     } catch (e: Exception) {
-        throw LoadException("Cannot eval script", e)
+        throw MojoExecutionException("Cannot eval script", e)
+    }
+
+    fun readFile(fileName: String): Reader {
+        val file = File(Paths.get(fileName).toUri())
+        return if (file.exists()) {
+            file.bufferedReader()
+        } else {
+            throw MojoExecutionException("File $fileName does not exist")
+        }
     }
 }
