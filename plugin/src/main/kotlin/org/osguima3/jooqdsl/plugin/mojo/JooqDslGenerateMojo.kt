@@ -20,7 +20,7 @@
  * For more information, please visit: http://www.jooq.org/licenses
  */
 
-package org.osguima3.jooqdsl.plugin
+package org.osguima3.jooqdsl.plugin.mojo
 
 import org.apache.maven.plugin.AbstractMojo
 import org.apache.maven.plugin.descriptor.PluginDescriptor
@@ -29,16 +29,14 @@ import org.apache.maven.plugins.annotations.Mojo
 import org.apache.maven.plugins.annotations.Parameter
 import org.apache.maven.plugins.annotations.ResolutionScope
 import org.apache.maven.project.MavenProject
-import org.jooq.codegen.GenerationTool
 import org.jooq.codegen.GenerationTool.DEFAULT_TARGET_DIRECTORY
 import org.jooq.meta.jaxb.Configuration
 import org.jooq.meta.jaxb.Generator
 import org.jooq.meta.jaxb.Jdbc
 import org.jooq.meta.jaxb.Logging
 import org.osguima3.jooqdsl.model.ModelDefinition
-import org.osguima3.jooqdsl.plugin.container.PostgresContainer
+import org.osguima3.jooqdsl.plugin.configuration.Container
 import org.osguima3.jooqdsl.plugin.context.ModelContextImpl
-import org.testcontainers.containers.BindMode
 import java.io.File
 import java.net.URI
 
@@ -63,11 +61,11 @@ class JooqDslGenerateMojo : AbstractMojo() {
     @Parameter(required = true)
     private lateinit var generator: Generator
 
-    @Parameter
-    private lateinit var postgresContainerImage: String
+    @Parameter(required = false)
+    private var container: Container? = null
 
-    @Parameter
-    private lateinit var migrationPath: String
+    @Parameter(defaultValue = "src/main/resources/db/definition/model_definition.kts")
+    private lateinit var definitionFile: String
 
     override fun execute() {
         val path = project.basedir.absolutePath
@@ -79,8 +77,9 @@ class JooqDslGenerateMojo : AbstractMojo() {
             .map(URI::toURL)
             .forEach(classRealm::addURL)
 
-        val definition: ModelDefinition = FileLoader()
-            .loadScript("$path/src/main/resources/db/definition/model_definition.kts")
+        log.info("Loading jOOQ model definition from $path/$definitionFile")
+        val modelDefinition: ModelDefinition = ScriptLoader()
+            .loadScript("$path/$definitionFile")
 
         val configuration = Configuration().also {
             it.logging = logging
@@ -90,24 +89,14 @@ class JooqDslGenerateMojo : AbstractMojo() {
             }
         }
 
-        startContainer(configuration, "$path/$migrationPath")
+        container?.apply {
+            if (jdbc?.url != null) {
+                log.warn("Provided jdbc url (${jdbc?.url}) will be replaced with container generated one")
+            }
 
-        ModelContextImpl(configuration).run {
-            (definition.configure)()
-            GenerationTool().run(configuration)
-            generateConverters()
+            startContainer(configuration, this, path)
         }
+
+        ModelContextImpl(configuration).generate(modelDefinition.configure)
     }
-
-    private fun startContainer(configuration: Configuration, path: String) = PostgresContainer(postgresContainerImage)
-        .withFileSystemBind(path, "/docker-entrypoint-initdb.d/", BindMode.READ_ONLY)
-        .run {
-            val jdbc = configuration.jdbc ?: Jdbc()
-            jdbc.user?.let(::withUsername)
-            jdbc.password?.let(::withPassword)
-
-            start()
-
-            configuration.jdbc = jdbc.apply { url = jdbcUrl }
-        }
 }
