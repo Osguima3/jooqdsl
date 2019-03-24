@@ -20,12 +20,26 @@
  * For more information, please visit: http://www.jooq.org/licenses
  */
 
+import io.osguima3.jooqdsl.multimodule.model.types.CustomEnum
+import io.osguima3.jooqdsl.multimodule.model.types.StringEnum
+import io.osguima3.jooqdsl.multimodule.model.types.TinyBigDecimal
+import io.osguima3.jooqdsl.multimodule.model.types.TinyId
+import io.osguima3.jooqdsl.multimodule.model.types.TinyInstant
+import io.osguima3.jooqdsl.multimodule.model.types.TinyInt
+import io.osguima3.jooqdsl.multimodule.model.types.TinyString
 import io.osguima3.jooqdsl.model.ModelDefinition
 
 ModelDefinition {
     tables {
-        table("table") {
-            field("field", String::class)
+        table("test") {
+            field("uuid", TinyId::class)
+            field("string", TinyString::class)
+            field("instant", TinyInstant::class)
+            field("int", TinyInt::class)
+            field("big_decimal", TinyBigDecimal::class)
+            field("custom_enum", CustomEnum::class)
+            field("string_enum") { enum(StringEnum::class, "String") }
+            // field("custom") { custom(TODO()) }
         }
     }
 }

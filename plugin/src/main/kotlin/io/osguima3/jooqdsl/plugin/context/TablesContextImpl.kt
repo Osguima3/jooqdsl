@@ -20,12 +20,16 @@
  * For more information, please visit: http://www.jooq.org/licenses
  */
 
-import io.osguima3.jooqdsl.model.ModelDefinition
+package io.osguima3.jooqdsl.plugin.context
 
-ModelDefinition {
-    tables {
-        table("table") {
-            field("field", String::class)
-        }
-    }
+import io.osguima3.jooqdsl.model.context.TableContext
+import io.osguima3.jooqdsl.model.context.TablesContext
+
+class TablesContextImpl(private val context: ModelContextImpl) : TablesContext {
+
+    private val tables = mutableMapOf<String, TableContextImpl>()
+
+    override fun table(name: String, configure: TableContext.() -> Unit) = tables
+        .getOrPut(name) { TableContextImpl(context, name) }
+        .configure()
 }

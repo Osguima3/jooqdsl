@@ -1,4 +1,4 @@
-import org.osguima3.jooqdsl.model.converter.Converter;
+import io.osguima3.jooqdsl.model.converter.Converter;
 
 import javax.annotation.Generated;
 import java.util.function.Function;

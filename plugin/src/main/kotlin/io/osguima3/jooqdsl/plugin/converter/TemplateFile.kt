@@ -20,12 +20,9 @@
  * For more information, please visit: http://www.jooq.org/licenses
  */
 
-import io.osguima3.jooqdsl.model.ModelDefinition
+package io.osguima3.jooqdsl.plugin.converter
 
-ModelDefinition {
-    tables {
-        table("table") {
-            field("field", String::class)
-        }
-    }
+enum class TemplateFile(val className: String) {
+    TINY_TYPE("TinyTypeConverter"),
+    ADAPTER("ConverterAdapter")
 }
