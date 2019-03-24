@@ -20,12 +20,18 @@
  * For more information, please visit: http://www.jooq.org/licenses
  */
 
-import io.osguima3.jooqdsl.model.ModelDefinition
+package io.osguima3.jooqdsl.model
 
-ModelDefinition {
-    tables {
-        table("table") {
-            field("field", String::class)
-        }
+import io.osguima3.jooqdsl.model.context.ModelContext
+import io.osguima3.jooqdsl.model.context.TableContext
+import io.osguima3.jooqdsl.model.context.TablesContext
+
+class TestModelContext(tableContext: (String) -> TableContext) : ModelContext {
+
+    private val tablesContext = object : TablesContext {
+
+        override fun table(name: String, configure: TableContext.() -> Unit) = tableContext(name).configure()
     }
+
+    override fun tables(configure: TablesContext.() -> Unit) = tablesContext.configure()
 }

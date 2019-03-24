@@ -20,12 +20,17 @@
  * For more information, please visit: http://www.jooq.org/licenses
  */
 
-import io.osguima3.jooqdsl.model.ModelDefinition
+package io.osguima3.jooqdsl.model.context
 
-ModelDefinition {
-    tables {
-        table("table") {
-            field("field", String::class)
-        }
-    }
+/**
+ * Provides the DSL context for jOOQ tables.
+ */
+interface TablesContext {
+
+    /**
+     * Configures a table's definition.
+     * @param name The database table name
+     * @param configure Table definition block
+     */
+    fun table(name: String, configure: TableContext.() -> Unit)
 }
