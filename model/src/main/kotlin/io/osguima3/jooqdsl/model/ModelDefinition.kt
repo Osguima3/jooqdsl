@@ -20,12 +20,12 @@
  * For more information, please visit: http://www.jooq.org/licenses
  */
 
-import io.osguima3.jooqdsl.model.ModelDefinition
+package io.osguima3.jooqdsl.model
 
-ModelDefinition {
-    tables {
-        table("table") {
-            field("field", String::class)
-        }
-    }
-}
+import io.osguima3.jooqdsl.model.context.ModelContext
+
+/**
+ * This class is used to define the model to be used in generated jOOQ classes.
+ * @property configure model definition block
+ */
+class ModelDefinition(val configure: ModelContext.() -> Unit)

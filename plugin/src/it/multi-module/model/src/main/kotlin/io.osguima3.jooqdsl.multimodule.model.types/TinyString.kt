@@ -20,12 +20,6 @@
  * For more information, please visit: http://www.jooq.org/licenses
  */
 
-import io.osguima3.jooqdsl.model.ModelDefinition
+package io.osguima3.jooqdsl.multimodule.model.types
 
-ModelDefinition {
-    tables {
-        table("table") {
-            field("field", String::class)
-        }
-    }
-}
+data class TinyString(val name: String)

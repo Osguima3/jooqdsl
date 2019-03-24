@@ -1,4 +1,7 @@
 /*
+ * Note: Based on org.jooq.Converter
+ * http://www.jooq.org/javadoc/3.11.9/org/jooq/Converter.html
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -20,12 +23,30 @@
  * For more information, please visit: http://www.jooq.org/licenses
  */
 
-import io.osguima3.jooqdsl.model.ModelDefinition
+package io.osguima3.jooqdsl.model.converter
 
-ModelDefinition {
-    tables {
-        table("table") {
-            field("field", String::class)
-        }
-    }
+/**
+ * A [Converter] for data types.
+ *
+ * @see org.jooq.Converter
+ * @param <T> The database type - i.e. any type available from [org.jooq.impl.SQLDataTypeSQLDataType]
+ * @param <U> The user type
+ */
+interface Converter<T, U> {
+
+    /**
+     * Convert a database object to a user object
+     *
+     * @param databaseObject The database object
+     * @return The user object
+     */
+    fun from(databaseObject: T): U
+
+    /**
+     * Convert a user object to a database object
+     *
+     * @param userObject The user object
+     * @return The database object
+     */
+    fun to(userObject: U): T
 }

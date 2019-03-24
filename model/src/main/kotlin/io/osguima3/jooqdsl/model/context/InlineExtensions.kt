@@ -20,12 +20,26 @@
  * For more information, please visit: http://www.jooq.org/licenses
  */
 
-import io.osguima3.jooqdsl.model.ModelDefinition
+package io.osguima3.jooqdsl.model.context
 
-ModelDefinition {
-    tables {
-        table("table") {
-            field("field", String::class)
-        }
-    }
-}
+import io.osguima3.jooqdsl.model.converter.Converter
+import kotlin.reflect.KClass
+
+/**
+ * Maps this field to the specified user tiny type using the specified converter to map
+ * the child field to the database type.
+ * @param converter The converter used to map between the child field and the database type
+ * @param userType The tiny type class
+ */
+inline fun <reified T : Any, reified U : Any> FieldContext.tinyType(
+    converter: KClass<out Converter<T, U>>,
+    userType: KClass<*>
+) = tinyType(converter, userType, T::class, U::class)
+
+/**
+ * Maps this field to the specified user type using a custom converter.
+ * @param converter The converter used to map between the user type and the database type
+ */
+inline fun <reified T : Any, reified U : Any> FieldContext.custom(
+    converter: KClass<out Converter<T, U>>
+) = custom(converter, U::class, T::class)

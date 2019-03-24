@@ -20,12 +20,28 @@
  * For more information, please visit: http://www.jooq.org/licenses
  */
 
-import io.osguima3.jooqdsl.model.ModelDefinition
+package io.osguima3.jooqdsl.multimodule.app.repository
 
-ModelDefinition {
-    tables {
-        table("table") {
-            field("field", String::class)
-        }
-    }
+import io.osguima3.jooqdsl.multimodule.app.model.Tables.TEST
+import io.osguima3.jooqdsl.multimodule.model.types.TestClass
+import org.jooq.DSLContext
+import org.jooq.Record
+
+class TestRepository(private val context: DSLContext) {
+
+    fun findAll(): List<TestClass> =
+        context.select(TEST.fields().toList())
+            .from(TEST)
+            .fetch(::toObject)
+
+    private fun toObject(record: Record): TestClass = TestClass(
+        record[TEST.UUID]!!,
+        record[TEST.STRING]!!,
+        record[TEST.INSTANT]!!,
+        record[TEST.INT]!!,
+        record[TEST.BIG_DECIMAL]!!,
+        record[TEST.CUSTOM_ENUM]!!,
+        record[TEST.STRING_ENUM]!!,
+        null // TODO: record[TEST.CUSTOM]!!
+    )
 }

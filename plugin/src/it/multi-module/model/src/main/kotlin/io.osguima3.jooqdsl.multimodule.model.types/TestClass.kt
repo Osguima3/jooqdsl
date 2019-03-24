@@ -20,12 +20,15 @@
  * For more information, please visit: http://www.jooq.org/licenses
  */
 
-import io.osguima3.jooqdsl.model.ModelDefinition
+package io.osguima3.jooqdsl.multimodule.model.types
 
-ModelDefinition {
-    tables {
-        table("table") {
-            field("field", String::class)
-        }
-    }
-}
+data class TestClass(
+    val id: TinyId,
+    val string: TinyString,
+    val instant: TinyInstant,
+    val int: TinyInt,
+    val bigDecimal: TinyBigDecimal,
+    val customEnum: CustomEnum,
+    val stringEnum: StringEnum,
+    val custom: CustomType?
+)

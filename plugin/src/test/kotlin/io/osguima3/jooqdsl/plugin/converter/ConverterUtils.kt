@@ -20,12 +20,23 @@
  * For more information, please visit: http://www.jooq.org/licenses
  */
 
-import io.osguima3.jooqdsl.model.ModelDefinition
+package io.osguima3.jooqdsl.plugin.converter
 
-ModelDefinition {
-    tables {
-        table("table") {
-            field("field", String::class)
-        }
-    }
+import org.jooq.tools.reflect.Reflect
+
+typealias JooqConverter<T, U> = org.jooq.Converter<T, U>
+typealias JavaFunction<T, U> = java.util.function.Function<T, U>
+
+fun <T, U> Any.loadConverter(template: TemplateFile, vararg args: Any): JooqConverter<T, U> {
+    val classLoader = this::class.java.classLoader
+    return Reflect.compile(
+        template.className,
+        classLoader
+            .getResourceAsStream("converter/${template.className}.java")
+            .reader().use { it.readText() }
+    ).create(*args)
+        .get()
 }
+
+val <T, U> Function1<T, U>.java
+    get() = JavaFunction<T, U> { this(it) }
