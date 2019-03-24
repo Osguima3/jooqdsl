@@ -23,6 +23,7 @@
 package org.osguima3.jooqdsl.plugin.context
 
 import org.jetbrains.kotlin.com.intellij.openapi.util.io.FileUtil
+import org.jooq.codegen.GenerationTool
 import org.jooq.meta.jaxb.Configuration
 import org.jooq.meta.jaxb.ForcedType
 import org.osguima3.jooqdsl.model.context.ModelContext
@@ -32,7 +33,7 @@ import java.io.File
 import java.io.SequenceInputStream
 import kotlin.reflect.KClass
 
-class ModelContextImpl(configuration: Configuration) : ModelContext {
+class ModelContextImpl(private val configuration: Configuration) : ModelContext {
 
     internal val targetPackage = configuration.generator.target.packageName
 
@@ -62,7 +63,13 @@ class ModelContextImpl(configuration: Configuration) : ModelContext {
         pendingTemplates.addAll(templates)
     }
 
-    internal fun generateConverters() = pendingTemplates.map(TemplateFile::className).forEach {
+    internal fun generate(configure: ModelContext.() -> Unit) {
+        configure()
+        GenerationTool().run(configuration)
+        generateConverters()
+    }
+
+    private fun generateConverters() = pendingTemplates.map(TemplateFile::className).forEach {
         val source = this::class.java.classLoader.getResource("converter/$it.java")
         val target = File("$targetDirectory/$converterDirectory").run {
             mkdirs()

@@ -26,6 +26,7 @@
 
         <postgresql.version>42.2.1</postgresql.version>
         <jooq.version>3.11.9</jooq.version>
+        <testcontainers.version>1.10.6</testcontainers.version>
     </properties>
 
     <dependencyManagement>
@@ -61,6 +62,11 @@
                 <groupId>org.jooq</groupId>
                 <artifactId>jooq-meta</artifactId>
                 <version>${jooq.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.testcontainers</groupId>
+                <artifactId>postgresql</artifactId>
+                <version>${testcontainers.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
