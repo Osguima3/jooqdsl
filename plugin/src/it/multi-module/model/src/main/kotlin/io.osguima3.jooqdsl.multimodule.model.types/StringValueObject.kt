@@ -22,6 +22,4 @@
 
 package io.osguima3.jooqdsl.multimodule.model.types
 
-import java.math.BigDecimal
-
-data class TinyBigDecimal(val value: BigDecimal)
+data class StringValueObject(val name: String)

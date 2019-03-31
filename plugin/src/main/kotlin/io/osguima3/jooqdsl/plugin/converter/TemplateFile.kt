@@ -23,6 +23,6 @@
 package io.osguima3.jooqdsl.plugin.converter
 
 enum class TemplateFile(val className: String) {
-    TINY_TYPE("TinyTypeConverter"),
+    VALUE_OBJECT("ValueObjectConverter"),
     ADAPTER("ConverterAdapter")
 }

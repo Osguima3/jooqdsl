@@ -23,12 +23,12 @@
 package io.osguima3.jooqdsl.multimodule.model.types
 
 data class TestClass(
-    val id: TinyId,
-    val string: TinyString,
-    val instant: TinyInstant,
-    val int: TinyInt,
-    val bigDecimal: TinyBigDecimal,
+    val id: IdValueObject,
+    val string: StringValueObject,
+    val instant: InstantValueObject,
+    val int: IntValueObject,
+    val bigDecimal: BigDecimalValueObject,
     val customEnum: CustomEnum,
     val stringEnum: StringEnum,
-    val custom: CustomType?
+    val custom: DateValueObject
 )

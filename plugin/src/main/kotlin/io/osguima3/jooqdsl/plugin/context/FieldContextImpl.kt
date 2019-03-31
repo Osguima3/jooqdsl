@@ -47,7 +47,7 @@ class FieldContextImpl(
     private var initialized = false
 
     fun doConfigure(configure: FieldContext.() -> Unit) = if (initialized) {
-        throw IllegalStateException("Field already initialized")
+        throw IllegalStateException("Field $name already initialized")
     } else {
         configure()
         initialized = true
@@ -59,18 +59,18 @@ class FieldContextImpl(
     override fun enum(userType: KClass<out Enum<*>>, databaseType: String?) =
         register(userType, builder.enum(userType, databaseType))
 
-    override fun <T : Any, U : Any> tinyType(
+    override fun <T : Any, U : Any> valueObject(
         converter: KClass<out Converter<T, U>>,
         userType: KClass<*>,
         databaseType: KClass<T>,
         fieldType: KClass<U>
-    ) = if (!userType.isTinyType) {
-        throw IllegalArgumentException("Type $userType is not a tiny type.")
+    ) = if (!userType.isValueObject) {
+        throw IllegalArgumentException("Type $userType is not a value object.")
     } else if (fieldType != userType.fieldType) {
         throw IllegalArgumentException("$userType.${userType.singleField.name}(): ${userType.fieldType} " +
             "is not of type $fieldType.")
     } else {
-        registerTinyType(databaseType, userType, builder.simple(converter), emptySet())
+        registerValueObject(databaseType, userType, builder.simple(converter), emptySet())
     }
 
     override fun <T : Any, U : Any> custom(
@@ -82,26 +82,26 @@ class FieldContextImpl(
     private fun resolve(userType: KClass<*>) = when {
         userType.isPrimitive -> Unit // No need to register
         userType.isEnum -> register(userType, builder.enum(userType))
-        userType.isTinyType -> resolveTinyType(userType)
+        userType.isValueObject -> resolveValueObject(userType)
         userType == Instant::class -> register(userType, builder.instant())
         else -> throw IllegalArgumentException("No default mapper available for $userType")
     }
 
-    private fun resolveTinyType(userType: KClass<*>, fieldType: KClass<*> = userType.fieldType) = when {
-        fieldType.isPrimitive -> register(userType, builder.tinyType(userType.javaObjectType.kotlin))
-        fieldType == Instant::class -> registerTinyType(OffsetDateTime::class, userType, builder.instant())
+    private fun resolveValueObject(userType: KClass<*>, fieldType: KClass<*> = userType.fieldType) = when {
+        fieldType.isPrimitive -> register(userType, builder.valueObject(userType.javaObjectType.kotlin))
+        fieldType == Instant::class -> registerValueObject(OffsetDateTime::class, userType, builder.instant())
         else -> throw IllegalArgumentException("No default mapper available for $userType")
     }
 
-    private fun registerTinyType(
+    private fun registerValueObject(
         databaseType: KClass<*>,
         userType: KClass<*>,
         converter: String,
         templates: Set<TemplateFile> = setOf(TemplateFile.ADAPTER)
     ) = register(
         userType = userType,
-        templates = templates + setOf(TemplateFile.TINY_TYPE),
-        converter = builder.tinyType(userType, databaseType, converter)
+        templates = templates + setOf(TemplateFile.VALUE_OBJECT),
+        converter = builder.valueObject(userType, databaseType, converter)
     )
 
     private fun <T : Any, U : Any> registerAdapter(
@@ -129,7 +129,7 @@ class FieldContextImpl(
     private val KClass<*>.isEnum
         get() = isSubclassOf(Enum::class)
 
-    private val KClass<*>.isTinyType
+    private val KClass<*>.isValueObject
         get() = isData && declaredMemberProperties.size == 1
 
     private val KClass<*>.singleField

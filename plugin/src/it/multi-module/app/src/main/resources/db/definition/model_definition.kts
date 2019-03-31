@@ -20,26 +20,29 @@
  * For more information, please visit: http://www.jooq.org/licenses
  */
 
-import io.osguima3.jooqdsl.multimodule.model.types.CustomEnum
-import io.osguima3.jooqdsl.multimodule.model.types.StringEnum
-import io.osguima3.jooqdsl.multimodule.model.types.TinyBigDecimal
-import io.osguima3.jooqdsl.multimodule.model.types.TinyId
-import io.osguima3.jooqdsl.multimodule.model.types.TinyInstant
-import io.osguima3.jooqdsl.multimodule.model.types.TinyInt
-import io.osguima3.jooqdsl.multimodule.model.types.TinyString
 import io.osguima3.jooqdsl.model.ModelDefinition
+import io.osguima3.jooqdsl.model.context.valueObject
+import io.osguima3.jooqdsl.multimodule.app.converter.SimpleDateConverter
+import io.osguima3.jooqdsl.multimodule.model.types.BigDecimalValueObject
+import io.osguima3.jooqdsl.multimodule.model.types.CustomEnum
+import io.osguima3.jooqdsl.multimodule.model.types.DateValueObject
+import io.osguima3.jooqdsl.multimodule.model.types.IdValueObject
+import io.osguima3.jooqdsl.multimodule.model.types.InstantValueObject
+import io.osguima3.jooqdsl.multimodule.model.types.IntValueObject
+import io.osguima3.jooqdsl.multimodule.model.types.StringEnum
+import io.osguima3.jooqdsl.multimodule.model.types.StringValueObject
 
 ModelDefinition {
     tables {
         table("test") {
-            field("uuid", TinyId::class)
-            field("string", TinyString::class)
-            field("instant", TinyInstant::class)
-            field("int", TinyInt::class)
-            field("big_decimal", TinyBigDecimal::class)
+            field("uuid", IdValueObject::class)
+            field("string", StringValueObject::class)
+            field("instant", InstantValueObject::class)
+            field("int", IntValueObject::class)
+            field("big_decimal", BigDecimalValueObject::class)
             field("custom_enum", CustomEnum::class)
             field("string_enum") { enum(StringEnum::class, "String") }
-            // field("custom") { custom(TODO()) }
+            field("custom_value_object") { valueObject(SimpleDateConverter::class, DateValueObject::class) }
         }
     }
 }

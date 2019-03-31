@@ -22,6 +22,6 @@
 
 package io.osguima3.jooqdsl.multimodule.model.types
 
-import java.util.UUID
+import java.util.Date
 
-data class TinyId(val id: UUID)
+data class DateValueObject(val date: Date)

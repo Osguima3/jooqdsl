@@ -45,14 +45,14 @@ interface FieldContext {
     fun enum(userType: KClass<out Enum<*>>, databaseType: String? = null)
 
     /**
-     * Maps this field to the specified user tiny type using the specified converter to map
+     * Maps this field to the specified user value object using the specified converter to map
      * the child field to the database type.
      * @param converter The converter used to map between the child field and the database type
-     * @param userType The tiny type class
+     * @param userType The value object class
      * @param databaseType The database type, not required when using the inline overload
      * @param fieldType The child field type, not required when using the inline overload
      */
-    fun <T : Any, U : Any> tinyType(
+    fun <T : Any, U : Any> valueObject(
         converter: KClass<out Converter<T, U>>,
         userType: KClass<*>,
         databaseType: KClass<T>,

@@ -24,35 +24,34 @@ package io.osguima3.jooqdsl.plugin.converter
 
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.whenever
+import io.osguima3.jooqdsl.model.converter.Converter
+import io.osguima3.jooqdsl.plugin.InstantValueObject
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
-import io.osguima3.jooqdsl.model.converter.Converter
 import java.time.Instant
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 
 @Disabled
-class TinyTypeConverterTest {
-
-    data class TestInstantTinyType(val value: Instant)
+class ValueObjectConverterTest {
 
     private val now = Instant.now()
     private val databaseValue = OffsetDateTime.ofInstant(now, ZoneOffset.UTC)
-    private val userValue = TestInstantTinyType(now)
+    private val userValue = InstantValueObject(now)
 
     private val baseConverter = mock<Converter<OffsetDateTime, Instant>>().also {
         whenever(it.from(databaseValue)).thenReturn(now)
         whenever(it.to(now)).thenReturn(databaseValue)
     }
 
-    private val converter = loadConverter<OffsetDateTime, TestInstantTinyType>(
-        TemplateFile.TINY_TYPE,
+    private val converter = loadConverter<OffsetDateTime, InstantValueObject>(
+        TemplateFile.VALUE_OBJECT,
         loadAdapterConverter(baseConverter),
-        ::TestInstantTinyType.java,
-        TestInstantTinyType::value.java,
+        ::InstantValueObject.java,
+        InstantValueObject::value.java,
         OffsetDateTime::class.java,
-        TestInstantTinyType::class.java
+        InstantValueObject::class.java
     )
 
     @Test
