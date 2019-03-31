@@ -73,6 +73,9 @@ class JooqDslGenerateMojo : AbstractMojo() {
 
     // jOOQ configuration
 
+    @Parameter(defaultValue = "\${skipJooq}")
+    private var disabled: Boolean? = null
+
     @Parameter(required = false)
     private var logging: Logging? = null
 
@@ -94,6 +97,11 @@ class JooqDslGenerateMojo : AbstractMojo() {
     private var container: Container? = null
 
     override fun execute() {
+        if (disabled == true) {
+            log.info("Skipping jOOQ code generation")
+            return
+        }
+
         val path = project.basedir.absolutePath
         val classRealm = descriptor.classRealm
 
