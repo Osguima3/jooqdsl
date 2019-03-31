@@ -62,7 +62,7 @@ ModelDefinition {
             field("string", CustomerName::class)
             field("registration", CustomerRegistrationTime::class)
             field("wallet_amount", CustomerWalletAmount::class)
-            
+
             // Custom field configuration
             field("registration_status") { enum(CustomerRegistrationStatus::class, databaseType = "String") }
             field("address") { custom(converter = CustomerAddressConverter::class) }

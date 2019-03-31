@@ -35,7 +35,7 @@ interface TableContext {
      * Default converters will be provided for the following types:
      * * Platform-supported fields (e.g. `String` is mapped to `varchar`-like types).
      * * Enums (e.g. `MyEnum` is mapped to `my_custom_db_enum_type`).
-     * * Tiny types (e.g. `MyTinyType(val value: String)` is mapped to `varchar`).
+     * * Value objects (e.g. `MyValueObject(val value: String)` is mapped to `varchar`).
      *
      * @param name The database field's name
      * @param type The user type used to represent this field

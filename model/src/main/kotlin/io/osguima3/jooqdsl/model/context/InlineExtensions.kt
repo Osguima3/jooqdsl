@@ -26,15 +26,15 @@ import io.osguima3.jooqdsl.model.converter.Converter
 import kotlin.reflect.KClass
 
 /**
- * Maps this field to the specified user tiny type using the specified converter to map
+ * Maps this field to the specified user value object using the specified converter to map
  * the child field to the database type.
  * @param converter The converter used to map between the child field and the database type
- * @param userType The tiny type class
+ * @param userType The value object class
  */
-inline fun <reified T : Any, reified U : Any> FieldContext.tinyType(
+inline fun <reified T : Any, reified U : Any> FieldContext.valueObject(
     converter: KClass<out Converter<T, U>>,
     userType: KClass<*>
-) = tinyType(converter, userType, T::class, U::class)
+) = valueObject(converter, userType, T::class, U::class)
 
 /**
  * Maps this field to the specified user type using a custom converter.

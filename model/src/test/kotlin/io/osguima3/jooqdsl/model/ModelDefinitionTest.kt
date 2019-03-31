@@ -27,21 +27,21 @@ import com.nhaarman.mockitokotlin2.eq
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.whenever
-import org.junit.jupiter.api.Test
 import io.osguima3.jooqdsl.model.context.FieldContext
 import io.osguima3.jooqdsl.model.context.TableContext
 import io.osguima3.jooqdsl.model.context.custom
-import io.osguima3.jooqdsl.model.context.tinyType
+import io.osguima3.jooqdsl.model.context.valueObject
 import io.osguima3.jooqdsl.model.converter.Converter
+import org.junit.jupiter.api.Test
 
 typealias ConverterConfig = (FieldContext) -> Unit
 
 class ModelDefinitionTest {
 
-    data class TestTinyType(val value: Int)
-    data class TestStringTinyType(val value: String)
+    data class IntValueObject(val value: Int)
+    data class StringValueObject(val value: String)
     enum class TestEnum
-    abstract class TestConverter : Converter<Int, String>
+    abstract class IntStringConverter : Converter<Int, String>
 
     private val converterContext = mock<FieldContext>()
     private val tableContext = mock<TableContext>().apply {
@@ -56,14 +56,14 @@ class ModelDefinitionTest {
         val definition = ModelDefinition {
             tables {
                 table("table") {
-                    field("field", TestTinyType::class)
+                    field("field", IntValueObject::class)
                 }
             }
         }
 
         context.run(definition.configure)
 
-        verify(tableContext).run { field("field", TestTinyType::class) }
+        verify(tableContext).run { field("field", IntValueObject::class) }
     }
 
     @Test
@@ -71,14 +71,14 @@ class ModelDefinitionTest {
         val definition = ModelDefinition {
             tables {
                 table("table") {
-                    field("field") { type(TestTinyType::class) }
+                    field("field") { type(IntValueObject::class) }
                 }
             }
         }
 
         context.run(definition.configure)
 
-        verify(converterContext).type(TestTinyType::class)
+        verify(converterContext).type(IntValueObject::class)
     }
 
     @Test
@@ -97,33 +97,33 @@ class ModelDefinitionTest {
     }
 
     @Test
-    fun testBlock_TinyType() {
+    fun testBlock_ValueObject() {
         val definition = ModelDefinition {
             tables {
                 table("table") {
-                    field("field") { tinyType(TestConverter::class, TestStringTinyType::class, Int::class, String::class) }
+                    field("field") { valueObject(IntStringConverter::class, StringValueObject::class, Int::class, String::class) }
                 }
             }
         }
 
         context.run(definition.configure)
 
-        verify(converterContext).tinyType(TestConverter::class, TestStringTinyType::class, Int::class, String::class)
+        verify(converterContext).valueObject(IntStringConverter::class, StringValueObject::class, Int::class, String::class)
     }
 
     @Test
-    fun testBlock_TinyTypeReified() {
+    fun testBlock_ValueObjectReified() {
         val definition = ModelDefinition {
             tables {
                 table("table") {
-                    field("field") { tinyType(TestConverter::class, TestStringTinyType::class) }
+                    field("field") { valueObject(IntStringConverter::class, StringValueObject::class) }
                 }
             }
         }
 
         context.run(definition.configure)
 
-        verify(converterContext).tinyType(TestConverter::class, TestStringTinyType::class, Int::class, String::class)
+        verify(converterContext).valueObject(IntStringConverter::class, StringValueObject::class, Int::class, String::class)
     }
 
     @Test
@@ -131,14 +131,14 @@ class ModelDefinitionTest {
         val definition = ModelDefinition {
             tables {
                 table("table") {
-                    field("field") { custom(TestConverter::class, String::class, Int::class) }
+                    field("field") { custom(IntStringConverter::class, String::class, Int::class) }
                 }
             }
         }
 
         context.run(definition.configure)
 
-        verify(converterContext).custom(TestConverter::class, String::class, Int::class)
+        verify(converterContext).custom(IntStringConverter::class, String::class, Int::class)
     }
 
     @Test
@@ -146,13 +146,13 @@ class ModelDefinitionTest {
         val definition = ModelDefinition {
             tables {
                 table("table") {
-                    field("field") { custom(TestConverter::class) }
+                    field("field") { custom(IntStringConverter::class) }
                 }
             }
         }
 
         context.run(definition.configure)
 
-        verify(converterContext).custom(TestConverter::class, String::class, Int::class)
+        verify(converterContext).custom(IntStringConverter::class, String::class, Int::class)
     }
 }

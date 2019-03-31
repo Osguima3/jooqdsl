@@ -22,4 +22,6 @@
 
 package io.osguima3.jooqdsl.multimodule.model.types
 
-data class TinyInt(val value: Int)
+import java.time.Instant
+
+data class InstantValueObject(val value: Instant)

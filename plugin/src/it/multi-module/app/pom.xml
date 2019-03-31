@@ -29,6 +29,11 @@
             <artifactId>multi-module-model</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
+        <dependency>
+            <groupId>javax.annotation</groupId>
+            <artifactId>jsr250-api</artifactId>
+            <version>1.0</version>
+        </dependency>
 
         <!-- Database -->
         <dependency>
@@ -68,11 +73,6 @@
                     </dependency>
                 </dependencies>
                 <configuration>
-                    <container>
-                        <provider>org.testcontainers.containers.PostgreSQLContainerProvider</provider>
-                        <version>10.3</version>
-                        <migrationPath>src/main/resources/db/migration</migrationPath>
-                    </container>
                     <jdbc>
                         <driver>org.postgresql.Driver</driver>
                         <user>test_user</user>
@@ -96,6 +96,15 @@
                             <packageName>io.osguima3.jooqdsl.multimodule.app.model</packageName>
                         </target>
                     </generator>
+                    <additionalSources>
+                        <additionalSource>src/main/kotlin/io/osguima3/jooqdsl/multimodule/app/converter
+                        </additionalSource>
+                    </additionalSources>
+                    <container>
+                        <provider>org.testcontainers.containers.PostgreSQLContainerProvider</provider>
+                        <version>10.3</version>
+                        <migrationPath>src/main/resources/db/migration</migrationPath>
+                    </container>
                 </configuration>
             </plugin>
             <plugin>
