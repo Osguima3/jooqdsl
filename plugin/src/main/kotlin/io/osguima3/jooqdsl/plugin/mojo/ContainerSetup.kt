@@ -1,9 +1,9 @@
 package io.osguima3.jooqdsl.plugin.mojo
 
+import io.osguima3.jooqdsl.plugin.configuration.Container
 import org.apache.maven.plugin.MojoExecutionException
 import org.jooq.meta.jaxb.Configuration
 import org.jooq.meta.jaxb.Jdbc
-import io.osguima3.jooqdsl.plugin.configuration.Container
 import org.testcontainers.containers.BindMode
 import org.testcontainers.containers.JdbcDatabaseContainer
 import org.testcontainers.containers.JdbcDatabaseContainerProvider
@@ -16,7 +16,7 @@ internal fun startContainer(configuration: Configuration, container: Container, 
 
 private fun getContainerProvider(className: String) = Class.forName(className).run {
     if (JdbcDatabaseContainerProvider::class.java.isAssignableFrom(this)) {
-        newInstance().let { it as JdbcDatabaseContainerProvider }
+        getConstructor().newInstance().let { it as JdbcDatabaseContainerProvider }
     } else {
         throw MojoExecutionException("Container provider class $className not valid, " +
             "must implement ${JdbcDatabaseContainerProvider::class.qualifiedName}"

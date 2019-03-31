@@ -22,6 +22,4 @@
 
 package io.osguima3.jooqdsl.multimodule.model.types
 
-import java.util.Date
-
-class CustomType(val date: Date, val time: Long)
+data class IntValueObject(val value: Int)

@@ -42,12 +42,12 @@ class ConverterBuilder(private val context: ModelContextImpl) {
         "new org.jooq.impl.EnumConverter<>(" +
             "${databaseType ?: "${context.targetPackage}.enums.${userType.simpleName}"}.class, ${userType.simple})"
 
-    internal fun tinyType(userType: KClass<*>) =
-        "org.jooq.Converter.ofNullable(${userType.fieldType.qualified}, ${userType.simple}, " +
+    internal fun valueObject(userType: KClass<*>) =
+        "org.jooq.Converter.ofNullable(${userType.valueType.qualified}, ${userType.simple}, " +
             "${userType.ctor}, ${userType.field})"
 
-    internal fun tinyType(userType: KClass<*>, databaseType: KClass<*>, converter: String) =
-        "new ${context.converterPackage}.TinyTypeConverter<>($converter, " +
+    internal fun valueObject(userType: KClass<*>, databaseType: KClass<*>, converter: String) =
+        "new ${context.converterPackage}.ValueObjectConverter<>($converter, " +
             "${userType.ctor}, ${userType.field}, ${databaseType.qualified}, ${userType.simple})"
 
     internal fun adapter(userType: KClass<*>, databaseType: KClass<*>, converter: String) =
@@ -60,11 +60,11 @@ class ConverterBuilder(private val context: ModelContextImpl) {
 
     private val KClass<*>.ctor get() = "$simpleName::new"
 
-    private val KClass<*>.field get() = "$simpleName::${singleField.name}"
+    private val KClass<*>.field get() = "$simpleName::${valueField.name}"
 
-    private val KClass<*>.singleField
+    private val KClass<*>.valueField
         get() = declaredMemberProperties.mapNotNull(KProperty<*>::javaGetter).single()
 
-    private val KClass<*>.fieldType
-        get() = singleField.returnType.kotlin
+    private val KClass<*>.valueType
+        get() = valueField.returnType.kotlin
 }

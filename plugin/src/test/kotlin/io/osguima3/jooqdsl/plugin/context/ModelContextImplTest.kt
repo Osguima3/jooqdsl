@@ -26,29 +26,27 @@ import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.verifyZeroInteractions
 import com.nhaarman.mockitokotlin2.whenever
+import io.osguima3.jooqdsl.model.ModelDefinition
+import io.osguima3.jooqdsl.model.context.custom
+import io.osguima3.jooqdsl.model.context.valueObject
+import io.osguima3.jooqdsl.plugin.InstantValueObject
+import io.osguima3.jooqdsl.plugin.IntStringConverter
+import io.osguima3.jooqdsl.plugin.IntValueObject
+import io.osguima3.jooqdsl.plugin.StringValueObject
+import io.osguima3.jooqdsl.plugin.TestEnum
+import io.osguima3.jooqdsl.plugin.converter.TemplateFile.ADAPTER
+import io.osguima3.jooqdsl.plugin.converter.TemplateFile.VALUE_OBJECT
 import org.assertj.core.api.Assertions.assertThat
 import org.jooq.meta.jaxb.Configuration
 import org.jooq.meta.jaxb.ForcedType
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.mockito.Answers.RETURNS_DEEP_STUBS
-import io.osguima3.jooqdsl.model.ModelDefinition
-import io.osguima3.jooqdsl.model.context.custom
-import io.osguima3.jooqdsl.model.context.tinyType
-import io.osguima3.jooqdsl.model.converter.Converter
-import io.osguima3.jooqdsl.plugin.converter.TemplateFile.ADAPTER
-import io.osguima3.jooqdsl.plugin.converter.TemplateFile.TINY_TYPE
 import java.math.BigDecimal
 import java.time.Instant
 import java.util.UUID
 
 class ModelContextImplTest {
-
-    data class TestIntTinyType(val value: Int)
-    data class TestStringTinyType(val value: String)
-    data class TestInstantTinyType(val value: Instant)
-    enum class TestEnum
-    abstract class TestConverter : Converter<Int, String>
 
     private val expression = ".*\\.table\\.field"
     private val targetDirectory = "generated/jooq"
@@ -62,7 +60,7 @@ class ModelContextImplTest {
         whenever(it.generator.database.forcedTypes).thenReturn(forcedTypes)
     }
 
-    private val context: ModelContextImpl = ModelContextImpl(configuration)
+    private val context = ModelContextImpl(configuration)
 
     @Nested
     inner class Simple {
@@ -191,11 +189,11 @@ class ModelContextImplTest {
         }
 
         @Test
-        fun testIntTinyType() {
+        fun IntValueObject() {
             val definition = ModelDefinition {
                 tables {
                     table("table") {
-                        field("field", TestIntTinyType::class)
+                        field("field", IntValueObject::class)
                     }
                 }
             }
@@ -204,19 +202,19 @@ class ModelContextImplTest {
 
             verify(forcedTypes).add(ForcedType().also {
                 it.expression = expression
-                it.userType = TestIntTinyType::class.qualifiedName
-                it.converter = "org.jooq.Converter.ofNullable(java.lang.Integer.class, TestIntTinyType.class, " +
-                    "TestIntTinyType::new, TestIntTinyType::getValue)"
+                it.userType = IntValueObject::class.qualifiedName
+                it.converter = "org.jooq.Converter.ofNullable(java.lang.Integer.class, IntValueObject.class, " +
+                    "IntValueObject::new, IntValueObject::getValue)"
             })
             assertThat(context.pendingTemplates).isEmpty()
         }
 
         @Test
-        fun testStringTinyType() {
+        fun StringValueObject() {
             val definition = ModelDefinition {
                 tables {
                     table("table") {
-                        field("field", TestStringTinyType::class)
+                        field("field", StringValueObject::class)
                     }
                 }
             }
@@ -225,19 +223,19 @@ class ModelContextImplTest {
 
             verify(forcedTypes).add(ForcedType().also {
                 it.expression = expression
-                it.userType = TestStringTinyType::class.qualifiedName
-                it.converter = "org.jooq.Converter.ofNullable(java.lang.String.class, TestStringTinyType.class, " +
-                    "TestStringTinyType::new, TestStringTinyType::getValue)"
+                it.userType = StringValueObject::class.qualifiedName
+                it.converter = "org.jooq.Converter.ofNullable(java.lang.String.class, StringValueObject.class, " +
+                    "StringValueObject::new, StringValueObject::getValue)"
             })
             assertThat(context.pendingTemplates).isEmpty()
         }
 
         @Test
-        fun testInstantTinyType() {
+        fun InstantValueObject() {
             val definition = ModelDefinition {
                 tables {
                     table("table") {
-                        field("field", TestInstantTinyType::class)
+                        field("field", InstantValueObject::class)
                     }
                 }
             }
@@ -246,15 +244,15 @@ class ModelContextImplTest {
 
             verify(forcedTypes).add(ForcedType().also {
                 it.expression = expression
-                it.userType = TestInstantTinyType::class.qualifiedName
-                it.converter = "new $converterPackage.TinyTypeConverter<>(" +
+                it.userType = InstantValueObject::class.qualifiedName
+                it.converter = "new $converterPackage.ValueObjectConverter<>(" +
                     "org.jooq.Converter.ofNullable(java.time.OffsetDateTime.class, java.time.Instant.class, " +
                     "java.time.OffsetDateTime::toInstant, " +
                     "i -> java.time.OffsetDateTime.ofInstant(i, java.time.ZoneOffset.UTC)), " +
-                    "TestInstantTinyType::new, TestInstantTinyType::getValue, " +
-                    "java.time.OffsetDateTime.class, TestInstantTinyType.class)"
+                    "InstantValueObject::new, InstantValueObject::getValue, " +
+                    "java.time.OffsetDateTime.class, InstantValueObject.class)"
             })
-            assertThat(context.pendingTemplates).containsExactly(ADAPTER, TINY_TYPE)
+            assertThat(context.pendingTemplates).containsExactly(ADAPTER, VALUE_OBJECT)
         }
     }
 
@@ -282,11 +280,11 @@ class ModelContextImplTest {
         }
 
         @Test
-        fun testTinyTypeConverter() {
+        fun testValueObjectConverter() {
             val definition = ModelDefinition {
                 tables {
                     table("table") {
-                        field("field") { tinyType(TestConverter::class, TestStringTinyType::class) }
+                        field("field") { valueObject(IntStringConverter::class, StringValueObject::class) }
                     }
                 }
             }
@@ -295,13 +293,13 @@ class ModelContextImplTest {
 
             verify(forcedTypes).add(ForcedType().also {
                 it.expression = expression
-                it.userType = TestStringTinyType::class.qualifiedName
-                it.converter = "new $converterPackage.TinyTypeConverter<>(" +
-                    "new ${TestConverter::class.qualifiedName}(), " +
-                    "TestStringTinyType::new, TestStringTinyType::getValue, " +
-                    "java.lang.Integer.class, TestStringTinyType.class)"
+                it.userType = StringValueObject::class.qualifiedName
+                it.converter = "new $converterPackage.ValueObjectConverter<>(" +
+                    "new ${IntStringConverter::class.qualifiedName}(), " +
+                    "StringValueObject::new, StringValueObject::getValue, " +
+                    "java.lang.Integer.class, StringValueObject.class)"
             })
-            assertThat(context.pendingTemplates).containsExactly(TINY_TYPE)
+            assertThat(context.pendingTemplates).containsExactly(VALUE_OBJECT)
         }
 
         @Test
@@ -309,7 +307,7 @@ class ModelContextImplTest {
             val definition = ModelDefinition {
                 tables {
                     table("table") {
-                        field("field") { custom(TestConverter::class) }
+                        field("field") { custom(IntStringConverter::class) }
                     }
                 }
             }
@@ -319,7 +317,7 @@ class ModelContextImplTest {
             verify(forcedTypes).add(ForcedType().also {
                 it.expression = expression
                 it.userType = String::class.qualifiedName
-                it.converter = "new $converterPackage.ConverterAdapter<>(new ${TestConverter::class.qualifiedName}(), " +
+                it.converter = "new $converterPackage.ConverterAdapter<>(new ${IntStringConverter::class.qualifiedName}(), " +
                     "java.lang.Integer.class, String.class)"
             })
             assertThat(context.pendingTemplates).containsExactly(ADAPTER)

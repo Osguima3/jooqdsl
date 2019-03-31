@@ -22,6 +22,6 @@
 
 package io.osguima3.jooqdsl.multimodule.model.types
 
-import java.time.Instant
+import java.util.UUID
 
-data class TinyInstant(val value: Instant)
+data class IdValueObject(val id: UUID)
