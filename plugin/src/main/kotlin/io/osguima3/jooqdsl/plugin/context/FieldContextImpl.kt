@@ -63,7 +63,7 @@ class FieldContextImpl(
         throw IllegalArgumentException(
             "$userType.${userType.valueField.name}(): ${userType.valueType} is not of type $valueType.")
     } else {
-        registerValueObject(databaseType, userType, converter)
+        registerValueObject(userType, databaseType, converter)
     }
 
     override fun <T : Any, U : Any> custom(
@@ -74,20 +74,20 @@ class FieldContextImpl(
         throw IllegalArgumentException(
             "Converter $converter should be a kotlin `object` or have an $instanceField singleton field.")
     } else {
-        registerAdapter(databaseType, userType, converter)
+        registerAdapter(userType, databaseType, converter)
     }
 
     private fun resolve(userType: KClass<*>) = when {
         userType.isPrimitive -> Unit // No need to register
         userType.isEnum -> registerEnum(userType)
         userType.isValueObject -> resolveValueObject(userType)
-        userType == Instant::class -> register(OffsetDateTime::class, userType, instantFrom, instantTo)
+        userType == Instant::class -> register(userType, OffsetDateTime::class, instantFrom, instantTo)
         else -> throw IllegalArgumentException("No default mapper available for $userType")
     }
 
     private fun resolveValueObject(userType: KClass<*>, valueType: KClass<*> = userType.valueType) = when {
         valueType.isPrimitive -> registerValueObject(userType)
-        valueType == Instant::class -> registerValueObject(OffsetDateTime::class, userType, instantFrom, instantTo)
+        valueType == Instant::class -> registerValueObject(userType, OffsetDateTime::class, instantFrom, instantTo)
         else -> throw IllegalArgumentException("No default mapper available for $userType")
     }
 
@@ -95,7 +95,7 @@ class FieldContextImpl(
         context.registerForcedType(".*\\.$tableName\\.$name", userType, converter)
     }
 
-    private fun register(databaseType: KClass<*>, userType: KClass<*>, from: String, to: String) {
+    private fun register(userType: KClass<*>, databaseType: KClass<*>, from: String, to: String) {
         register(userType, builder.simple(userType, databaseType, from, to))
     }
 
@@ -107,15 +107,15 @@ class FieldContextImpl(
         register(userType, builder.valueObject(userType))
     }
 
-    private fun registerValueObject(databaseType: KClass<*>, userType: KClass<*>, converter: KClass<*>) {
+    private fun registerValueObject(userType: KClass<*>, databaseType: KClass<*>, converter: KClass<*>) {
         register(userType, builder.valueObject(userType, databaseType, converter))
     }
 
-    private fun registerValueObject(databaseType: KClass<*>, userType: KClass<*>, from: String, to: String) {
+    private fun registerValueObject(userType: KClass<*>, databaseType: KClass<*>, from: String, to: String) {
         register(userType, builder.valueObject(userType, databaseType, from, to))
     }
 
-    private fun registerAdapter(databaseType: KClass<*>, userType: KClass<*>, converter: KClass<*>) {
+    private fun registerAdapter(userType: KClass<*>, databaseType: KClass<*>, converter: KClass<*>) {
         register(userType, builder.adapter(userType, databaseType, converter))
     }
 
