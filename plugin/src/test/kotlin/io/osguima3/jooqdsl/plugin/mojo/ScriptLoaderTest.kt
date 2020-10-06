@@ -3,7 +3,6 @@ package io.osguima3.jooqdsl.plugin.mojo
 import io.osguima3.jooqdsl.model.ModelDefinition
 import org.apache.maven.plugin.MojoExecutionException
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -28,7 +27,6 @@ class ScriptLoaderTest {
     inner class ReadFile {
 
         @Test
-        @Disabled
         fun `should read file if it exists`() {
             val resource = this::class.java.getResource("/mojo/dummy.txt")
             val readFile: Reader = fileLoader.readFile(resource.path)

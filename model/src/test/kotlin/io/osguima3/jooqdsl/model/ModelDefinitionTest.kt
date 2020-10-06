@@ -23,7 +23,6 @@
 package io.osguima3.jooqdsl.model
 
 import com.nhaarman.mockitokotlin2.any
-import com.nhaarman.mockitokotlin2.eq
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.whenever
@@ -31,128 +30,101 @@ import io.osguima3.jooqdsl.model.context.FieldContext
 import io.osguima3.jooqdsl.model.context.TableContext
 import io.osguima3.jooqdsl.model.context.custom
 import io.osguima3.jooqdsl.model.context.valueObject
-import io.osguima3.jooqdsl.model.converter.Converter
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
 typealias ConverterConfig = (FieldContext) -> Unit
 
 class ModelDefinitionTest {
 
-    data class IntValueObject(val value: Int)
-    data class StringValueObject(val value: String)
-    enum class TestEnum
-    abstract class IntStringConverter : Converter<Int, String>
-
-    private val converterContext = mock<FieldContext>()
+    private val fieldContext = mock<FieldContext>()
     private val tableContext = mock<TableContext>().apply {
-        whenever(field(eq("field"), any<ConverterConfig>()))
-            .then { it.getArgument<ConverterConfig>(1).invoke(converterContext) }
+        whenever(field(any(), any<ConverterConfig>()))
+            .then { it.getArgument<ConverterConfig>(1)(fieldContext) }
     }
 
     private val context = TestModelContext { tableContext }
 
-    @Test
-    fun testField() {
-        val definition = ModelDefinition {
-            tables {
-                table("table") {
-                    field("field", IntValueObject::class)
+    @Nested
+    inner class `field(name, type)` {
+
+        @Test
+        fun `should forward to table context`() {
+            val definition = ModelDefinition {
+                tables {
+                    table("table") {
+                        field("field", String::class)
+                    }
                 }
             }
+
+            context.run(definition.configure)
+
+            verify(tableContext).run { field("field", String::class) }
         }
-
-        context.run(definition.configure)
-
-        verify(tableContext).run { field("field", IntValueObject::class) }
     }
 
-    @Test
-    fun testBlock_Type() {
-        val definition = ModelDefinition {
-            tables {
-                table("table") {
-                    field("field") { type(IntValueObject::class) }
+    @Nested
+    inner class `field(name) { block }` {
+
+        @Test
+        fun `should forward type to field context`() {
+            val definition = ModelDefinition {
+                tables {
+                    table("table") {
+                        field("field") { type(String::class) }
+                    }
                 }
             }
+
+            context.run(definition.configure)
+
+            verify(fieldContext).type(String::class)
         }
 
-        context.run(definition.configure)
-
-        verify(converterContext).type(IntValueObject::class)
-    }
-
-    @Test
-    fun testBlock_Enum() {
-        val definition = ModelDefinition {
-            tables {
-                table("table") {
-                    field("field") { enum(TestEnum::class, "String") }
+        @Test
+        fun `should forward enum to field context`() {
+            val definition = ModelDefinition {
+                tables {
+                    table("table") {
+                        field("field") { enum(TestEnum::class, "String") }
+                    }
                 }
             }
+
+            context.run(definition.configure)
+
+            verify(fieldContext).enum(TestEnum::class, "String")
         }
 
-        context.run(definition.configure)
-
-        verify(converterContext).enum(TestEnum::class, "String")
-    }
-
-    @Test
-    fun testBlock_ValueObject() {
-        val definition = ModelDefinition {
-            tables {
-                table("table") {
-                    field("field") { valueObject(IntStringConverter::class, StringValueObject::class, Int::class, String::class) }
+        @Test
+        fun `should forward reified valueObject to field context`() {
+            val definition = ModelDefinition {
+                tables {
+                    table("table") {
+                        field("field") { valueObject(TestConverter::class, TestValueObject::class) }
+                    }
                 }
             }
+
+            context.run(definition.configure)
+
+            verify(fieldContext).valueObject(TestConverter::class, TestValueObject::class, Int::class, String::class)
         }
 
-        context.run(definition.configure)
-
-        verify(converterContext).valueObject(IntStringConverter::class, StringValueObject::class, Int::class, String::class)
-    }
-
-    @Test
-    fun testBlock_ValueObjectReified() {
-        val definition = ModelDefinition {
-            tables {
-                table("table") {
-                    field("field") { valueObject(IntStringConverter::class, StringValueObject::class) }
+        @Test
+        fun `should forward reified custom to field context`() {
+            val definition = ModelDefinition {
+                tables {
+                    table("table") {
+                        field("field") { custom(TestConverter::class) }
+                    }
                 }
             }
+
+            context.run(definition.configure)
+
+            verify(fieldContext).custom(TestConverter::class, String::class, Int::class)
         }
-
-        context.run(definition.configure)
-
-        verify(converterContext).valueObject(IntStringConverter::class, StringValueObject::class, Int::class, String::class)
-    }
-
-    @Test
-    fun testBlock_Custom() {
-        val definition = ModelDefinition {
-            tables {
-                table("table") {
-                    field("field") { custom(IntStringConverter::class, String::class, Int::class) }
-                }
-            }
-        }
-
-        context.run(definition.configure)
-
-        verify(converterContext).custom(IntStringConverter::class, String::class, Int::class)
-    }
-
-    @Test
-    fun testBlock_CustomReified() {
-        val definition = ModelDefinition {
-            tables {
-                table("table") {
-                    field("field") { custom(IntStringConverter::class) }
-                }
-            }
-        }
-
-        context.run(definition.configure)
-
-        verify(converterContext).custom(IntStringConverter::class, String::class, Int::class)
     }
 }
