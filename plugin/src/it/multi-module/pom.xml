@@ -24,7 +24,7 @@
 
         <kotlin.version>1.4.10</kotlin.version>
 
-        <postgresql.version>42.2.16</postgresql.version>
+        <postgresql.version>42.3.3</postgresql.version>
         <jooq.version>3.13.5</jooq.version>
         <testcontainers.version>1.15.0-rc2</testcontainers.version>
     </properties>
