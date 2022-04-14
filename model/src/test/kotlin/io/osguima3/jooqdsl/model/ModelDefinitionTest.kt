@@ -22,16 +22,16 @@
 
 package io.osguima3.jooqdsl.model
 
-import com.nhaarman.mockitokotlin2.any
-import com.nhaarman.mockitokotlin2.mock
-import com.nhaarman.mockitokotlin2.verify
-import com.nhaarman.mockitokotlin2.whenever
 import io.osguima3.jooqdsl.model.context.FieldContext
 import io.osguima3.jooqdsl.model.context.TableContext
 import io.osguima3.jooqdsl.model.context.custom
 import io.osguima3.jooqdsl.model.context.valueObject
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.any
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
 
 typealias ConverterConfig = (FieldContext) -> Unit
 
