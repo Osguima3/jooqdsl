@@ -50,13 +50,13 @@ interface FieldContext {
      * @param converter The converter used to map between the child field and the database type
      * @param userType The value object class
      * @param databaseType The database type, not required when using the inline overload
-     * @param fieldType The child field type, not required when using the inline overload
+     * @param valueType The child field type, not required when using the inline overload
      */
     fun <T : Any, U : Any> valueObject(
         converter: KClass<out Converter<T, U>>,
         userType: KClass<*>,
         databaseType: KClass<T>,
-        fieldType: KClass<U>
+        valueType: KClass<U>
     )
 
     /**
