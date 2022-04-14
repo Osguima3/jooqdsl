@@ -26,13 +26,17 @@ import io.osguima3.jooqdsl.model.context.FieldContext
 import io.osguima3.jooqdsl.model.context.TableContext
 import kotlin.reflect.KClass
 
-class TableContextImpl(private val context: ModelContextImpl, private val tableName: String) : TableContext {
+class TableContextImpl(private val context: JooqContext, private val tableName: String) : TableContext {
 
-    private val fields = mutableMapOf<String, FieldContextImpl>()
+    private val fields = mutableSetOf<String>()
 
     override fun field(name: String, type: KClass<*>) = field(name) { type(type) }
 
-    override fun field(name: String, configure: FieldContext.() -> Unit) = fields
-        .getOrPut(name) { FieldContextImpl(context, tableName, name) }
-        .doConfigure(configure)
+    override fun field(name: String, configure: FieldContext.() -> Unit) {
+        if (fields.add(name)) {
+            FieldContextImpl(context, tableName, name).run(configure)
+        } else {
+            throw IllegalArgumentException("Field $name already initialized")
+        }
+    }
 }

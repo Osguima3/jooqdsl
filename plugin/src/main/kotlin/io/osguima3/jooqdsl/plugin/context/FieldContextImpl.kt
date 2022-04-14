@@ -25,7 +25,7 @@ package io.osguima3.jooqdsl.plugin.context
 import io.osguima3.jooqdsl.model.context.FieldContext
 import io.osguima3.jooqdsl.model.converter.Converter
 import io.osguima3.jooqdsl.plugin.converter.ConverterBuilder
-import io.osguima3.jooqdsl.plugin.converter.TemplateFile
+import java.lang.reflect.Modifier
 import java.math.BigDecimal
 import java.time.Instant
 import java.time.OffsetDateTime
@@ -37,21 +37,14 @@ import kotlin.reflect.full.isSubclassOf
 import kotlin.reflect.jvm.javaGetter
 
 class FieldContextImpl(
-    private val context: ModelContextImpl,
+    private val context: JooqContext,
     private val tableName: String,
     private val name: String
 ) : FieldContext {
 
+    private val instanceField = "INSTANCE"
+
     private val builder = ConverterBuilder(context)
-
-    private var initialized = false
-
-    fun doConfigure(configure: FieldContext.() -> Unit) = if (initialized) {
-        throw IllegalStateException("Field $name already initialized")
-    } else {
-        configure()
-        initialized = true
-    }
 
     override fun type(userType: KClass<*>) =
         resolve(userType)
@@ -63,62 +56,72 @@ class FieldContextImpl(
         converter: KClass<out Converter<T, U>>,
         userType: KClass<*>,
         databaseType: KClass<T>,
-        fieldType: KClass<U>
+        valueType: KClass<U>
     ) = if (!userType.isValueObject) {
         throw IllegalArgumentException("Type $userType is not a value object.")
-    } else if (fieldType != userType.fieldType) {
-        throw IllegalArgumentException("$userType.${userType.singleField.name}(): ${userType.fieldType} " +
-            "is not of type $fieldType.")
+    } else if (valueType != userType.valueType) {
+        throw IllegalArgumentException(
+            "$userType.${userType.valueField.name}(): ${userType.valueType} is not of type $valueType.")
     } else {
-        registerValueObject(databaseType, userType, builder.simple(converter), emptySet())
+        registerValueObject(databaseType, userType, converter)
     }
 
     override fun <T : Any, U : Any> custom(
         converter: KClass<out Converter<T, U>>,
         userType: KClass<U>,
         databaseType: KClass<T>
-    ) = registerAdapter(databaseType, userType, builder.simple(converter))
+    ) = if (!converter.isObjectType) {
+        throw IllegalArgumentException(
+            "Converter $converter should be a kotlin `object` or have an $instanceField singleton field.")
+    } else {
+        registerAdapter(databaseType, userType, converter)
+    }
 
     private fun resolve(userType: KClass<*>) = when {
         userType.isPrimitive -> Unit // No need to register
-        userType.isEnum -> register(userType, builder.enum(userType))
+        userType.isEnum -> registerEnum(userType)
         userType.isValueObject -> resolveValueObject(userType)
-        userType == Instant::class -> register(userType, builder.instant())
+        userType == Instant::class -> register(OffsetDateTime::class, userType, instantFrom, instantTo)
         else -> throw IllegalArgumentException("No default mapper available for $userType")
     }
 
-    private fun resolveValueObject(userType: KClass<*>, fieldType: KClass<*> = userType.fieldType) = when {
-        fieldType.isPrimitive -> register(userType, builder.valueObject(userType.javaObjectType.kotlin))
-        fieldType == Instant::class -> registerValueObject(OffsetDateTime::class, userType, builder.instant())
+    private fun resolveValueObject(userType: KClass<*>, valueType: KClass<*> = userType.valueType) = when {
+        valueType.isPrimitive -> registerValueObject(userType)
+        valueType == Instant::class -> registerValueObject(OffsetDateTime::class, userType, instantFrom, instantTo)
         else -> throw IllegalArgumentException("No default mapper available for $userType")
     }
 
-    private fun registerValueObject(
-        databaseType: KClass<*>,
-        userType: KClass<*>,
-        converter: String,
-        templates: Set<TemplateFile> = setOf(TemplateFile.ADAPTER)
-    ) = register(
-        userType = userType,
-        templates = templates + setOf(TemplateFile.VALUE_OBJECT),
-        converter = builder.valueObject(userType, databaseType, converter)
-    )
-
-    private fun <T : Any, U : Any> registerAdapter(
-        databaseType: KClass<T>,
-        userType: KClass<U>,
-        converter: String,
-        templates: Set<TemplateFile> = emptySet()
-    ) = register(
-        userType = userType,
-        templates = templates + setOf(TemplateFile.ADAPTER),
-        converter = builder.adapter(userType, databaseType, converter)
-    )
-
-    private fun register(userType: KClass<*>, converter: String, templates: Set<TemplateFile> = emptySet()) {
-        context.addTemplates(templates)
+    private fun register(userType: KClass<*>, converter: String) {
         context.registerForcedType(".*\\.$tableName\\.$name", userType, converter)
     }
+
+    private fun register(databaseType: KClass<*>, userType: KClass<*>, from: String, to: String) {
+        register(userType, builder.simple(userType, databaseType, from, to))
+    }
+
+    private fun registerEnum(userType: KClass<*>) {
+        register(userType, builder.enum(userType))
+    }
+
+    private fun registerValueObject(userType: KClass<*>) {
+        register(userType, builder.valueObject(userType))
+    }
+
+    private fun registerValueObject(databaseType: KClass<*>, userType: KClass<*>, converter: KClass<*>) {
+        register(userType, builder.valueObject(userType, databaseType, converter))
+    }
+
+    private fun registerValueObject(databaseType: KClass<*>, userType: KClass<*>, from: String, to: String) {
+        register(userType, builder.valueObject(userType, databaseType, from, to))
+    }
+
+    private fun registerAdapter(databaseType: KClass<*>, userType: KClass<*>, converter: KClass<*>) {
+        register(userType, builder.adapter(userType, databaseType, converter))
+    }
+
+    private val instantFrom = "java.time.OffsetDateTime::toInstant"
+
+    private val instantTo = "i -> java.time.OffsetDateTime.ofInstant(i, java.time.ZoneOffset.UTC)"
 
     private val KClass<*>.isPrimitive
         get() = when (this) {
@@ -132,9 +135,14 @@ class FieldContextImpl(
     private val KClass<*>.isValueObject
         get() = isData && declaredMemberProperties.size == 1
 
-    private val KClass<*>.singleField
+    private val KClass<*>.isObjectType
+        get() = objectInstance != null || java.declaredFields.any {
+            it.name == instanceField && it.type == java && Modifier.isStatic(it.modifiers)
+        }
+
+    private val KClass<*>.valueField
         get() = declaredMemberProperties.mapNotNull(KProperty<*>::javaGetter).single()
 
-    private val KClass<*>.fieldType
-        get() = singleField.returnType.kotlin
+    private val KClass<*>.valueType
+        get() = valueField.returnType.kotlin
 }

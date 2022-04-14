@@ -4,7 +4,7 @@ import io.osguima3.jooqdsl.model.converter.Converter
 import java.text.SimpleDateFormat
 import java.util.Date
 
-class SimpleDateConverter : Converter<String, Date> {
+object SimpleDateConverter : Converter<String, Date> {
 
     private val formatter = SimpleDateFormat()
 

@@ -22,49 +22,52 @@
 
 package io.osguima3.jooqdsl.plugin.converter
 
-import io.osguima3.jooqdsl.model.converter.Converter
-import io.osguima3.jooqdsl.plugin.context.ModelContextImpl
+import io.osguima3.jooqdsl.plugin.context.JooqContext
+import java.util.function.Function
 import kotlin.reflect.KClass
 import kotlin.reflect.KProperty
 import kotlin.reflect.full.declaredMemberProperties
 import kotlin.reflect.jvm.javaGetter
 
-class ConverterBuilder(private val context: ModelContextImpl) {
+class ConverterBuilder(private val context: JooqContext) {
 
-    internal fun simple(converter: KClass<out Converter<*, *>>) =
-        "new ${converter.qualifiedName}()"
+    internal fun simple(userType: KClass<*>, databaseType: KClass<*>, from: String, to: String) =
+        "org.jooq.Converter.ofNullable(${databaseType.canonical}.class, ${userType.simple}.class, $from, $to)"
 
-    internal fun instant() =
-        "org.jooq.Converter.ofNullable(java.time.OffsetDateTime.class, java.time.Instant.class, " +
-            "java.time.OffsetDateTime::toInstant, i -> java.time.OffsetDateTime.ofInstant(i, java.time.ZoneOffset.UTC))"
-
-    internal fun enum(userType: KClass<*>, databaseType: String? = null) =
-        "new org.jooq.impl.EnumConverter<>(" +
-            "${databaseType ?: "${context.targetPackage}.enums.${userType.simpleName}"}.class, ${userType.simple})"
+    internal fun enum(
+        userType: KClass<*>,
+        databaseType: String? = "${context.targetPackage}.enums.${userType.simple}"
+    ) = "new org.jooq.impl.EnumConverter<>($databaseType.class, ${userType.simple}.class)"
 
     internal fun valueObject(userType: KClass<*>) =
-        "org.jooq.Converter.ofNullable(${userType.valueType.qualified}, ${userType.simple}, " +
-            "${userType.ctor}, ${userType.field})"
+        simple(userType, userType.valueType, userType.ctor, userType.valueField)
 
-    internal fun valueObject(userType: KClass<*>, databaseType: KClass<*>, converter: String) =
-        "new ${context.converterPackage}.ValueObjectConverter<>($converter, " +
-            "${userType.ctor}, ${userType.field}, ${databaseType.qualified}, ${userType.simple})"
+    internal fun valueObject(userType: KClass<*>, databaseType: KClass<*>, converter: KClass<*>) =
+        valueObject(userType, databaseType, "${converter.instance}::from", "${converter.instance}::to")
 
-    internal fun adapter(userType: KClass<*>, databaseType: KClass<*>, converter: String) =
-        "new ${context.converterPackage}.ConverterAdapter<>($converter, " +
-            "${databaseType.qualified}, ${userType.simple})"
+    internal fun valueObject(userType: KClass<*>, databaseType: KClass<*>, from: String, to: String) = simple(
+        userType = userType, databaseType = databaseType,
+        from = "(${funCast(databaseType.canonical, userType.valueType.canonical)} $from).andThen(${userType.ctor})",
+        to = "(${funCast(userType.simple, userType.valueType.canonical)} ${userType.valueField}).andThen($to)")
 
-    private val KClass<*>.simple get() = "$simpleName.class"
+    internal fun adapter(userType: KClass<*>, databaseType: KClass<*>, converter: KClass<*>) =
+        simple(userType, databaseType, "${converter.instance}::from", "${converter.instance}::to")
 
-    private val KClass<*>.qualified get() = "${javaObjectType.canonicalName}.class"
+    private fun funCast(from: String, to: String) =
+        "(${Function::class.canonical}<$from, $to>)"
 
-    private val KClass<*>.ctor get() = "$simpleName::new"
+    private val KClass<*>.simple get() = javaObjectType.simpleName
 
-    private val KClass<*>.field get() = "$simpleName::${valueField.name}"
+    private val KClass<*>.canonical get() = javaObjectType.canonicalName
 
-    private val KClass<*>.valueField
+    private val KClass<*>.instance get() = "$canonical.INSTANCE"
+
+    private val KClass<*>.ctor get() = "$simple::new"
+
+    private val KClass<*>.valueField get() = "$simple::${valueGetter.name}"
+
+    private val KClass<*>.valueType get() = valueGetter.returnType.kotlin
+
+    private val KClass<*>.valueGetter
         get() = declaredMemberProperties.mapNotNull(KProperty<*>::javaGetter).single()
-
-    private val KClass<*>.valueType
-        get() = valueField.returnType.kotlin
 }

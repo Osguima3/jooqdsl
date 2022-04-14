@@ -25,9 +25,9 @@ package io.osguima3.jooqdsl.plugin.context
 import io.osguima3.jooqdsl.model.context.TableContext
 import io.osguima3.jooqdsl.model.context.TablesContext
 
-class TablesContextImpl(private val context: ModelContextImpl) : TablesContext {
+class TablesContextImpl(private val context: JooqContext) : TablesContext {
 
-    private val tables = mutableMapOf<String, TableContextImpl>()
+    private val tables = mutableMapOf<String, TableContext>()
 
     override fun table(name: String, configure: TableContext.() -> Unit) = tables
         .getOrPut(name) { TableContextImpl(context, name) }
