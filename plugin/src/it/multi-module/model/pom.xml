@@ -4,14 +4,14 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>io.osguima3.multi-module</groupId>
-        <artifactId>multi-module-parent</artifactId>
+        <groupId>io.osguima3.it</groupId>
+        <artifactId>jooqdsl-multimodule-parent</artifactId>
         <version>1.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>multi-module-model</artifactId>
+    <artifactId>jooqdsl-multimodule-model</artifactId>
     <name>Multi Module model module</name>
-    <description>Defines the types used by the jOOQ-dsl plugin</description>
+    <description>Defines the types used by the jOOQ DSL plugin</description>
     <packaging>jar</packaging>
 
     <dependencies>

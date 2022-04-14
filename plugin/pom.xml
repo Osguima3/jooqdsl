@@ -5,11 +5,11 @@
 
     <parent>
         <groupId>io.osguima3</groupId>
-        <artifactId>jooq-dsl-maven-parent</artifactId>
+        <artifactId>jooqdsl-parent</artifactId>
         <version>1.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>jooq-dsl-maven-plugin</artifactId>
+    <artifactId>jooqdsl-maven-plugin</artifactId>
     <name>Jooq DSL Maven plugin</name>
     <packaging>maven-plugin</packaging>
 
@@ -46,7 +46,7 @@
 
         <dependency>
             <groupId>io.osguima3</groupId>
-            <artifactId>jooq-dsl-model</artifactId>
+            <artifactId>jooqdsl-model</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
 

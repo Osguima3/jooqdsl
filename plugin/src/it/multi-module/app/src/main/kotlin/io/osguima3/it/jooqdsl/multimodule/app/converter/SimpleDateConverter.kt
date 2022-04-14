@@ -20,8 +20,17 @@
  * For more information, please visit: http://www.jooq.org/licenses
  */
 
-package io.osguima3.jooqdsl.multimodule.model.types
+package io.osguima3.it.jooqdsl.multimodule.app.converter
 
-import java.util.UUID
+import io.osguima3.jooqdsl.model.converter.Converter
+import java.text.SimpleDateFormat
+import java.util.Date
 
-data class IdValueObject(val id: UUID)
+object SimpleDateConverter : Converter<String, Date> {
+
+    private val formatter = SimpleDateFormat()
+
+    override fun from(databaseObject: String): Date = formatter.parse(databaseObject)
+
+    override fun to(userObject: Date): String = formatter.format(userObject)
+}
