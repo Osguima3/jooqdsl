@@ -21,7 +21,8 @@
         </dependency>
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>
-            <artifactId>kotlin-script-runtime</artifactId>
+            <artifactId>kotlin-scripting-jsr223</artifactId>
+            <scope>runtime</scope>
         </dependency>
 
         <dependency>
