@@ -20,8 +20,8 @@
  * For more information, please visit: http://www.jooq.org/licenses
  */
 
-package io.osguima3.jooqdsl.multimodule.model.types
+package io.osguima3.it.jooqdsl.multimodule.model.types
 
-import java.math.BigDecimal
+import java.util.Date
 
-data class BigDecimalValueObject(val value: BigDecimal)
+data class DateValueObject(val date: Date)

@@ -20,15 +20,9 @@
  * For more information, please visit: http://www.jooq.org/licenses
  */
 
-package io.osguima3.jooqdsl.multimodule.model.types
+package io.osguima3.it.jooqdsl.multimodule.model.types
 
-data class TestClass(
-    val id: IdValueObject,
-    val string: StringValueObject,
-    val instant: InstantValueObject,
-    val int: IntValueObject,
-    val bigDecimal: BigDecimalValueObject,
-    val customEnum: CustomEnum,
-    val stringEnum: StringEnum,
-    val custom: DateValueObject
-)
+enum class CustomEnum {
+    ENABLED,
+    DISABLED
+}

@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>io.osguima3</groupId>
-    <artifactId>jooq-dsl-maven-parent</artifactId>
+    <artifactId>jooqdsl-parent</artifactId>
     <version>1.0-SNAPSHOT</version>
 
     <name>Jooq DSL parent</name>
@@ -199,7 +199,7 @@
                     <artifactId>maven-plugin-plugin</artifactId>
                     <version>${maven-plugin.version}</version>
                     <configuration>
-                        <goalPrefix>jooq-dsl</goalPrefix>
+                        <goalPrefix>jooqdsl</goalPrefix>
                         <skipErrorNoDescriptorsFound>true</skipErrorNoDescriptorsFound>
                     </configuration>
                     <executions>

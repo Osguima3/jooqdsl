@@ -1,6 +1,9 @@
 import static java.util.stream.Collectors.toList
 
-File generated = new File(basedir, "app/target/generated-sources/jooq/io/osguima3/jooqdsl/multimodule/app/model/tables/Test.java")
+File generated = new File(
+    basedir,
+    "app/target/generated-sources/jooq/io/osguima3/it/jooqdsl/multimodule/app/model/tables/Test.java"
+)
 assert generated.isFile()
 
 static def assertField(List<String> lines, String type, String name) {

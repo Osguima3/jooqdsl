@@ -20,6 +20,8 @@
  * For more information, please visit: http://www.jooq.org/licenses
  */
 
-package io.osguima3.jooqdsl.multimodule.model.types
+package io.osguima3.it.jooqdsl.multimodule.model.types
 
-data class IntValueObject(val value: Int)
+import java.time.Instant
+
+data class InstantValueObject(val value: Instant)
