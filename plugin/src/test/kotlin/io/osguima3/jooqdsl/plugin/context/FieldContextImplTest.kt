@@ -22,10 +22,6 @@
 
 package io.osguima3.jooqdsl.plugin.context
 
-import com.nhaarman.mockitokotlin2.mock
-import com.nhaarman.mockitokotlin2.verify
-import com.nhaarman.mockitokotlin2.verifyZeroInteractions
-import com.nhaarman.mockitokotlin2.whenever
 import io.osguima3.jooqdsl.model.context.custom
 import io.osguima3.jooqdsl.model.context.valueObject
 import io.osguima3.jooqdsl.plugin.TestEnum
@@ -39,6 +35,10 @@ import io.osguima3.jooqdsl.plugin.TestValueObject
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.verify
+import org.mockito.kotlin.verifyNoInteractions
+import org.mockito.kotlin.whenever
 import java.math.BigDecimal
 import java.time.Instant
 import java.time.OffsetDateTime
@@ -64,35 +64,35 @@ class FieldContextImplTest {
         fun `should skip primitive types`() {
             context.type(Int::class)
 
-            verifyZeroInteractions(jooqContext)
+            verifyNoInteractions(jooqContext)
         }
 
         @Test
         fun `should skip boxed primitive types`() {
             context.type(Integer::class)
 
-            verifyZeroInteractions(jooqContext)
+            verifyNoInteractions(jooqContext)
         }
 
         @Test
         fun `should skip BigDecimal type`() {
             context.type(BigDecimal::class)
 
-            verifyZeroInteractions(jooqContext)
+            verifyNoInteractions(jooqContext)
         }
 
         @Test
         fun `should skip String type`() {
             context.type(String::class)
 
-            verifyZeroInteractions(jooqContext)
+            verifyNoInteractions(jooqContext)
         }
 
         @Test
         fun `should skip UUID type`() {
             context.type(UUID::class)
 
-            verifyZeroInteractions(jooqContext)
+            verifyNoInteractions(jooqContext)
         }
 
         @Test

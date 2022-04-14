@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.osguima3</groupId>
+        <groupId>io.osguima3</groupId>
         <artifactId>jooq-dsl-maven-parent</artifactId>
         <version>1.0-SNAPSHOT</version>
     </parent>
@@ -45,7 +45,7 @@
         </dependency>
 
         <dependency>
-            <groupId>org.osguima3</groupId>
+            <groupId>io.osguima3</groupId>
             <artifactId>jooq-dsl-model</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
@@ -104,7 +104,7 @@
             <artifactId>assertj-core</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.nhaarman.mockitokotlin2</groupId>
+            <groupId>org.mockito.kotlin</groupId>
             <artifactId>mockito-kotlin</artifactId>
         </dependency>
         <dependency>
