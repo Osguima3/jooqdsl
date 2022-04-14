@@ -38,7 +38,7 @@
         <junit.version>5.7.0</junit.version>
         <assertj.version>3.12.1</assertj.version>
         <mockito-kotlin.version>2.1.0</mockito-kotlin.version>
-        <testcontainers.version>1.15.0-rc2</testcontainers.version>
+        <testcontainers.version>1.17.1</testcontainers.version>
 
         <!-- Plugins -->
         <maven-surefire-plugin.version>2.22.2</maven-surefire-plugin.version>
