@@ -27,11 +27,12 @@
         <kotlin.code.style>official</kotlin.code.style>
         <kotlin.compiler.incremental>true</kotlin.compiler.incremental>
 
-        <java.version>8</java.version>
+        <java.version>11</java.version>
         <kotlin.version>1.6.20</kotlin.version>
 
         <maven-plugin.version>3.6.0</maven-plugin.version>
         <mojo-executor.version>2.4.0</mojo-executor.version>
+        <jaxb-api.version>2.3.1</jaxb-api.version>
         <jooq.version>3.16.5</jooq.version>
 
         <!-- Test dependencies -->
@@ -53,62 +54,12 @@
                 <artifactId>kotlin-stdlib-jdk8</artifactId>
                 <version>${kotlin.version}</version>
             </dependency>
-            <dependency>
-                <groupId>org.jetbrains.kotlin</groupId>
-                <artifactId>kotlin-reflect</artifactId>
-                <version>${kotlin.version}</version>
-            </dependency>
-
-            <!-- Maven -->
-            <dependency>
-                <groupId>org.apache.maven</groupId>
-                <artifactId>maven-core</artifactId>
-                <version>${maven-plugin.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.maven</groupId>
-                <artifactId>maven-plugin-api</artifactId>
-                <version>${maven-plugin.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.maven.plugin-tools</groupId>
-                <artifactId>maven-plugin-annotations</artifactId>
-                <version>${maven-plugin.version}</version>
-                <scope>provided</scope>
-            </dependency>
-
-            <dependency>
-                <groupId>org.twdata.maven</groupId>
-                <artifactId>mojo-executor</artifactId>
-                <version>${mojo-executor.version}</version>
-            </dependency>
 
             <!-- Jooq -->
             <dependency>
                 <groupId>org.jooq</groupId>
                 <artifactId>jooq</artifactId>
                 <version>${jooq.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.jooq</groupId>
-                <artifactId>jooq-meta</artifactId>
-                <version>${jooq.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.jooq</groupId>
-                <artifactId>jooq-codegen</artifactId>
-                <version>${jooq.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.testcontainers</groupId>
-                <artifactId>testcontainers</artifactId>
-                <version>${testcontainers.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.testcontainers</groupId>
-                <artifactId>jdbc</artifactId>
-                <version>${testcontainers.version}</version>
             </dependency>
 
             <!-- Test dependencies -->
@@ -141,14 +92,6 @@
                 <groupId>org.apache.maven</groupId>
                 <artifactId>maven-compat</artifactId>
                 <version>${maven-plugin.version}</version>
-                <scope>test</scope>
-            </dependency>
-
-            <!-- Used only for autocompletion in the test project -->
-            <dependency>
-                <groupId>org.jetbrains.kotlin</groupId>
-                <artifactId>kotlin-script-runtime</artifactId>
-                <version>${kotlin.version}</version>
                 <scope>test</scope>
             </dependency>
 

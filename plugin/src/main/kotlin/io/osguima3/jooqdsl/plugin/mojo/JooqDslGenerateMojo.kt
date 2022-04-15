@@ -26,10 +26,13 @@ import io.osguima3.jooqdsl.model.ModelDefinition
 import io.osguima3.jooqdsl.plugin.configuration.AdditionalSources
 import io.osguima3.jooqdsl.plugin.configuration.Container
 import io.osguima3.jooqdsl.plugin.configuration.DefinitionFile
+import io.osguima3.jooqdsl.plugin.configuration.loadDefinition
+import io.osguima3.jooqdsl.plugin.configuration.precompile
 import io.osguima3.jooqdsl.plugin.context.ModelContextImpl
 import org.apache.maven.execution.MavenSession
 import org.apache.maven.plugin.AbstractMojo
 import org.apache.maven.plugin.BuildPluginManager
+import org.apache.maven.plugin.MojoExecutionException
 import org.apache.maven.plugin.descriptor.PluginDescriptor
 import org.apache.maven.plugins.annotations.Component
 import org.apache.maven.plugins.annotations.LifecyclePhase
@@ -42,14 +45,7 @@ import org.jooq.meta.jaxb.Configuration
 import org.jooq.meta.jaxb.Generator
 import org.jooq.meta.jaxb.Jdbc
 import org.jooq.meta.jaxb.Logging
-import org.twdata.maven.mojoexecutor.MojoExecutor.artifactId
-import org.twdata.maven.mojoexecutor.MojoExecutor.configuration
-import org.twdata.maven.mojoexecutor.MojoExecutor.element
-import org.twdata.maven.mojoexecutor.MojoExecutor.executeMojo
 import org.twdata.maven.mojoexecutor.MojoExecutor.executionEnvironment
-import org.twdata.maven.mojoexecutor.MojoExecutor.goal
-import org.twdata.maven.mojoexecutor.MojoExecutor.groupId
-import org.twdata.maven.mojoexecutor.MojoExecutor.plugin
 import java.io.File
 import java.net.URI
 
@@ -85,7 +81,7 @@ class JooqDslGenerateMojo : AbstractMojo() {
     @Parameter(required = true)
     private lateinit var generator: Generator
 
-    // jOOQ-DSL configuration
+    // jOOQ DSL configuration
 
     @Parameter(defaultValue = "src/main/resources/db/definition/model_definition.kts")
     private lateinit var definitionFile: DefinitionFile
@@ -102,7 +98,7 @@ class JooqDslGenerateMojo : AbstractMojo() {
             return
         }
 
-        val path = project.basedir.absolutePath
+        val path = project.basedir
         val classRealm = descriptor.classRealm
 
         project.runtimeClasspathElements
@@ -119,7 +115,7 @@ class JooqDslGenerateMojo : AbstractMojo() {
             it.logging = logging
             it.jdbc = jdbc
             it.generator = generator.apply {
-                target.directory = "$path/${target.directory ?: DEFAULT_TARGET_DIRECTORY}"
+                target.directory = "${path.absolutePath}/${target.directory ?: DEFAULT_TARGET_DIRECTORY}"
             }
         }
 
@@ -128,32 +124,27 @@ class JooqDslGenerateMojo : AbstractMojo() {
         ModelContextImpl(configuration).generate(modelDefinition.configure)
     }
 
-    private fun DefinitionFile.load(path: String?): ModelDefinition {
+    private fun DefinitionFile.load(path: File): ModelDefinition {
         log.info("Loading jOOQ model definition from $path/$this")
-        return ScriptLoader().loadScript("$path/$this")
+        return loadDefinition(path)
     }
 
     private fun AdditionalSources.precompile() {
-        forEach { log.info("Precompiling sources from $it") }
-        executeMojo(
-            plugin(
-                groupId("org.jetbrains.kotlin"),
-                artifactId("kotlin-maven-plugin")
-            ),
-            goal("compile"),
-            configuration(
-                element("sourceDirs", *map { element("sourceDir", it) }.toTypedArray())
-            ),
-            executionEnvironment(project, session, pluginManager)
-        )
+        try {
+            map { File(project.basedir, it) }.forEach { log.info("Precompiling sources from $it") }
+            precompile(executionEnvironment(project, session, pluginManager))
+        } catch (e: MojoExecutionException) {
+            log.error(e)
+            throw MojoExecutionException("Could not precompile sources. Make sure all dependencies are included", e)
+        }
     }
 
-    private fun Container.start(configuration: Configuration, path: String) {
+    private fun Container.start(configuration: Configuration, path: File) {
         log.info("Starting container from $provider")
         if (jdbc?.url != null) {
             log.warn("Provided jdbc url (${jdbc?.url}) will be replaced with container generated one")
         }
 
-        startContainer(configuration, this, path)
+        startContainer(configuration, path)
     }
 }

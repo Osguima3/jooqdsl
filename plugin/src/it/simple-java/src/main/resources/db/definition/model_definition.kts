@@ -20,31 +20,26 @@
  * For more information, please visit: http://www.jooq.org/licenses
  */
 
-package io.osguima3.jooqdsl.plugin.mojo
+import io.osguima3.jooqdsl.it.simplejava.converter.SimpleDateConverter
+import io.osguima3.jooqdsl.it.simplejava.types.CustomEnum
+import io.osguima3.jooqdsl.it.simplejava.types.StringEnum
+import io.osguima3.jooqdsl.model.ModelDefinition
+import io.osguima3.jooqdsl.model.context.custom
+import java.math.BigDecimal
+import java.time.Instant
+import java.util.UUID
 
-import org.apache.maven.plugin.MojoExecutionException
-import org.apache.maven.plugin.MojoFailureException
-import org.jetbrains.kotlin.cli.common.environment.setIdeaIoUseFallback
-import java.io.File
-import java.io.Reader
-import javax.script.ScriptEngineManager
-
-class ScriptLoader {
-
-    init {
-        setIdeaIoUseFallback()
-    }
-
-    private val engine = ScriptEngineManager(Thread.currentThread().contextClassLoader)
-        .getEngineByExtension("kts") ?: throw MojoFailureException("KTS engine not found")
-
-    inline fun <reified T> loadScript(file: File): T = eval(file.bufferedReader()) as T
-
-    inline fun <reified T> loadScript(reader: Reader): T = eval(reader) as T
-
-    fun eval(reader: Reader): Any = try {
-        { engine.eval(reader) }()
-    } catch (e: Exception) {
-        throw MojoExecutionException("Cannot eval script", e)
+ModelDefinition {
+    tables {
+        table("test") {
+            field("uuid", UUID::class)
+            field("string", String::class)
+            field("instant", Instant::class)
+            field("int", Integer::class)
+            field("big_decimal", BigDecimal::class)
+            field("custom_enum", CustomEnum::class)
+            field("string_enum") { enum(StringEnum::class, "String") }
+            field("custom") { custom(SimpleDateConverter::class) }
+        }
     }
 }

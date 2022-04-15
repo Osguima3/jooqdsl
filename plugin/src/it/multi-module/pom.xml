@@ -44,6 +44,11 @@
 
             <!-- Database -->
             <dependency>
+                <groupId>org.jooq</groupId>
+                <artifactId>jooq</artifactId>
+                <version>${jooq.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>@project.groupId@</groupId>
                 <artifactId>jooqdsl-model</artifactId>
                 <version>@project.version@</version>
@@ -52,16 +57,6 @@
                 <groupId>org.postgresql</groupId>
                 <artifactId>postgresql</artifactId>
                 <version>${postgresql.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.jooq</groupId>
-                <artifactId>jooq</artifactId>
-                <version>${jooq.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.jooq</groupId>
-                <artifactId>jooq-meta</artifactId>
-                <version>${jooq.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.testcontainers</groupId>
