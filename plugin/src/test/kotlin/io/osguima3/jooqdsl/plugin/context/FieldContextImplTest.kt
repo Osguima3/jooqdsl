@@ -24,14 +24,17 @@ package io.osguima3.jooqdsl.plugin.context
 
 import io.osguima3.jooqdsl.model.context.custom
 import io.osguima3.jooqdsl.model.context.valueObject
-import io.osguima3.jooqdsl.plugin.TestEnum
-import io.osguima3.jooqdsl.plugin.TestInstantValueObject
-import io.osguima3.jooqdsl.plugin.TestInvalidConverter
-import io.osguima3.jooqdsl.plugin.TestJavaConverter
-import io.osguima3.jooqdsl.plugin.TestKotlinConverter
-import io.osguima3.jooqdsl.plugin.TestUnsupportedObject
-import io.osguima3.jooqdsl.plugin.TestUnsupportedValueObject
-import io.osguima3.jooqdsl.plugin.TestValueObject
+import io.osguima3.jooqdsl.plugin.types.JavaConverter
+import io.osguima3.jooqdsl.plugin.types.JavaInvalidConverter
+import io.osguima3.jooqdsl.plugin.types.JavaUnsupportedObject
+import io.osguima3.jooqdsl.plugin.types.JavaValueObject
+import io.osguima3.jooqdsl.plugin.types.KotlinConverter
+import io.osguima3.jooqdsl.plugin.types.KotlinEnum
+import io.osguima3.jooqdsl.plugin.types.KotlinInstantValueObject
+import io.osguima3.jooqdsl.plugin.types.KotlinInvalidConverter
+import io.osguima3.jooqdsl.plugin.types.KotlinStringValueObject
+import io.osguima3.jooqdsl.plugin.types.KotlinUnsupportedObject
+import io.osguima3.jooqdsl.plugin.types.KotlinUnsupportedValueObject
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -58,7 +61,7 @@ class FieldContextImplTest {
     private val context = FieldContextImpl(jooqContext, "table", "field")
 
     @Nested
-    inner class Type {
+    inner class `Type (native)` {
 
         @Test
         fun `should skip primitive types`() {
@@ -108,44 +111,66 @@ class FieldContextImplTest {
                     "i -> java.time.OffsetDateTime.ofInstant(i, java.time.ZoneOffset.UTC))"
             )
         }
+    }
+
+    @Nested
+    inner class TypeJava {
+
+        @Test
+        fun `should throw IllegalArgumentException for java value object types`() {
+            assertThrows<IllegalArgumentException> {
+                context.type(JavaValueObject::class)
+            }
+        }
+
+        @Test
+        fun `should throw IllegalArgumentException if no mapper is available`() {
+            assertThrows<IllegalArgumentException> {
+                context.type(JavaUnsupportedObject::class)
+            }
+        }
+    }
+
+    @Nested
+    inner class TypeKotlin {
 
         @Test
         fun `should correctly register enum types`() {
-            context.type(TestEnum::class)
+            context.type(KotlinEnum::class)
 
             verify(jooqContext).registerForcedType(
                 expression = expression,
-                userType = TestEnum::class,
-                converter = "new org.jooq.impl.EnumConverter<>(" +
-                    "$targetPackage.enums.TestEnum.class, TestEnum.class)"
+                userType = KotlinEnum::class,
+                converter = "new org.jooq.impl.EnumConverter<>($targetPackage.enums.KotlinEnum.class, KotlinEnum.class)"
             )
         }
 
         @Test
         fun `should correctly register simple value object types`() {
-            context.type(TestValueObject::class)
+            context.type(KotlinStringValueObject::class)
 
             verify(jooqContext).registerForcedType(
                 expression = expression,
-                userType = TestValueObject::class,
+                userType = KotlinStringValueObject::class,
                 converter = "org.jooq.Converter.ofNullable(" +
-                    "java.lang.String.class, TestValueObject.class, " +
-                    "TestValueObject::new, TestValueObject::getValue)"
+                    "java.lang.String.class, KotlinStringValueObject.class, " +
+                    "KotlinStringValueObject::new, KotlinStringValueObject::getValue)"
             )
         }
 
         @Test
         fun `should correctly register Instant value object type`() {
-            context.type(TestInstantValueObject::class)
+            context.type(KotlinInstantValueObject::class)
 
             verify(jooqContext).registerForcedType(
                 expression = expression,
-                userType = TestInstantValueObject::class,
-                converter = "org.jooq.Converter.ofNullable(java.time.OffsetDateTime.class, TestInstantValueObject.class, " +
+                userType = KotlinInstantValueObject::class,
+                converter = "org.jooq.Converter.ofNullable(" +
+                    "java.time.OffsetDateTime.class, KotlinInstantValueObject.class, " +
                     "(${functionCast(OffsetDateTime::class.qualified, Instant::class.qualified)}" +
-                    "java.time.OffsetDateTime::toInstant).andThen(TestInstantValueObject::new), " +
-                    "(${functionCast(TestInstantValueObject::class.simple, Instant::class.qualified)}" +
-                    "TestInstantValueObject::getValue)" +
+                    "java.time.OffsetDateTime::toInstant).andThen(KotlinInstantValueObject::new), " +
+                    "(${functionCast(KotlinInstantValueObject::class.simple, Instant::class.qualified)}" +
+                    "KotlinInstantValueObject::getValue)" +
                     ".andThen(i -> java.time.OffsetDateTime.ofInstant(i, java.time.ZoneOffset.UTC)))"
             )
         }
@@ -153,14 +178,14 @@ class FieldContextImplTest {
         @Test
         fun `should throw IllegalArgumentException if no mapper is available`() {
             assertThrows<IllegalArgumentException> {
-                context.type(TestUnsupportedObject::class)
+                context.type(KotlinUnsupportedObject::class)
             }
         }
 
         @Test
         fun `should throw IllegalArgumentException if no value object mapper is available`() {
             assertThrows<IllegalArgumentException> {
-                context.type(TestUnsupportedValueObject::class)
+                context.type(KotlinUnsupportedValueObject::class)
             }
         }
     }
@@ -170,12 +195,12 @@ class FieldContextImplTest {
 
         @Test
         fun `should correctly register enum type with custom database type`() {
-            context.enum(TestEnum::class, "String")
+            context.enum(KotlinEnum::class, "String")
 
             verify(jooqContext).registerForcedType(
                 expression = expression,
-                userType = TestEnum::class,
-                converter = "new org.jooq.impl.EnumConverter<>(String.class, TestEnum.class)"
+                userType = KotlinEnum::class,
+                converter = "new org.jooq.impl.EnumConverter<>(String.class, KotlinEnum.class)"
             )
         }
     }
@@ -184,31 +209,38 @@ class FieldContextImplTest {
     inner class ValueObject {
 
         @Test
-        fun `should correctly register value object type with custom converter`() {
-            context.valueObject(TestKotlinConverter::class, TestValueObject::class)
+        fun `should correctly register kotlin value object type with custom converter`() {
+            context.valueObject(KotlinConverter::class, KotlinStringValueObject::class)
 
             verify(jooqContext).registerForcedType(
                 expression = expression,
-                userType = TestValueObject::class,
-                converter = "org.jooq.Converter.ofNullable(java.lang.Integer.class, TestValueObject.class, " +
+                userType = KotlinStringValueObject::class,
+                converter = "org.jooq.Converter.ofNullable(java.lang.Integer.class, KotlinStringValueObject.class, " +
                     "(${functionCast(Integer::class.qualified, String::class.qualified)}" +
-                    "${TestKotlinConverter::class.qualified}.INSTANCE::from).andThen(TestValueObject::new), " +
-                    "(${functionCast(TestValueObject::class.simple, String::class.qualified)}" +
-                    "TestValueObject::getValue).andThen(${TestKotlinConverter::class.qualified}.INSTANCE::to))"
+                    "${KotlinConverter::class.qualified}.INSTANCE::from).andThen(KotlinStringValueObject::new), " +
+                    "(${functionCast(KotlinStringValueObject::class.simple, String::class.qualified)}" +
+                    "KotlinStringValueObject::getValue).andThen(${KotlinConverter::class.qualified}.INSTANCE::to))"
             )
         }
 
         @Test
         fun `should throw IllegalArgumentException if type is not a value type`() {
             assertThrows<IllegalArgumentException> {
-                context.valueObject(TestKotlinConverter::class, String::class)
+                context.valueObject(JavaConverter::class, String::class)
+            }
+        }
+
+        @Test
+        fun `should throw IllegalArgumentException for java value object types (not supported)`() {
+            assertThrows<IllegalArgumentException> {
+                context.valueObject(JavaConverter::class, JavaValueObject::class)
             }
         }
 
         @Test
         fun `should throw IllegalArgumentException if value field type does not match converter from type`() {
             assertThrows<IllegalArgumentException> {
-                context.valueObject(TestKotlinConverter::class, TestInstantValueObject::class)
+                context.valueObject(KotlinConverter::class, KotlinInstantValueObject::class)
             }
         }
     }
@@ -217,35 +249,42 @@ class FieldContextImplTest {
     inner class Custom {
 
         @Test
-        fun `should correctly register kotlin-style converter`() {
-            context.custom(TestKotlinConverter::class)
+        fun `should correctly register Kotlin converter`() {
+            context.custom(KotlinConverter::class)
 
             verify(jooqContext).registerForcedType(
                 expression = expression,
                 userType = String::class,
                 converter = "org.jooq.Converter.ofNullable(java.lang.Integer.class, String.class, " +
-                    "${TestKotlinConverter::class.qualified}.INSTANCE::from, " +
-                    "${TestKotlinConverter::class.qualified}.INSTANCE::to)"
+                    "${KotlinConverter::class.qualified}.INSTANCE::from, " +
+                    "${KotlinConverter::class.qualified}.INSTANCE::to)"
             )
         }
 
         @Test
-        fun `should correctly register java-style converter`() {
-            context.custom(TestJavaConverter::class)
-
-            verify(jooqContext).registerForcedType(
-                expression = expression,
-                userType = String::class,
-                converter = "org.jooq.Converter.ofNullable(java.lang.Integer.class, String.class, " +
-                    "${TestJavaConverter::class.qualified}.INSTANCE::from, " +
-                    "${TestJavaConverter::class.qualified}.INSTANCE::to)"
-            )
-        }
-
-        @Test
-        fun `should throw IllegalArgumentException if converter does not have an INSTANCE singleton field`() {
+        fun `should throw IllegalArgumentException if Kotlin converter is not an object`() {
             assertThrows<IllegalArgumentException> {
-                context.custom(TestInvalidConverter::class)
+                context.custom(KotlinInvalidConverter::class)
+            }
+        }
+
+        @Test
+        fun `should correctly register Java converter`() {
+            context.custom(JavaConverter::class)
+
+            verify(jooqContext).registerForcedType(
+                expression = expression,
+                userType = String::class,
+                converter = "org.jooq.Converter.ofNullable(java.lang.Integer.class, String.class, " +
+                    "${JavaConverter::class.qualified}.INSTANCE::from, " +
+                    "${JavaConverter::class.qualified}.INSTANCE::to)"
+            )
+        }
+
+        @Test
+        fun `should throw IllegalArgumentException if Java converter does not have an INSTANCE singleton field`() {
+            assertThrows<IllegalArgumentException> {
+                context.custom(JavaInvalidConverter::class)
             }
         }
     }

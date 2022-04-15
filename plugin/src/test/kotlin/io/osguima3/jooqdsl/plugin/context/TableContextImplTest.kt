@@ -1,11 +1,11 @@
 package io.osguima3.jooqdsl.plugin.context
 
-import com.nhaarman.mockitokotlin2.mock
-import com.nhaarman.mockitokotlin2.verify
-import com.nhaarman.mockitokotlin2.whenever
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
 import io.osguima3.jooqdsl.model.context.custom
-import io.osguima3.jooqdsl.plugin.TestEnum
-import io.osguima3.jooqdsl.plugin.TestKotlinConverter
+import io.osguima3.jooqdsl.plugin.types.KotlinConverter
+import io.osguima3.jooqdsl.plugin.types.KotlinEnum
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import kotlin.reflect.KClass
@@ -22,25 +22,25 @@ class TableContextImplTest {
     fun `should delegate definition to jooqContext`() {
         tablesContext.run {
             table("table1") {
-                field("field1", TestEnum::class)
+                field("field1", KotlinEnum::class)
             }
 
             table("table2") {
-                field("field2") { custom(TestKotlinConverter::class) }
+                field("field2") { custom(KotlinConverter::class) }
             }
         }
 
         verify(jooqContext).registerForcedType(
             expression = ".*\\.table1\\.field1",
-            userType = TestEnum::class,
-            converter = "new org.jooq.impl.EnumConverter<>(package.enums.TestEnum.class, TestEnum.class)"
+            userType = KotlinEnum::class,
+            converter = "new org.jooq.impl.EnumConverter<>(package.enums.KotlinEnum.class, KotlinEnum.class)"
         )
         verify(jooqContext).registerForcedType(
             expression = ".*\\.table2\\.field2",
             userType = String::class,
             converter = "org.jooq.Converter.ofNullable(java.lang.Integer.class, String.class, " +
-                "${TestKotlinConverter::class.qualified}.INSTANCE::from, " +
-                "${TestKotlinConverter::class.qualified}.INSTANCE::to)"
+                "${KotlinConverter::class.qualified}.INSTANCE::from, " +
+                "${KotlinConverter::class.qualified}.INSTANCE::to)"
         )
     }
 
@@ -49,8 +49,8 @@ class TableContextImplTest {
         assertThrows<IllegalArgumentException> {
             tablesContext.run {
                 table("table1") {
-                    field("field1", TestEnum::class)
-                    field("field1", TestEnum::class)
+                    field("field1", KotlinEnum::class)
+                    field("field1", KotlinEnum::class)
                 }
             }
         }

@@ -20,31 +20,31 @@
  * For more information, please visit: http://www.jooq.org/licenses
  */
 
-package io.osguima3.jooqdsl.plugin.mojo
+package io.osguima3.jooqdsl.it.simplejava.converter;
 
-import org.apache.maven.plugin.MojoExecutionException
-import org.apache.maven.plugin.MojoFailureException
-import org.jetbrains.kotlin.cli.common.environment.setIdeaIoUseFallback
-import java.io.File
-import java.io.Reader
-import javax.script.ScriptEngineManager
+import io.osguima3.jooqdsl.model.converter.Converter;
 
-class ScriptLoader {
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
-    init {
-        setIdeaIoUseFallback()
+public class SimpleDateConverter implements Converter<String, Date> {
+
+    private SimpleDateFormat formatter = new SimpleDateFormat();
+
+    public static final SimpleDateConverter INSTANCE = new SimpleDateConverter();
+
+    @Override
+    public Date from(String databaseObject) {
+        try {
+            return formatter.parse(databaseObject);
+        } catch (ParseException e) {
+            throw new IllegalArgumentException("Cannot parse date " + databaseObject);
+        }
     }
 
-    private val engine = ScriptEngineManager(Thread.currentThread().contextClassLoader)
-        .getEngineByExtension("kts") ?: throw MojoFailureException("KTS engine not found")
-
-    inline fun <reified T> loadScript(file: File): T = eval(file.bufferedReader()) as T
-
-    inline fun <reified T> loadScript(reader: Reader): T = eval(reader) as T
-
-    fun eval(reader: Reader): Any = try {
-        { engine.eval(reader) }()
-    } catch (e: Exception) {
-        throw MojoExecutionException("Cannot eval script", e)
+    @Override
+    public String to(Date userObject) {
+        return formatter.format(userObject);
     }
 }

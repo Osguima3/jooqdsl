@@ -12,6 +12,7 @@
     <artifactId>jooqdsl-maven-plugin</artifactId>
     <name>Jooq DSL Maven plugin</name>
     <packaging>maven-plugin</packaging>
+    <version>1.0-SNAPSHOT</version>
 
     <properties>
         <skipJooq>false</skipJooq>
@@ -34,7 +35,11 @@
             <artifactId>kotlin-compiler-embeddable</artifactId>
             <version>${kotlin.version}</version>
         </dependency>
-
+        <dependency>
+            <groupId>org.jetbrains.kotlin</groupId>
+            <artifactId>kotlin-scripting-compiler-embeddable</artifactId>
+            <version>${kotlin.version}</version>
+        </dependency>
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>
             <artifactId>kotlin-stdlib-jdk8</artifactId>
@@ -42,6 +47,7 @@
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>
             <artifactId>kotlin-reflect</artifactId>
+            <version>${kotlin.version}</version>
         </dependency>
 
         <dependency>
@@ -53,19 +59,29 @@
         <dependency>
             <groupId>org.apache.maven</groupId>
             <artifactId>maven-core</artifactId>
+            <version>${maven-plugin.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.maven</groupId>
             <artifactId>maven-plugin-api</artifactId>
+            <version>${maven-plugin.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.maven.plugin-tools</groupId>
             <artifactId>maven-plugin-annotations</artifactId>
+            <version>${maven-plugin.version}</version>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>org.twdata.maven</groupId>
             <artifactId>mojo-executor</artifactId>
+            <version>${mojo-executor.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.xml.bind</groupId>
+            <artifactId>jaxb-api</artifactId>
+            <version>${jaxb-api.version}</version>
         </dependency>
 
         <dependency>
@@ -75,19 +91,23 @@
         <dependency>
             <groupId>org.jooq</groupId>
             <artifactId>jooq-meta</artifactId>
+            <version>${jooq.version}</version>
         </dependency>
         <dependency>
             <groupId>org.jooq</groupId>
             <artifactId>jooq-codegen</artifactId>
+            <version>${jooq.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>testcontainers</artifactId>
+            <version>${testcontainers.version}</version>
         </dependency>
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>jdbc</artifactId>
+            <version>${testcontainers.version}</version>
         </dependency>
 
         <!-- Test dependencies -->

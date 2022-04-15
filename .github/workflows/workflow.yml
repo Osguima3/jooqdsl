@@ -3,10 +3,6 @@ on: [ push ]
 jobs:
   build:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        java: [8, 11]
-    name: Java ${{ matrix.java }} build
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
@@ -14,9 +10,9 @@ jobs:
       - name: Setup Java
         uses: actions/setup-java@v2
         with:
-          distribution: 'adopt'
-          java-package: jdk
-          java-version: ${{ matrix.java }}
+          cache: maven
+          distribution: adopt
+          java-version: 11
 
       - name: Build project
         run: mvn clean compile verify
