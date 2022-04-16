@@ -88,13 +88,6 @@
                 <scope>test</scope>
             </dependency>
 
-            <dependency>
-                <groupId>org.apache.maven</groupId>
-                <artifactId>maven-compat</artifactId>
-                <version>${maven-plugin.version}</version>
-                <scope>test</scope>
-            </dependency>
-
             <!-- Dependency CVEs fixing -->
             <dependency>
                 <groupId>org.codehaus.plexus</groupId>
