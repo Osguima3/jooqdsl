@@ -1,53 +1,51 @@
 package io.osguima3.jooqdsl.plugin.context
 
-import org.mockito.kotlin.mock
-import org.mockito.kotlin.verify
-import org.mockito.kotlin.whenever
-import io.osguima3.jooqdsl.model.context.custom
+import io.osguima3.jooqdsl.model.context.converter
+import io.osguima3.jooqdsl.plugin.converter.ConverterForcedType
+import io.osguima3.jooqdsl.plugin.converter.ValueObjectForcedType
 import io.osguima3.jooqdsl.plugin.types.KotlinConverter
 import io.osguima3.jooqdsl.plugin.types.KotlinEnum
+import io.osguima3.jooqdsl.plugin.types.KotlinStringValueObject
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import kotlin.reflect.KClass
+import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.verify
 
 class TableContextImplTest {
 
-    private val jooqContext = mock<JooqContext>().also {
-        whenever(it.targetPackage).thenReturn("package")
+    private val jooqContext = mock<JooqContext> {
+        on { it.targetPackage } doReturn "package"
     }
 
     private val tablesContext = TablesContextImpl(jooqContext)
 
     @Test
     fun `should delegate definition to jooqContext`() {
-        tablesContext.run {
+        with(tablesContext) {
             table("table1") {
-                field("field1", KotlinEnum::class)
+                field("field1", KotlinStringValueObject::class)
             }
 
             table("table2") {
-                field("field2") { custom(KotlinConverter::class) }
+                field("field2") { converter(KotlinConverter::class) }
             }
         }
 
         verify(jooqContext).registerForcedType(
             expression = ".*\\.table1\\.field1",
-            userType = KotlinEnum::class,
-            converter = "new org.jooq.impl.EnumConverter<>(package.enums.KotlinEnum.class, KotlinEnum.class)"
+            forcedType = ValueObjectForcedType(KotlinStringValueObject::class)
         )
         verify(jooqContext).registerForcedType(
             expression = ".*\\.table2\\.field2",
-            userType = String::class,
-            converter = "org.jooq.Converter.ofNullable(java.lang.Integer.class, String.class, " +
-                "${KotlinConverter::class.qualified}.INSTANCE::from, " +
-                "${KotlinConverter::class.qualified}.INSTANCE::to)"
+            forcedType = ConverterForcedType(Int::class, String::class, KotlinConverter::class)
         )
     }
 
     @Test
     fun `should throw IllegalArgumentException if a field is defined twice`() {
         assertThrows<IllegalArgumentException> {
-            tablesContext.run {
+            with(tablesContext) {
                 table("table1") {
                     field("field1", KotlinEnum::class)
                     field("field1", KotlinEnum::class)
@@ -55,6 +53,4 @@ class TableContextImplTest {
             }
         }
     }
-
-    private val KClass<*>.qualified get() = javaObjectType.canonicalName
 }

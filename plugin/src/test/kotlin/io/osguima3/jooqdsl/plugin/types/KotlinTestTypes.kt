@@ -2,6 +2,7 @@ package io.osguima3.jooqdsl.plugin.types
 
 import io.osguima3.jooqdsl.model.converter.Converter
 import java.time.Instant
+import org.jooq.Converter as JooqConverter
 
 enum class KotlinEnum
 data class KotlinStringValueObject(val value: String)
@@ -11,14 +12,25 @@ data class KotlinUnsupportedObject(val field1: String, val field2: String)
 
 object KotlinConverter : Converter<Int, String> {
 
-    override fun from(databaseObject: Int) = ""
+    override fun from(databaseObject: Int): String = ""
 
-    override fun to(userObject: String) = 0
+    override fun to(userObject: String): Int = 0
+}
+
+class KotlinJooqConverter : JooqConverter<Int, String> {
+
+    override fun from(databaseObject: Int): String = ""
+
+    override fun to(userObject: String): Int = 0
+
+    override fun fromType() = Int::class.java
+
+    override fun toType() = String::class.java
 }
 
 class KotlinInvalidConverter : Converter<Int, String> {
 
-    override fun from(databaseObject: Int) = ""
+    override fun from(databaseObject: Int): String = ""
 
-    override fun to(userObject: String) = 0
+    override fun to(userObject: String): Int = 0
 }

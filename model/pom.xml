@@ -26,6 +26,11 @@
             <scope>compile</scope>
         </dependency>
 
+        <dependency>
+            <groupId>org.jooq</groupId>
+            <artifactId>jooq</artifactId>
+        </dependency>
+
         <!-- Test dependencies -->
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>

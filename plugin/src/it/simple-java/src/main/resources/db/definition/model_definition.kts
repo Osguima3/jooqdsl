@@ -24,7 +24,7 @@ import io.osguima3.jooqdsl.it.simplejava.converter.SimpleDateConverter
 import io.osguima3.jooqdsl.it.simplejava.types.CustomEnum
 import io.osguima3.jooqdsl.it.simplejava.types.StringEnum
 import io.osguima3.jooqdsl.model.ModelDefinition
-import io.osguima3.jooqdsl.model.context.custom
+import io.osguima3.jooqdsl.model.context.converter
 import java.math.BigDecimal
 import java.time.Instant
 import java.util.UUID
@@ -39,7 +39,8 @@ ModelDefinition {
             field("big_decimal", BigDecimal::class)
             field("custom_enum", CustomEnum::class)
             field("string_enum") { enum(StringEnum::class, "String") }
-            field("custom") { custom(SimpleDateConverter::class) }
+            field("converter") { converter(SimpleDateConverter::class) }
+            field("custom") { custom(String::class, "org.jooq.Converters.identity(String.class)") }
         }
     }
 }

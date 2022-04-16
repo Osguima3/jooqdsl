@@ -32,8 +32,10 @@ class JavaValueObject(value: String) {
 class JavaUnsupportedObject(value1: String, value2: Int) {
 
     private val field1 = value1
+
     private val field2 = value2
 
     fun getField1() = field1
+
     fun getField2() = field2
 }

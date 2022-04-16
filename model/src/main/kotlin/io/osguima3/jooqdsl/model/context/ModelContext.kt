@@ -28,7 +28,7 @@ package io.osguima3.jooqdsl.model.context
 interface ModelContext {
 
     /**
-     * Configures the tables definition.
+     * Configures the tables' definition.
      * @param configure Tables definition block
      */
     fun tables(configure: TablesContext.() -> Unit)

@@ -7,7 +7,7 @@ File generated = new File(
 assert generated.isFile()
 
 static def assertField(List<String> lines, String type, String name) {
-    assert lines.stream().any { it.startsWith("public final TableField<TestRecord, $type> $name") }
+    assert lines.any { it.startsWith("public final TableField<TestRecord, $type> $name") }
 }
 
 BufferedReader reader = new BufferedReader(new FileReader(generated))
@@ -23,6 +23,7 @@ assertField(lines, "Integer", "INT")
 assertField(lines, "BigDecimal", "BIG_DECIMAL")
 assertField(lines, "CustomEnum", "CUSTOM_ENUM")
 assertField(lines, "StringEnum", "STRING_ENUM")
-assertField(lines, "Date", "CUSTOM")
+assertField(lines, "Date", "CONVERTER")
+assertField(lines, "String", "CUSTOM")
 
 reader.close()

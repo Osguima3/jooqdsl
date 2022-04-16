@@ -1,7 +1,7 @@
 CREATE TYPE custom_enum AS ENUM (
     'ENABLED',
     'DISABLED'
-    );
+);
 
 CREATE TABLE test
 (
@@ -12,5 +12,6 @@ CREATE TABLE test
     big_decimal NUMERIC(10, 4),
     custom_enum CUSTOM_ENUM,
     string_enum TEXT,
+    converter   TEXT,
     custom      TEXT
 );

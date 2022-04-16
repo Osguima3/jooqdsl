@@ -1,42 +1,50 @@
 package io.osguima3.jooqdsl.plugin.configuration
 
-import org.twdata.maven.mojoexecutor.MojoExecutor
+import org.twdata.maven.mojoexecutor.MojoExecutor.ExecutionEnvironment
+import org.twdata.maven.mojoexecutor.MojoExecutor.artifactId
+import org.twdata.maven.mojoexecutor.MojoExecutor.configuration
+import org.twdata.maven.mojoexecutor.MojoExecutor.element
+import org.twdata.maven.mojoexecutor.MojoExecutor.executeMojo
+import org.twdata.maven.mojoexecutor.MojoExecutor.goal
+import org.twdata.maven.mojoexecutor.MojoExecutor.groupId
+import org.twdata.maven.mojoexecutor.MojoExecutor.plugin
+import org.twdata.maven.mojoexecutor.MojoExecutor.version
 
 typealias AdditionalSources = List<String>
 
-fun AdditionalSources.precompile(environment: MojoExecutor.ExecutionEnvironment) {
+fun AdditionalSources.precompile(environment: ExecutionEnvironment) {
     precompileKotlin(this, environment)
     precompileJava(this, environment)
 }
 
-private fun precompileKotlin(sources: AdditionalSources, environment: MojoExecutor.ExecutionEnvironment) {
-    MojoExecutor.executeMojo(
-        MojoExecutor.plugin(
-            MojoExecutor.groupId("org.jetbrains.kotlin"),
-            MojoExecutor.artifactId("kotlin-maven-plugin"),
-            MojoExecutor.version(KotlinVersion.CURRENT.toString())
+private fun precompileKotlin(sources: AdditionalSources, environment: ExecutionEnvironment) {
+    executeMojo(
+        plugin(
+            groupId("org.jetbrains.kotlin"),
+            artifactId("kotlin-maven-plugin"),
+            version(KotlinVersion.CURRENT.toString())
         ),
-        MojoExecutor.goal("compile"),
-        MojoExecutor.configuration(
-            MojoExecutor.element("sourceDirs", *sources
-                .map { MojoExecutor.element("sourceDir", it) }
+        goal("compile"),
+        configuration(
+            element("sourceDirs", *sources
+                .map { element("sourceDir", it) }
                 .toTypedArray())
         ),
         environment
     )
 }
 
-private fun precompileJava(sources: AdditionalSources, environment: MojoExecutor.ExecutionEnvironment) {
-    MojoExecutor.executeMojo(
-        MojoExecutor.plugin(
-            MojoExecutor.groupId("org.apache.maven.plugins"),
-            MojoExecutor.artifactId("maven-compiler-plugin"),
-            MojoExecutor.version("3.8.0")
+private fun precompileJava(sources: AdditionalSources, environment: ExecutionEnvironment) {
+    executeMojo(
+        plugin(
+            groupId("org.apache.maven.plugins"),
+            artifactId("maven-compiler-plugin"),
+            version("3.8.0")
         ),
-        MojoExecutor.goal("compile"),
-        MojoExecutor.configuration(
-            MojoExecutor.element("includes", *sources
-                .map { MojoExecutor.element("include", "$it/**/*.java") }
+        goal("compile"),
+        configuration(
+            element("includes", *sources
+                .map { element("include", "$it/**/*.java") }
                 .toTypedArray()
             )
         ),

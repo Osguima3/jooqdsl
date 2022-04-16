@@ -24,10 +24,10 @@ package io.osguima3.jooqdsl.plugin.context
 
 import io.osguima3.jooqdsl.model.context.ModelContext
 import io.osguima3.jooqdsl.model.context.TablesContext
+import io.osguima3.jooqdsl.plugin.converter.IForcedType
 import org.jooq.codegen.GenerationTool
 import org.jooq.meta.jaxb.Configuration
 import org.jooq.meta.jaxb.ForcedType
-import kotlin.reflect.KClass
 
 class ModelContextImpl(private val configuration: Configuration) : ModelContext, JooqContext {
 
@@ -39,11 +39,11 @@ class ModelContextImpl(private val configuration: Configuration) : ModelContext,
 
     override fun tables(configure: TablesContext.() -> Unit) = tablesContext.configure()
 
-    override fun registerForcedType(expression: String, userType: KClass<*>, converter: String) {
+    override fun registerForcedType(expression: String, forcedType: IForcedType) {
         forcedTypes += ForcedType().also {
             it.expression = expression
-            it.userType = userType.qualifiedName
-            it.converter = converter
+            it.userType = forcedType.userType
+            it.converter = forcedType.converter
         }
     }
 

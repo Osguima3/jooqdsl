@@ -42,6 +42,8 @@ class TestRepository(private val context: DSLContext) {
         record[TEST.BIG_DECIMAL]!!,
         record[TEST.CUSTOM_ENUM]!!,
         record[TEST.STRING_ENUM]!!,
-        record[TEST.CUSTOM_VALUE_OBJECT]
+        record[TEST.VALUE_OBJECT]!!,
+        record[TEST.CONVERTER]!!,
+        record[TEST.CUSTOM]!!
     )
 }

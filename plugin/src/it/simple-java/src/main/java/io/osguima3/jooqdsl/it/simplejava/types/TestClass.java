@@ -43,11 +43,13 @@ public class TestClass {
 
     private final StringEnum stringEnum;
 
-    private final Date custom;
+    private final Date converter;
+
+    private final String custom;
 
     public TestClass(
             UUID id, String string, Instant instant, Integer integer, BigDecimal bigDecimal, CustomEnum customEnum,
-            StringEnum stringEnum, Date custom
+            StringEnum stringEnum, Date converter, String custom
     ) {
         this.id = id;
         this.string = string;
@@ -56,6 +58,7 @@ public class TestClass {
         this.bigDecimal = bigDecimal;
         this.customEnum = customEnum;
         this.stringEnum = stringEnum;
+        this.converter = converter;
         this.custom = custom;
     }
 
@@ -87,7 +90,11 @@ public class TestClass {
         return stringEnum;
     }
 
-    public Date getCustom() {
+    public Date getConverter() {
+        return converter;
+    }
+
+    public String getCustom() {
         return custom;
     }
 }

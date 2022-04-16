@@ -24,23 +24,21 @@ package io.osguima3.jooqdsl.model
 
 import io.osguima3.jooqdsl.model.context.FieldContext
 import io.osguima3.jooqdsl.model.context.TableContext
-import io.osguima3.jooqdsl.model.context.custom
+import io.osguima3.jooqdsl.model.context.converter
 import io.osguima3.jooqdsl.model.context.valueObject
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
-import org.mockito.kotlin.whenever
 
 typealias ConverterConfig = (FieldContext) -> Unit
 
 class ModelDefinitionTest {
 
     private val fieldContext = mock<FieldContext>()
-    private val tableContext = mock<TableContext>().apply {
-        whenever(field(any(), any<ConverterConfig>()))
-            .then { it.getArgument<ConverterConfig>(1)(fieldContext) }
+    private val tableContext = mock<TableContext> {
+        on { it.field(any(), any<ConverterConfig>()) }.then { it.getArgument<ConverterConfig>(1)(fieldContext) }
     }
 
     private val context = TestModelContext { tableContext }
@@ -113,18 +111,48 @@ class ModelDefinitionTest {
         }
 
         @Test
-        fun `should forward reified custom to field context`() {
+        fun `should forward jooq converter to field context`() {
             val definition = ModelDefinition {
                 tables {
                     table("table") {
-                        field("field") { custom(TestConverter::class) }
+                        field("field") { converter(TestJooqConverter::class) }
                     }
                 }
             }
 
             context.run(definition.configure)
 
-            verify(fieldContext).custom(TestConverter::class, String::class, Int::class)
+            verify(fieldContext).converter(TestJooqConverter::class)
+        }
+
+        @Test
+        fun `should forward reified converter to field context`() {
+            val definition = ModelDefinition {
+                tables {
+                    table("table") {
+                        field("field") { converter(TestConverter::class) }
+                    }
+                }
+            }
+
+            context.run(definition.configure)
+
+            verify(fieldContext).converter(TestConverter::class, Int::class, String::class)
+        }
+
+        @Test
+        fun `should forward custom string to field context`() {
+            val definition = ModelDefinition {
+                tables {
+                    table("table") {
+                        field("field") { custom(String::class, "custom") }
+                    }
+                }
+            }
+
+            context.run(definition.configure)
+
+            verify(fieldContext).custom(String::class, "custom")
         }
     }
 }

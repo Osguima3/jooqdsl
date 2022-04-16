@@ -40,6 +40,6 @@ inline fun <reified T : Any, reified U : Any> FieldContext.valueObject(
  * Maps this field to the specified user type using a custom converter.
  * @param converter The converter used to map between the user type and the database type
  */
-inline fun <reified T : Any, reified U : Any> FieldContext.custom(
+inline fun <reified T : Any, reified U : Any> FieldContext.converter(
     converter: KClass<out Converter<T, U>>
-) = custom(converter, U::class, T::class)
+) = converter(converter, T::class, U::class)

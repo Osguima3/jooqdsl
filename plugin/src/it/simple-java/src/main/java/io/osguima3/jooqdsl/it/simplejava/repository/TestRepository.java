@@ -52,6 +52,7 @@ public class TestRepository {
             record.get(TEST.BIG_DECIMAL),
             record.get(TEST.CUSTOM_ENUM),
             record.get(TEST.STRING_ENUM),
+            record.get(TEST.CONVERTER),
             record.get(TEST.CUSTOM)
         );
     }

@@ -22,6 +22,8 @@
 
 package io.osguima3.it.jooqdsl.multimodule.model.types
 
+import java.util.Date
+
 data class TestClass(
     val id: IdValueObject,
     val string: StringValueObject,
@@ -30,5 +32,7 @@ data class TestClass(
     val bigDecimal: BigDecimalValueObject,
     val customEnum: CustomEnum,
     val stringEnum: StringEnum,
-    val custom: DateValueObject
+    val valueObject: DateValueObject,
+    val converter: Date,
+    val custom: String
 )

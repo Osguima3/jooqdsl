@@ -22,8 +22,15 @@
 
 package io.osguima3.jooqdsl.plugin.context
 
-import io.osguima3.jooqdsl.model.context.custom
+import io.osguima3.jooqdsl.model.context.converter
 import io.osguima3.jooqdsl.model.context.valueObject
+import io.osguima3.jooqdsl.plugin.converter.CompositeForcedType
+import io.osguima3.jooqdsl.plugin.converter.ConverterForcedType
+import io.osguima3.jooqdsl.plugin.converter.CustomForcedType
+import io.osguima3.jooqdsl.plugin.converter.EnumForcedType
+import io.osguima3.jooqdsl.plugin.converter.InstantForcedType
+import io.osguima3.jooqdsl.plugin.converter.JooqConverterForcedType
+import io.osguima3.jooqdsl.plugin.converter.ValueObjectForcedType
 import io.osguima3.jooqdsl.plugin.types.JavaConverter
 import io.osguima3.jooqdsl.plugin.types.JavaInvalidConverter
 import io.osguima3.jooqdsl.plugin.types.JavaUnsupportedObject
@@ -32,30 +39,28 @@ import io.osguima3.jooqdsl.plugin.types.KotlinConverter
 import io.osguima3.jooqdsl.plugin.types.KotlinEnum
 import io.osguima3.jooqdsl.plugin.types.KotlinInstantValueObject
 import io.osguima3.jooqdsl.plugin.types.KotlinInvalidConverter
+import io.osguima3.jooqdsl.plugin.types.KotlinJooqConverter
 import io.osguima3.jooqdsl.plugin.types.KotlinStringValueObject
 import io.osguima3.jooqdsl.plugin.types.KotlinUnsupportedObject
 import io.osguima3.jooqdsl.plugin.types.KotlinUnsupportedValueObject
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoInteractions
-import org.mockito.kotlin.whenever
 import java.math.BigDecimal
 import java.time.Instant
-import java.time.OffsetDateTime
 import java.util.UUID
-import java.util.function.Function
-import kotlin.reflect.KClass
 
 class FieldContextImplTest {
 
     private val expression = ".*\\.table\\.field"
     private val targetPackage = "io.osguima3.project.package"
 
-    private val jooqContext = mock<JooqContext>().also {
-        whenever(it.targetPackage).thenReturn(targetPackage)
+    private val jooqContext = mock<JooqContext> {
+        on { it.targetPackage } doReturn targetPackage
     }
 
     private val context = FieldContextImpl(jooqContext, "table", "field")
@@ -102,14 +107,7 @@ class FieldContextImplTest {
         fun `should correctly register Instant type`() {
             context.type(Instant::class)
 
-            verify(jooqContext).registerForcedType(
-                expression = expression,
-                userType = Instant::class,
-                converter = "org.jooq.Converter.ofNullable(" +
-                    "java.time.OffsetDateTime.class, Instant.class, " +
-                    "java.time.OffsetDateTime::toInstant, " +
-                    "i -> java.time.OffsetDateTime.ofInstant(i, java.time.ZoneOffset.UTC))"
-            )
+            verify(jooqContext).registerForcedType(expression, InstantForcedType)
         }
     }
 
@@ -139,9 +137,8 @@ class FieldContextImplTest {
             context.type(KotlinEnum::class)
 
             verify(jooqContext).registerForcedType(
-                expression = expression,
-                userType = KotlinEnum::class,
-                converter = "new org.jooq.impl.EnumConverter<>($targetPackage.enums.KotlinEnum.class, KotlinEnum.class)"
+                expression,
+                EnumForcedType("$targetPackage.enums.KotlinEnum", KotlinEnum::class)
             )
         }
 
@@ -150,11 +147,8 @@ class FieldContextImplTest {
             context.type(KotlinStringValueObject::class)
 
             verify(jooqContext).registerForcedType(
-                expression = expression,
-                userType = KotlinStringValueObject::class,
-                converter = "org.jooq.Converter.ofNullable(" +
-                    "java.lang.String.class, KotlinStringValueObject.class, " +
-                    "KotlinStringValueObject::new, KotlinStringValueObject::getValue)"
+                expression,
+                ValueObjectForcedType(KotlinStringValueObject::class)
             )
         }
 
@@ -163,15 +157,11 @@ class FieldContextImplTest {
             context.type(KotlinInstantValueObject::class)
 
             verify(jooqContext).registerForcedType(
-                expression = expression,
-                userType = KotlinInstantValueObject::class,
-                converter = "org.jooq.Converter.ofNullable(" +
-                    "java.time.OffsetDateTime.class, KotlinInstantValueObject.class, " +
-                    "(${functionCast(OffsetDateTime::class.qualified, Instant::class.qualified)}" +
-                    "java.time.OffsetDateTime::toInstant).andThen(KotlinInstantValueObject::new), " +
-                    "(${functionCast(KotlinInstantValueObject::class.simple, Instant::class.qualified)}" +
-                    "KotlinInstantValueObject::getValue)" +
-                    ".andThen(i -> java.time.OffsetDateTime.ofInstant(i, java.time.ZoneOffset.UTC)))"
+                expression,
+                CompositeForcedType(
+                    InstantForcedType,
+                    ValueObjectForcedType(KotlinInstantValueObject::class)
+                )
             )
         }
 
@@ -197,11 +187,7 @@ class FieldContextImplTest {
         fun `should correctly register enum type with custom database type`() {
             context.enum(KotlinEnum::class, "String")
 
-            verify(jooqContext).registerForcedType(
-                expression = expression,
-                userType = KotlinEnum::class,
-                converter = "new org.jooq.impl.EnumConverter<>(String.class, KotlinEnum.class)"
-            )
+            verify(jooqContext).registerForcedType(expression, EnumForcedType("String", KotlinEnum::class))
         }
     }
 
@@ -212,15 +198,10 @@ class FieldContextImplTest {
         fun `should correctly register kotlin value object type with custom converter`() {
             context.valueObject(KotlinConverter::class, KotlinStringValueObject::class)
 
-            verify(jooqContext).registerForcedType(
-                expression = expression,
-                userType = KotlinStringValueObject::class,
-                converter = "org.jooq.Converter.ofNullable(java.lang.Integer.class, KotlinStringValueObject.class, " +
-                    "(${functionCast(Integer::class.qualified, String::class.qualified)}" +
-                    "${KotlinConverter::class.qualified}.INSTANCE::from).andThen(KotlinStringValueObject::new), " +
-                    "(${functionCast(KotlinStringValueObject::class.simple, String::class.qualified)}" +
-                    "KotlinStringValueObject::getValue).andThen(${KotlinConverter::class.qualified}.INSTANCE::to))"
-            )
+            verify(jooqContext).registerForcedType(expression, CompositeForcedType(
+                ConverterForcedType(Int::class, String::class, KotlinConverter::class),
+                ValueObjectForcedType(KotlinStringValueObject::class)
+            ))
         }
 
         @Test
@@ -246,52 +227,58 @@ class FieldContextImplTest {
     }
 
     @Nested
-    inner class Custom {
+    inner class Converter {
 
         @Test
         fun `should correctly register Kotlin converter`() {
-            context.custom(KotlinConverter::class)
+            context.converter(KotlinConverter::class)
 
-            verify(jooqContext).registerForcedType(
-                expression = expression,
-                userType = String::class,
-                converter = "org.jooq.Converter.ofNullable(java.lang.Integer.class, String.class, " +
-                    "${KotlinConverter::class.qualified}.INSTANCE::from, " +
-                    "${KotlinConverter::class.qualified}.INSTANCE::to)"
-            )
+            verify(jooqContext)
+                .registerForcedType(expression, ConverterForcedType(Int::class, String::class, KotlinConverter::class))
         }
 
         @Test
         fun `should throw IllegalArgumentException if Kotlin converter is not an object`() {
             assertThrows<IllegalArgumentException> {
-                context.custom(KotlinInvalidConverter::class)
+                context.converter(KotlinInvalidConverter::class)
             }
         }
 
         @Test
         fun `should correctly register Java converter`() {
-            context.custom(JavaConverter::class)
+            context.converter(JavaConverter::class)
 
-            verify(jooqContext).registerForcedType(
-                expression = expression,
-                userType = String::class,
-                converter = "org.jooq.Converter.ofNullable(java.lang.Integer.class, String.class, " +
-                    "${JavaConverter::class.qualified}.INSTANCE::from, " +
-                    "${JavaConverter::class.qualified}.INSTANCE::to)"
-            )
+            verify(jooqContext)
+                .registerForcedType(expression, ConverterForcedType(Int::class, String::class, JavaConverter::class))
         }
 
         @Test
         fun `should throw IllegalArgumentException if Java converter does not have an INSTANCE singleton field`() {
             assertThrows<IllegalArgumentException> {
-                context.custom(JavaInvalidConverter::class)
+                context.converter(JavaInvalidConverter::class)
             }
         }
     }
 
-    fun functionCast(from: String, to: String): String = "(${Function::class.qualified}<$from, $to>) "
+    @Nested
+    inner class JooqConverter {
 
-    private val KClass<*>.simple get() = javaObjectType.simpleName
+        @Test
+        fun `should correctly register jOOQ converter`() {
+            context.converter(KotlinJooqConverter::class)
 
-    private val KClass<*>.qualified get() = javaObjectType.canonicalName
+            verify(jooqContext).registerForcedType(expression, JooqConverterForcedType(KotlinJooqConverter::class))
+        }
+    }
+
+    @Nested
+    inner class Custom {
+
+        @Test
+        fun `should correctly register custom converter`() {
+            context.custom(Int::class, "custom")
+
+            verify(jooqContext).registerForcedType(expression, CustomForcedType("custom", Int::class))
+        }
+    }
 }

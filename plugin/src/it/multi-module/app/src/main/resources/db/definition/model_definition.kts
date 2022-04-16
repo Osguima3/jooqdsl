@@ -30,6 +30,7 @@ import io.osguima3.it.jooqdsl.multimodule.model.types.IntValueObject
 import io.osguima3.it.jooqdsl.multimodule.model.types.StringEnum
 import io.osguima3.it.jooqdsl.multimodule.model.types.StringValueObject
 import io.osguima3.jooqdsl.model.ModelDefinition
+import io.osguima3.jooqdsl.model.context.converter
 import io.osguima3.jooqdsl.model.context.valueObject
 
 ModelDefinition {
@@ -42,7 +43,9 @@ ModelDefinition {
             field("big_decimal", BigDecimalValueObject::class)
             field("custom_enum", CustomEnum::class)
             field("string_enum") { enum(StringEnum::class, "String") }
-            field("custom_value_object") { valueObject(SimpleDateConverter::class, DateValueObject::class) }
+            field("value_object") { valueObject(SimpleDateConverter::class, DateValueObject::class) }
+            field("converter") { converter(SimpleDateConverter::class) }
+            field("custom") { custom(String::class, "org.jooq.Converters.identity(String.class)") }
         }
     }
 }
