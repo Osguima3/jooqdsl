@@ -35,31 +35,29 @@ class Container : Serializable {
     @XmlJavaTypeAdapter(NormalizedStringAdapter::class)
     private var migrationPath: String? = null
 
-    internal fun startContainer(
-        configuration: Configuration,
-        path: File
-    ): JdbcDatabaseContainer<out JdbcDatabaseContainer<*>>? =
-        getContainerProvider(Class.forName(provider)).newInstance(version)
-            .apply { initScript?.let { withInitScript("${path.absolutePath}/$it") } }
-            .apply { migrationPath?.let { withFileSystemBind("${path.absolutePath}/$it", CONTAINER_PATH, READ_ONLY) } }
-            .also { bind(configuration, it) }
+    internal fun startContainer(configuration: Configuration, path: File) =
+        getContainerProvider(Class.forName(provider)).newInstance(version).apply {
+            initScript?.let { withInitScript("${path.absolutePath}/$it") }
+            migrationPath?.let { withFileSystemBind("${path.absolutePath}/$it", CONTAINER_PATH, READ_ONLY) }
+            bind(configuration)
+        }
 
     private fun getContainerProvider(clazz: Class<*>) =
         if (JdbcDatabaseContainerProvider::class.java.isAssignableFrom(clazz)) {
-            clazz.getConstructor().newInstance().let { it as JdbcDatabaseContainerProvider }
+            clazz.getConstructor().newInstance() as JdbcDatabaseContainerProvider
         } else {
             throw MojoExecutionException("Container provider class ${clazz.canonicalName} not valid, " +
                 "must implement ${JdbcDatabaseContainerProvider::class.qualifiedName}"
             )
         }
 
-    private fun bind(configuration: Configuration, container: JdbcDatabaseContainer<*>) {
+    private fun JdbcDatabaseContainer<*>.bind(configuration: Configuration) {
         val jdbc = configuration.jdbc ?: Jdbc()
-        jdbc.user?.let(container::withUsername)
-        jdbc.password?.let(container::withPassword)
+        jdbc.user?.let(::withUsername)
+        jdbc.password?.let(::withPassword)
 
-        container.start()
+        start()
 
-        configuration.jdbc = jdbc.apply { url = container.getJdbcUrl() }
+        configuration.jdbc = jdbc.apply { url = jdbcUrl }
     }
 }

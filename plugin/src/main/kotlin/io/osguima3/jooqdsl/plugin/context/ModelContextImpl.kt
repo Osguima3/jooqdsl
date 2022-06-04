@@ -41,7 +41,7 @@ class ModelContextImpl(private val configuration: Configuration) : ModelContext,
 
     override fun registerForcedType(expression: String, forcedType: IForcedType) {
         forcedTypes += ForcedType().also {
-            it.expression = expression
+            it.includeExpression = expression
             it.userType = forcedType.userType
             it.converter = forcedType.converter
         }
