@@ -26,6 +26,7 @@ private fun precompileKotlin(sources: AdditionalSources, environment: ExecutionE
         ),
         goal("compile"),
         configuration(
+            element("jvmTarget", environment.mavenProject.properties.getProperty("maven.compiler.target", "1.8")),
             element("sourceDirs", *sources
                 .map { element("sourceDir", it) }
                 .toTypedArray())

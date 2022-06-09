@@ -41,7 +41,7 @@ class ModelDefinitionTest {
         on { it.field(any(), any<ConverterConfig>()) }.then { it.getArgument<ConverterConfig>(1)(fieldContext) }
     }
 
-    private val context = TestModelContext { tableContext }
+    private val context = TestModelContext(tableContext)
 
     @Nested
     inner class `field(name, type)` {

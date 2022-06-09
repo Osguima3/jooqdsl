@@ -32,6 +32,7 @@ public class SimpleDateConverter implements Converter<String, Date> {
 
     private SimpleDateFormat formatter = new SimpleDateFormat();
 
+    @SuppressWarnings("unused")
     public static final SimpleDateConverter INSTANCE = new SimpleDateConverter();
 
     @Override

@@ -24,4 +24,10 @@ package io.osguima3.it.jooqdsl.multimodule.model.types
 
 import java.math.BigDecimal
 
-data class BigDecimalValueObject(val value: BigDecimal)
+data class BigDecimalValueObject(val value: BigDecimal) {
+
+    override fun equals(other: Any?) =
+        (other as? BigDecimalValueObject)?.let { it.value.compareTo(value) == 0 } == true
+
+    override fun hashCode() = value.hashCode()
+}

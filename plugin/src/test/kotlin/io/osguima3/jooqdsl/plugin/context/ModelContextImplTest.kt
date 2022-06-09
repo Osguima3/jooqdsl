@@ -22,11 +22,11 @@
 
 package io.osguima3.jooqdsl.plugin.context
 
-import io.osguima3.jooqdsl.plugin.converter.CompositeForcedType
-import io.osguima3.jooqdsl.plugin.converter.ConverterForcedType
-import io.osguima3.jooqdsl.plugin.converter.EnumForcedType
-import io.osguima3.jooqdsl.plugin.converter.InstantForcedType
-import io.osguima3.jooqdsl.plugin.converter.ValueObjectForcedType
+import io.osguima3.jooqdsl.plugin.converter.CompositeDefinition
+import io.osguima3.jooqdsl.plugin.converter.SimpleConverterDefinition
+import io.osguima3.jooqdsl.plugin.converter.EnumDefinition
+import io.osguima3.jooqdsl.plugin.converter.InstantConverterDefinition
+import io.osguima3.jooqdsl.plugin.converter.ValueObjectDefinition
 import io.osguima3.jooqdsl.plugin.qualified
 import io.osguima3.jooqdsl.plugin.types.KotlinConverter
 import io.osguima3.jooqdsl.plugin.types.KotlinEnum
@@ -55,9 +55,9 @@ class ModelContextImplTest {
 
     @Test
     fun `should correctly register enum`() {
+        val forcedType = EnumDefinition(context, KotlinEnum::class)
         context.registerForcedType(
-            expression = expression,
-            forcedType = EnumForcedType(context, KotlinEnum::class)
+            forcedType = forcedType.toForcedType(expression)
         )
 
         assertThat(forcedTypes).containsExactly(ForcedType().also {
@@ -70,9 +70,9 @@ class ModelContextImplTest {
 
     @Test
     fun `should correctly register enum with custom database type`() {
+        val forcedType = EnumDefinition("String", KotlinEnum::class)
         context.registerForcedType(
-            expression = expression,
-            forcedType = EnumForcedType("String", KotlinEnum::class)
+            forcedType = forcedType.toForcedType(expression)
         )
 
         assertThat(forcedTypes).containsExactly(ForcedType().also {
@@ -85,8 +85,7 @@ class ModelContextImplTest {
     @Test
     fun `should correctly register instant`() {
         context.registerForcedType(
-            expression = expression,
-            forcedType = InstantForcedType
+            forcedType = InstantConverterDefinition.toForcedType(expression)
         )
 
         assertThat(forcedTypes).containsExactly(ForcedType().also {
@@ -101,9 +100,9 @@ class ModelContextImplTest {
 
     @Test
     fun `should correctly register value object`() {
+        val forcedType = ValueObjectDefinition(KotlinStringValueObject::class)
         context.registerForcedType(
-            expression = expression,
-            forcedType = ValueObjectForcedType(KotlinStringValueObject::class)
+            forcedType = forcedType.toForcedType(expression)
         )
 
         assertThat(forcedTypes).containsExactly(ForcedType().also {
@@ -118,9 +117,9 @@ class ModelContextImplTest {
 
     @Test
     fun `should correctly register converter`() {
+        val forcedType = SimpleConverterDefinition(Int::class, String::class, KotlinConverter::class)
         context.registerForcedType(
-            expression = expression,
-            forcedType = ConverterForcedType(Int::class, String::class, KotlinConverter::class)
+            forcedType = forcedType.toForcedType(expression)
         )
 
         assertThat(forcedTypes).containsExactly(ForcedType().also {
@@ -134,12 +133,12 @@ class ModelContextImplTest {
 
     @Test
     fun `should correctly register composite value object + instant`() {
+        val forcedType = CompositeDefinition(
+            InstantConverterDefinition,
+            ValueObjectDefinition(KotlinInstantValueObject::class)
+        )
         context.registerForcedType(
-            expression = expression,
-            forcedType = CompositeForcedType(
-                InstantForcedType,
-                ValueObjectForcedType(KotlinInstantValueObject::class)
-            )
+            forcedType = forcedType.toForcedType(expression)
         )
 
         assertThat(forcedTypes).containsExactly(ForcedType().also {
@@ -157,12 +156,12 @@ class ModelContextImplTest {
 
     @Test
     fun `should correctly register composite value object + converter`() {
+        val forcedType = CompositeDefinition(
+            SimpleConverterDefinition(Int::class, String::class, KotlinConverter::class),
+            ValueObjectDefinition(KotlinStringValueObject::class)
+        )
         context.registerForcedType(
-            expression = expression,
-            forcedType = CompositeForcedType(
-                ConverterForcedType(Int::class, String::class, KotlinConverter::class),
-                ValueObjectForcedType(KotlinStringValueObject::class)
-            )
+            forcedType = forcedType.toForcedType(expression)
         )
 
         assertThat(forcedTypes).containsExactly(ForcedType().also {

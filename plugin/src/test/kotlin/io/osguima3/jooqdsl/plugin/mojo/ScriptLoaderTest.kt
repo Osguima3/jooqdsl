@@ -14,9 +14,10 @@ class ScriptLoaderTest {
 
         @Test
         fun `should successfully load script`() {
-            val resource = this::class.java.getResource("/mojo/model_definition.kts")
-            val modelDefinition: ModelDefinition = fileLoader.loadScript(resource.openStream().reader())
-            assertThat(modelDefinition.configure).isNotNull
+            this::class.java.getResource("/mojo/model_definition.kts")!!.openStream().reader().use {
+                val modelDefinition = fileLoader.loadScript<ModelDefinition>(it)
+                assertThat(modelDefinition.configure).isNotNull
+            }
         }
     }
 }

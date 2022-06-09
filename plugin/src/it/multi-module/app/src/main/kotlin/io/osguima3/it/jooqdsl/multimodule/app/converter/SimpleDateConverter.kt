@@ -22,15 +22,10 @@
 
 package io.osguima3.it.jooqdsl.multimodule.app.converter
 
-import io.osguima3.jooqdsl.model.converter.Converter
+import io.osguima3.jooqdsl.model.converter.SimpleConverter
 import java.text.SimpleDateFormat
 import java.util.Date
 
-object SimpleDateConverter : Converter<String, Date> {
+private val formatter = SimpleDateFormat()
 
-    private val formatter = SimpleDateFormat()
-
-    override fun from(databaseObject: String): Date = formatter.parse(databaseObject)
-
-    override fun to(userObject: Date): String = formatter.format(userObject)
-}
+object SimpleDateConverter : SimpleConverter<String, Date>(formatter::parse, formatter::format)

@@ -24,13 +24,13 @@ package io.osguima3.jooqdsl.plugin.context
 
 import io.osguima3.jooqdsl.model.context.converter
 import io.osguima3.jooqdsl.model.context.valueObject
-import io.osguima3.jooqdsl.plugin.converter.CompositeForcedType
-import io.osguima3.jooqdsl.plugin.converter.ConverterForcedType
-import io.osguima3.jooqdsl.plugin.converter.CustomForcedType
-import io.osguima3.jooqdsl.plugin.converter.EnumForcedType
-import io.osguima3.jooqdsl.plugin.converter.InstantForcedType
-import io.osguima3.jooqdsl.plugin.converter.JooqConverterForcedType
-import io.osguima3.jooqdsl.plugin.converter.ValueObjectForcedType
+import io.osguima3.jooqdsl.plugin.converter.CompositeDefinition
+import io.osguima3.jooqdsl.plugin.converter.ConverterDefinition
+import io.osguima3.jooqdsl.plugin.converter.CustomConverterDefinition
+import io.osguima3.jooqdsl.plugin.converter.EnumDefinition
+import io.osguima3.jooqdsl.plugin.converter.InstantConverterDefinition
+import io.osguima3.jooqdsl.plugin.converter.SimpleConverterDefinition
+import io.osguima3.jooqdsl.plugin.converter.ValueObjectDefinition
 import io.osguima3.jooqdsl.plugin.types.JavaConverter
 import io.osguima3.jooqdsl.plugin.types.JavaInvalidConverter
 import io.osguima3.jooqdsl.plugin.types.JavaUnsupportedObject
@@ -107,7 +107,7 @@ class FieldContextImplTest {
         fun `should correctly register Instant type`() {
             context.type(Instant::class)
 
-            verify(jooqContext).registerForcedType(expression, InstantForcedType)
+            verifyForcedType(InstantConverterDefinition)
         }
     }
 
@@ -136,33 +136,24 @@ class FieldContextImplTest {
         fun `should correctly register enum types`() {
             context.type(KotlinEnum::class)
 
-            verify(jooqContext).registerForcedType(
-                expression,
-                EnumForcedType("$targetPackage.enums.KotlinEnum", KotlinEnum::class)
-            )
+            verifyForcedType(EnumDefinition("$targetPackage.enums.KotlinEnum", KotlinEnum::class))
         }
 
         @Test
         fun `should correctly register simple value object types`() {
             context.type(KotlinStringValueObject::class)
 
-            verify(jooqContext).registerForcedType(
-                expression,
-                ValueObjectForcedType(KotlinStringValueObject::class)
-            )
+            verifyForcedType(ValueObjectDefinition(KotlinStringValueObject::class))
         }
 
         @Test
         fun `should correctly register Instant value object type`() {
             context.type(KotlinInstantValueObject::class)
 
-            verify(jooqContext).registerForcedType(
-                expression,
-                CompositeForcedType(
-                    InstantForcedType,
-                    ValueObjectForcedType(KotlinInstantValueObject::class)
-                )
-            )
+            verifyForcedType(CompositeDefinition(
+                InstantConverterDefinition,
+                ValueObjectDefinition(KotlinInstantValueObject::class)
+            ))
         }
 
         @Test
@@ -187,7 +178,7 @@ class FieldContextImplTest {
         fun `should correctly register enum type with custom database type`() {
             context.enum(KotlinEnum::class, "String")
 
-            verify(jooqContext).registerForcedType(expression, EnumForcedType("String", KotlinEnum::class))
+            verifyForcedType(EnumDefinition("String", KotlinEnum::class))
         }
     }
 
@@ -198,9 +189,9 @@ class FieldContextImplTest {
         fun `should correctly register kotlin value object type with custom converter`() {
             context.valueObject(KotlinConverter::class, KotlinStringValueObject::class)
 
-            verify(jooqContext).registerForcedType(expression, CompositeForcedType(
-                ConverterForcedType(Int::class, String::class, KotlinConverter::class),
-                ValueObjectForcedType(KotlinStringValueObject::class)
+            verifyForcedType(CompositeDefinition(
+                SimpleConverterDefinition(Int::class, String::class, KotlinConverter::class),
+                ValueObjectDefinition(KotlinStringValueObject::class)
             ))
         }
 
@@ -233,8 +224,7 @@ class FieldContextImplTest {
         fun `should correctly register Kotlin converter`() {
             context.converter(KotlinConverter::class)
 
-            verify(jooqContext)
-                .registerForcedType(expression, ConverterForcedType(Int::class, String::class, KotlinConverter::class))
+            verifyForcedType(SimpleConverterDefinition(Int::class, String::class, KotlinConverter::class))
         }
 
         @Test
@@ -248,8 +238,7 @@ class FieldContextImplTest {
         fun `should correctly register Java converter`() {
             context.converter(JavaConverter::class)
 
-            verify(jooqContext)
-                .registerForcedType(expression, ConverterForcedType(Int::class, String::class, JavaConverter::class))
+            verifyForcedType(SimpleConverterDefinition(Int::class, String::class, JavaConverter::class))
         }
 
         @Test
@@ -267,7 +256,7 @@ class FieldContextImplTest {
         fun `should correctly register jOOQ converter`() {
             context.converter(KotlinJooqConverter::class)
 
-            verify(jooqContext).registerForcedType(expression, JooqConverterForcedType(KotlinJooqConverter::class))
+            verifyForcedType(CustomConverterDefinition(KotlinJooqConverter::class, String::class))
         }
     }
 
@@ -278,7 +267,11 @@ class FieldContextImplTest {
         fun `should correctly register custom converter`() {
             context.custom(Int::class, "custom")
 
-            verify(jooqContext).registerForcedType(expression, CustomForcedType("custom", Int::class))
+            verifyForcedType(CustomConverterDefinition("custom", Int::class))
         }
+    }
+
+    private fun verifyForcedType(definition: ConverterDefinition) {
+        verify(jooqContext).registerForcedType(definition.toForcedType(expression))
     }
 }

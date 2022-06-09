@@ -24,6 +24,8 @@ package io.osguima3.jooqdsl.model
 
 import io.osguima3.jooqdsl.model.context.ModelContext
 
+typealias JooqConverter<T, U> = org.jooq.Converter<T, U>
+
 /**
  * This class is used to define the model to be used in generated jOOQ classes.
  * @property configure model definition block

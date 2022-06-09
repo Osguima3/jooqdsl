@@ -24,7 +24,6 @@ package io.osguima3.jooqdsl.plugin.context
 
 import io.osguima3.jooqdsl.model.context.ModelContext
 import io.osguima3.jooqdsl.model.context.TablesContext
-import io.osguima3.jooqdsl.plugin.converter.IForcedType
 import org.jooq.codegen.GenerationTool
 import org.jooq.meta.jaxb.Configuration
 import org.jooq.meta.jaxb.ForcedType
@@ -39,12 +38,8 @@ class ModelContextImpl(private val configuration: Configuration) : ModelContext,
 
     override fun tables(configure: TablesContext.() -> Unit) = tablesContext.configure()
 
-    override fun registerForcedType(expression: String, forcedType: IForcedType) {
-        forcedTypes += ForcedType().also {
-            it.includeExpression = expression
-            it.userType = forcedType.userType
-            it.converter = forcedType.converter
-        }
+    override fun registerForcedType(forcedType: ForcedType) {
+        forcedTypes += forcedType
     }
 
     internal fun generate(configure: ModelContext.() -> Unit) {

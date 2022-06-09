@@ -22,6 +22,7 @@
 
 package io.osguima3.jooqdsl.model.context
 
+import io.osguima3.jooqdsl.model.JooqConverter
 import io.osguima3.jooqdsl.model.converter.Converter
 import kotlin.reflect.KClass
 
@@ -33,7 +34,7 @@ import kotlin.reflect.KClass
  */
 inline fun <reified T : Any, reified U : Any> FieldContext.valueObject(
     converter: KClass<out Converter<T, U>>,
-    userType: KClass<*>
+    userType: KClass<out Any>
 ) = valueObject(converter, userType, T::class, U::class)
 
 /**
@@ -43,3 +44,12 @@ inline fun <reified T : Any, reified U : Any> FieldContext.valueObject(
 inline fun <reified T : Any, reified U : Any> FieldContext.converter(
     converter: KClass<out Converter<T, U>>
 ) = converter(converter, T::class, U::class)
+
+/**
+ * Maps this field to the specified user type using a custom jOOQ converter.
+ * @param converter The converter used to map between the user type and the database type
+ */
+@JvmName("jooqConverter")
+inline fun <T, reified U : Any> FieldContext.converter(
+    converter: KClass<out JooqConverter<T, U>>
+) = converter(converter, U::class)

@@ -3,8 +3,8 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>io.osguima3.it</groupId>
-    <artifactId>jooqdsl-multimodule-parent</artifactId>
+    <groupId>io.osguima3.jooqdsl.it</groupId>
+    <artifactId>multimodule-parent</artifactId>
     <version>1.0-SNAPSHOT</version>
 
     <name>Multi Module project</name>
@@ -26,6 +26,7 @@
 
         <postgresql.version>42.3.6</postgresql.version>
         <testcontainers.version>1.17.1</testcontainers.version>
+        <jooqdsl.version>@project.version@</jooqdsl.version>
     </properties>
 
     <dependencyManagement>

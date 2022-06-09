@@ -29,7 +29,7 @@ package io.osguima3.jooqdsl.model.converter
  * A [Converter] for data types.
  *
  * @see org.jooq.Converter
- * @param <T> The database type - i.e. any type available from [org.jooq.impl.SQLDataTypeSQLDataType]
+ * @param <T> The database type - i.e. any type available from [org.jooq.impl.SQLDataType]
  * @param <U> The user type
  */
 interface Converter<T, U> {

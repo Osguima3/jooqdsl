@@ -6,11 +6,11 @@ import kotlin.reflect.KClass
 
 internal const val INSTANCE_FIELD = "INSTANCE"
 
-data class ConverterForcedType(
+data class SimpleConverterDefinition(
     override val fromType: KClass<*>,
     override val toType: KClass<*>,
     private val converterClass: KClass<*>
-) : SimpleForcedType {
+) : NullableConverterDefinition {
 
     init {
         if (!converterClass.isObjectType) {
@@ -19,8 +19,7 @@ data class ConverterForcedType(
         }
     }
 
-    override val from = "${converterClass.qualified}.INSTANCE::from"
+    override val from = "${converterClass.qualified}.$INSTANCE_FIELD::from"
 
-    override val to = "${converterClass.qualified}.INSTANCE::to"
+    override val to = "${converterClass.qualified}.$INSTANCE_FIELD::to"
 }
-

@@ -22,9 +22,9 @@
 
 package io.osguima3.jooqdsl.model.context
 
+import io.osguima3.jooqdsl.model.JooqConverter
 import io.osguima3.jooqdsl.model.converter.Converter
 import kotlin.reflect.KClass
-import org.jooq.Converter as JooqConverter
 
 /**
  * Provides the DSL context for a jOOQ field.
@@ -75,8 +75,9 @@ interface FieldContext {
     /**
      * Maps this field to the specified user type using a custom jOOQ converter.
      * @param converter The converter used to map between the user type and the database type
+     * @param userType The user type, not required when using the inline overload
      */
-    fun converter(converter: KClass<out JooqConverter<*, *>>)
+    fun <U : Any> converter(converter: KClass<out JooqConverter<*, U>>, userType: KClass<U>)
 
     /**
      * Maps this field to the specified user type using a custom jOOQ converter.

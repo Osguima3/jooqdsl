@@ -43,7 +43,7 @@ class ScriptLoader {
     inline fun <reified T> loadScript(reader: Reader): T = eval(reader) as T
 
     fun eval(reader: Reader): Any = try {
-        { engine.eval(reader) }()
+        engine.eval(reader)
     } catch (e: Exception) {
         throw MojoExecutionException("Cannot eval script", e)
     }

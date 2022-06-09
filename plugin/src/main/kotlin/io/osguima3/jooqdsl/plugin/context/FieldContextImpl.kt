@@ -24,14 +24,13 @@ package io.osguima3.jooqdsl.plugin.context
 
 import io.osguima3.jooqdsl.model.context.FieldContext
 import io.osguima3.jooqdsl.model.converter.Converter
-import io.osguima3.jooqdsl.plugin.converter.CompositeForcedType
-import io.osguima3.jooqdsl.plugin.converter.ConverterForcedType
-import io.osguima3.jooqdsl.plugin.converter.CustomForcedType
-import io.osguima3.jooqdsl.plugin.converter.EnumForcedType
-import io.osguima3.jooqdsl.plugin.converter.IForcedType
-import io.osguima3.jooqdsl.plugin.converter.InstantForcedType
-import io.osguima3.jooqdsl.plugin.converter.JooqConverterForcedType
-import io.osguima3.jooqdsl.plugin.converter.ValueObjectForcedType
+import io.osguima3.jooqdsl.plugin.converter.CompositeDefinition
+import io.osguima3.jooqdsl.plugin.converter.ConverterDefinition
+import io.osguima3.jooqdsl.plugin.converter.CustomConverterDefinition
+import io.osguima3.jooqdsl.plugin.converter.EnumDefinition
+import io.osguima3.jooqdsl.plugin.converter.InstantConverterDefinition
+import io.osguima3.jooqdsl.plugin.converter.SimpleConverterDefinition
+import io.osguima3.jooqdsl.plugin.converter.ValueObjectDefinition
 import io.osguima3.jooqdsl.plugin.isEnum
 import io.osguima3.jooqdsl.plugin.isPrimitive
 import io.osguima3.jooqdsl.plugin.isValueObject
@@ -50,8 +49,8 @@ class FieldContextImpl(
         resolve(userType)
 
     override fun enum(userType: KClass<out Enum<*>>, databaseType: String?) = when (databaseType) {
-        null -> register(EnumForcedType(context, userType))
-        else -> register(EnumForcedType(databaseType, userType))
+        null -> register(EnumDefinition(context, userType))
+        else -> register(EnumDefinition(databaseType, userType))
     }
 
     override fun <T : Any, U : Any> valueObject(
@@ -60,9 +59,9 @@ class FieldContextImpl(
         databaseType: KClass<T>,
         valueType: KClass<U>
     ) {
-        register(CompositeForcedType(
-            ConverterForcedType(databaseType, valueType, converter),
-            ValueObjectForcedType(valueType, userType)
+        register(CompositeDefinition(
+            SimpleConverterDefinition(databaseType, valueType, converter),
+            ValueObjectDefinition(valueType, userType)
         ))
     }
 
@@ -71,32 +70,33 @@ class FieldContextImpl(
         databaseType: KClass<T>,
         userType: KClass<U>
     ) {
-        register(ConverterForcedType(databaseType, userType, converter))
+        register(SimpleConverterDefinition(databaseType, userType, converter))
     }
 
-    override fun converter(converter: KClass<out JooqConverter<*, *>>) {
-        register(JooqConverterForcedType(converter))
+    override fun <U : Any> converter(converter: KClass<out JooqConverter<*, U>>, userType: KClass<U>) {
+        register(CustomConverterDefinition(converter, userType))
     }
 
     override fun custom(userType: KClass<*>, converter: String) {
-        register(CustomForcedType(converter, userType))
+        register(CustomConverterDefinition(converter, userType))
     }
 
     private fun resolve(userType: KClass<*>) = when {
         userType.isPrimitive -> Unit // No need to register
-        userType.isEnum -> register(EnumForcedType(context, userType))
+        userType.isEnum -> register(EnumDefinition(context, userType))
         userType.isValueObject -> resolveValueObject(userType)
-        userType == Instant::class -> register(InstantForcedType)
+        userType == Instant::class -> register(InstantConverterDefinition)
         else -> throw IllegalArgumentException("No default mapper available for $userType")
     }
 
     private fun resolveValueObject(userType: KClass<*>, value: KClass<*> = userType.valueType) = when {
-        value.isPrimitive -> register(ValueObjectForcedType(userType))
-        value == Instant::class -> register(CompositeForcedType(InstantForcedType, ValueObjectForcedType(userType)))
+        value.isPrimitive -> register(ValueObjectDefinition(userType))
+        value == Instant::class -> register(
+            CompositeDefinition(InstantConverterDefinition, ValueObjectDefinition(userType)))
         else -> throw IllegalArgumentException("No default mapper available for $userType")
     }
 
-    private fun register(forcedTypeData: IForcedType) {
-        context.registerForcedType(".*\\.$tableName\\.$name", forcedTypeData)
+    private fun register(definition: ConverterDefinition) {
+        context.registerForcedType(definition.toForcedType(".*\\.$tableName\\.$name"))
     }
 }

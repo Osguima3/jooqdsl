@@ -5,7 +5,8 @@ import io.osguima3.jooqdsl.plugin.valueField
 import io.osguima3.jooqdsl.plugin.valueType
 import kotlin.reflect.KClass
 
-data class ValueObjectForcedType(override val fromType: KClass<*>, override val toType: KClass<*>) : SimpleForcedType {
+data class ValueObjectDefinition(override val fromType: KClass<*>, override val toType: KClass<*>) :
+    NullableConverterDefinition {
 
     constructor(toType: KClass<*>) : this(toType.valueType, toType)
 

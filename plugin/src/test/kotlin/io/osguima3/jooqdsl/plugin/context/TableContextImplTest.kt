@@ -1,8 +1,8 @@
 package io.osguima3.jooqdsl.plugin.context
 
 import io.osguima3.jooqdsl.model.context.converter
-import io.osguima3.jooqdsl.plugin.converter.ConverterForcedType
-import io.osguima3.jooqdsl.plugin.converter.ValueObjectForcedType
+import io.osguima3.jooqdsl.plugin.converter.SimpleConverterDefinition
+import io.osguima3.jooqdsl.plugin.converter.ValueObjectDefinition
 import io.osguima3.jooqdsl.plugin.types.KotlinConverter
 import io.osguima3.jooqdsl.plugin.types.KotlinEnum
 import io.osguima3.jooqdsl.plugin.types.KotlinStringValueObject
@@ -32,13 +32,14 @@ class TableContextImplTest {
             }
         }
 
+        val forcedType1 = ValueObjectDefinition(KotlinStringValueObject::class)
         verify(jooqContext).registerForcedType(
-            expression = ".*\\.table1\\.field1",
-            forcedType = ValueObjectForcedType(KotlinStringValueObject::class)
+            forcedType = forcedType1.toForcedType(".*\\.table1\\.field1")
         )
+
+        val forcedType2 = SimpleConverterDefinition(Int::class, String::class, KotlinConverter::class)
         verify(jooqContext).registerForcedType(
-            expression = ".*\\.table2\\.field2",
-            forcedType = ConverterForcedType(Int::class, String::class, KotlinConverter::class)
+            forcedType = forcedType2.toForcedType(".*\\.table2\\.field2")
         )
     }
 

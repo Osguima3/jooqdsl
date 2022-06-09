@@ -5,7 +5,7 @@ import io.osguima3.jooqdsl.plugin.qualified
 import io.osguima3.jooqdsl.plugin.simple
 import kotlin.reflect.KClass
 
-data class EnumForcedType(private val fromClass: String, private val toType: KClass<*>) : IForcedType {
+data class EnumDefinition(private val fromClass: String, private val toType: KClass<*>) : ConverterDefinition {
 
     constructor(context: JooqContext, toClass: KClass<*>) :
         this("${context.targetPackage}.enums.${toClass.simple}", toClass)

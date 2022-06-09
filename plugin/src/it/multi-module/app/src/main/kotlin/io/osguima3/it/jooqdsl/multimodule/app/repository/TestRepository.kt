@@ -34,6 +34,20 @@ class TestRepository(private val context: DSLContext) {
             .from(TEST)
             .fetch(::toObject)
 
+    fun save(test: TestClass): Int =
+        context.insertInto(TEST)
+            .set(TEST.UUID, test.id)
+            .set(TEST.STRING, test.string)
+            .set(TEST.INSTANT, test.instant)
+            .set(TEST.INT, test.int)
+            .set(TEST.BIG_DECIMAL, test.bigDecimal)
+            .set(TEST.CUSTOM_ENUM, test.customEnum)
+            .set(TEST.STRING_ENUM, test.stringEnum)
+            .set(TEST.VALUE_OBJECT, test.valueObject)
+            .set(TEST.CONVERTER, test.converter)
+            .set(TEST.CUSTOM, test.custom)
+            .execute()
+
     private fun toObject(record: Record): TestClass = TestClass(
         record[TEST.UUID]!!,
         record[TEST.STRING]!!,
