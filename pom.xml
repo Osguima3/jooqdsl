@@ -41,6 +41,7 @@
         <assertj.version>3.22.0</assertj.version>
         <mockito-kotlin.version>4.0.0</mockito-kotlin.version>
         <testcontainers.version>1.17.1</testcontainers.version>
+        <jackson.version>2.9.9</jackson.version>
 
         <!-- Plugins -->
         <maven-source-plugin.version>3.2.1</maven-source-plugin.version>
