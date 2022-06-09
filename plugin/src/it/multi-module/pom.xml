@@ -23,7 +23,7 @@
         <kotlin.code.style>official</kotlin.code.style>
 
         <kotlin.version>1.6.20</kotlin.version>
-        <jackson.version>2.9.9</jackson.version>
+        <jackson.version>2.13.3</jackson.version>
 
         <!-- Database -->
         <postgresql.version>42.3.6</postgresql.version>
