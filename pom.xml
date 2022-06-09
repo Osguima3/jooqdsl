@@ -3,13 +3,26 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>io.osguima3.jooqdsl</groupId>
+    <groupId>io.github.osguima3.jooqdsl</groupId>
     <artifactId>jooqdsl-parent</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0.0-SNAPSHOT</version>
 
-    <name>Jooq DSL parent</name>
+    <name>JooqDSL parent</name>
     <packaging>pom</packaging>
+    <description>Type-safe extension to jOOQ's generator plugin</description>
+    <url>https://github.com/Osguima3/jooqdsl</url>
 
+    <developers>
+        <developer>
+            <name>Oscar Guillén</name>
+            <email>osguima3@gmail.com</email>
+        </developer>
+    </developers>
+    <scm>
+        <connection>scm:git:git://github.com/Osguima3/jooqdsl.git</connection>
+        <developerConnection>scm:git:ssh://github.com:Osguima3/jooqdsl.git</developerConnection>
+        <url>https://github.com/Osguima3/jooqdsl/tree/main</url>
+    </scm>
     <licenses>
         <license>
             <name>The Apache License, Version 2.0</name>
@@ -18,8 +31,8 @@
     </licenses>
 
     <modules>
-        <module>model</module>
-        <module>plugin</module>
+        <module>jooqdsl-model</module>
+        <module>jooqdsl-maven-plugin</module>
     </modules>
 
     <properties>
@@ -154,6 +167,7 @@
                         </execution>
                     </executions>
                 </plugin>
+
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-source-plugin</artifactId>
@@ -170,19 +184,50 @@
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-source-plugin</artifactId>
-                    <version>${maven-source-plugin.version}</version>
+                    <artifactId>maven-javadoc-plugin</artifactId>
+                    <version>3.4.0</version>
                     <executions>
                         <execution>
-                            <id>attach-sources</id>
-                            <phase>package</phase>
+                            <id>attach-javadocs</id>
                             <goals>
-                                <goal>jar-no-fork</goal>
+                                <goal>jar</goal>
                             </goals>
                         </execution>
                     </executions>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-gpg-plugin</artifactId>
+                    <version>3.0.1</version>
+                    <executions>
+                        <execution>
+                            <id>sign-artifacts</id>
+                            <phase>verify</phase>
+                            <goals>
+                                <goal>sign</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <groupId>org.sonatype.plugins</groupId>
+                    <artifactId>nexus-staging-maven-plugin</artifactId>
+                    <version>1.6.13</version>
+                    <extensions>true</extensions>
+                    <configuration>
+                        <serverId>ossrh</serverId>
+                        <nexusUrl>https://s01.oss.sonatype.org/</nexusUrl>
+                        <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                    </configuration>
                 </plugin>
             </plugins>
         </pluginManagement>
     </build>
+
+    <distributionManagement>
+        <snapshotRepository>
+            <id>ossrh</id>
+            <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
+        </snapshotRepository>
+    </distributionManagement>
 </project>

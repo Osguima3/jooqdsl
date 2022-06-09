@@ -1,18 +1,18 @@
 # jOOQ DSL Maven Plugin
 
-This plugin is an extension to [jOOQ's code generation plugin](https://www.jooq.org/doc/3.11/manual/code-generation/codegen-configuration/) that enables defining the user model ([Forced types](https://www.jooq.org/doc/3.11/manual/code-generation/codegen-advanced/codegen-config-database/codegen-database-forced-types/)) with a Type-safe .kts ([Kotlin script](https://kotlinlang.org/)) file.
+This plugin is an extension to [jOOQ's code generation plugin](https://www.jooq.org/doc/3.11/manual/code-generation/codegen-configuration/) that lets you define the user model ([Forced types](https://www.jooq.org/doc/3.11/manual/code-generation/codegen-advanced/codegen-config-database/codegen-database-forced-types/)) from a type-safe `.kts` ([Kotlin script](https://kotlinlang.org/)) file.
 
 ## Configuration
 
-This plugin's configuration is the same as [jOOQ's plugin](https://www.jooq.org/doc/3.11/manual/code-generation/codegen-configuration/), with the exception of the artifact id.
+To use this plugin, just replace [jOOQ's](https://www.jooq.org/doc/3.11/manual/code-generation/codegen-configuration/) groupId, artifactId and version. You can leave all other configuration untouched.
 
 Here is a basic example:
 
 ```xml
 <plugin>
-  <groupId>io.osguima3.jooq</groupId>
-  <artifactId>jooq-dsl-maven-plugin</artifactId>
-  <version>1.0-SNAPSHOT</version>
+  <groupId>io.github.osguima3.jooqdsl</groupId>
+  <artifactId>jooqdsl-maven-plugin</artifactId>
+  <version>${jooqdsl.version}</version>
   <executions>
     <execution>
       <id>generate-jooq</id>
@@ -48,33 +48,46 @@ Here is a basic example:
 </plugin>
 ```
 
+Additionally, you will need to add a dependency to the definition model, like so:
+
+```xml
+<dependency>
+    <groupId>io.github.osguima3.jooqdsl</groupId>
+    <artifactId>jooqdsl-model</artifactId>
+    <version>${jooqdsl.version}</version>
+</dependency>
+```
+
 The main advantage over jOOQ's plugin is the way `ForcedTypes` can be defined:
 
 ```kotlin
 ModelDefinition {
     tables {
         table("customer") {
-            // Default field configuration
-            field("id", CustomerId::class)
+            field("id", CustomerId::class) // customer.id will be converted to CustomerId
             field("string", CustomerName::class)
             field("registration", CustomerRegistrationTime::class)
             field("wallet_amount", CustomerWalletAmount::class)
 
-            // Custom field configuration
+            // Has CustomerRegistrationStatus in java/kotlin, String type in the database 
             field("registration_status") { enum(CustomerRegistrationStatus::class, databaseType = "String") }
+            
+            // Custom field conversion
             field("address") { custom(converter = CustomerAddressConverter::class) }
         }
     }
 }
 ```
 
-As a Kotlin script, this definition is type-safe. The plugin also provides default implementations for types like `java.time.Instant` or tiny types (POJOs with a single field), popularly used in Domain-driven design.
+Thanks to Kotlin's type safety, it will verify that the classes you use exist and that custom converters implement the necessary interfaces.
 
-It also simplifies the definition of custom converters using type reification to infer the `fromType` and `toType` fields required in jOOQ's [`Converter`](http://www.jooq.org/javadoc/3.11.10/org/jooq/Converter.html).
+The plugin also provides default converter implementations for types like `java.time.Instant` or value objects (POJOs with a single field), popularly used in Domain-Driven Design.
 
-## Using jOOQ against test containers
+It also provides a simplified interface to define custom converters, using type reification to infer the `fromType` and `toType` fields required in jOOQ's [`Converter`](http://www.jooq.org/javadoc/3.11.10/org/jooq/Converter.html) so you don't need to add them.
 
-This plugin is also integrated with [Test containers](https://www.testcontainers.org/), which starts a small docker container with the needed database implementation, which can run [migration scripts](https://flywaydb.org/documentation/migrations) before executing jOOQ's generator.
+## Using jOOQ with test containers
+
+This plugin also integrates with [Test containers](https://www.testcontainers.org/), which starts a small docker container with the needed database implementation, which can run [migration scripts](https://flywaydb.org/documentation/migrations) before executing jOOQ's generator.
 
 This is a sample setup for postgres:
 

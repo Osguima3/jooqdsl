@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>io.github.osguima3.jooqdsl.it</groupId>
+    <artifactId>simple-java</artifactId>
+    <version>1.0.0</version>
+
+    <name>Simple Java project</name>
+    <description>A simple java project consisting of a single module</description>
+    <packaging>jar</packaging>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+
+        <postgresql.version>42.3.6</postgresql.version>
+        <testcontainers.version>1.17.1</testcontainers.version>
+        <jooqdsl.version>@project.version@</jooqdsl.version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>javax.annotation</groupId>
+            <artifactId>jsr250-api</artifactId>
+            <version>1.0</version>
+        </dependency>
+
+        <!-- Database -->
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>${postgresql.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.osguima3.jooqdsl</groupId>
+            <artifactId>jooqdsl-model</artifactId>
+            <version>${jooqdsl.version}</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <sourceDirectory>src/main/java</sourceDirectory>
+        <testSourceDirectory>src/test/java</testSourceDirectory>
+        <plugins>
+            <plugin>
+                <groupId>io.github.osguima3.jooqdsl</groupId>
+                <artifactId>jooqdsl-maven-plugin</artifactId>
+                <version>${jooqdsl.version}</version>
+                <executions>
+                    <execution>
+                        <id>generate-jooq</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>generate-jooq</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.testcontainers</groupId>
+                        <artifactId>postgresql</artifactId>
+                        <version>${testcontainers.version}</version>
+                    </dependency>
+                </dependencies>
+                <configuration>
+                    <jdbc>
+                        <driver>org.postgresql.Driver</driver>
+                        <user>test_user</user>
+                        <password>mysecret</password>
+                    </jdbc>
+                    <generator>
+                        <generate>
+                            <routines>false</routines>
+                            <pojos>false</pojos>
+                            <fluentSetters>true</fluentSetters>
+                            <javaTimeTypes>true</javaTimeTypes>
+                        </generate>
+                        <database>
+                            <name>org.jooq.meta.postgres.PostgresDatabase</name>
+                            <inputSchema>public</inputSchema>
+                            <includes>public.*</includes>
+                            <excludes>flyway_schema_history</excludes>
+                            <recordVersionFields>version</recordVersionFields>
+                        </database>
+                        <target>
+                            <packageName>io.github.osguima3.jooqdsl.it.simplejava.model</packageName>
+                        </target>
+                    </generator>
+                    <additionalSources>
+                        <additionalSource>io/github/osguima3/jooqdsl/it/simplejava/types</additionalSource>
+                        <additionalSource>io/github/osguima3/jooqdsl/it/simplejava/converter</additionalSource>
+                    </additionalSources>
+                    <container>
+                        <provider>org.testcontainers.containers.PostgreSQLContainerProvider</provider>
+                        <version>10.3</version>
+                        <migrationPath>src/main/resources/db/migration</migrationPath>
+                    </container>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <version>3.0.0</version>
+                <executions>
+                    <execution>
+                        <id>add-source</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>add-source</goal>
+                        </goals>
+                        <configuration>
+                            <sources>
+                                <source>${project.build.directory}/generated-sources/jooq/</source>
+                            </sources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>
