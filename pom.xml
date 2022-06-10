@@ -51,7 +51,7 @@
         <!-- Test dependencies -->
         <junit-jupiter.version>5.8.2</junit-jupiter.version>
         <junit-platform.version>1.8.2</junit-platform.version>
-        <assertj.version>3.22.0</assertj.version>
+        <assertj.version>3.23.1</assertj.version>
         <mockito-kotlin.version>4.0.0</mockito-kotlin.version>
         <testcontainers.version>1.17.1</testcontainers.version>
         <jackson.version>2.13.3</jackson.version>
