@@ -17,4 +17,4 @@ jobs:
         java-version: 11
 
     - name: Build project
-      run: mvn clean compile verify
+      run: mvn -B clean compile verify
