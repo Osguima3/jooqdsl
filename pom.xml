@@ -53,7 +53,7 @@
         <junit-platform.version>1.8.2</junit-platform.version>
         <assertj.version>3.23.1</assertj.version>
         <mockito-kotlin.version>4.0.0</mockito-kotlin.version>
-        <testcontainers.version>1.17.1</testcontainers.version>
+        <testcontainers.version>1.17.2</testcontainers.version>
         <jackson.version>2.13.3</jackson.version>
 
         <!-- Plugins -->
