@@ -19,9 +19,9 @@
         </developer>
     </developers>
     <scm>
-        <connection>scm:git:git://github.com/Osguima3/jooqdsl.git</connection>
-        <developerConnection>scm:git:ssh://github.com:Osguima3/jooqdsl.git</developerConnection>
-        <url>https://github.com/Osguima3/jooqdsl/tree/main</url>
+        <connection>scm:git:git@github.com:Osguima3/jooqdsl.git</connection>
+        <developerConnection>scm:git:git@github.com:Osguima3/jooqdsl.git</developerConnection>
+        <url>https://github.com/Osguima3/jooqdsl</url>
     </scm>
     <licenses>
         <license>
