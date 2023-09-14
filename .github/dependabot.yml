@@ -12,7 +12,7 @@ updates:
     groups:
       all-minor-and-patch:
         patterns:
-          - *
+          - '*'
         update-types:
           - minor
           - patch
