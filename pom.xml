@@ -41,23 +41,23 @@
         <kotlin.compiler.incremental>true</kotlin.compiler.incremental>
 
         <java.version>11</java.version>
-        <kotlin.version>1.6.20</kotlin.version>
+        <kotlin.version>1.8.22</kotlin.version>
 
-        <maven-plugin.version>3.6.0</maven-plugin.version>
+        <maven-plugin.version>3.9.0</maven-plugin.version>
         <mojo-executor.version>2.4.0</mojo-executor.version>
         <jaxb-api.version>2.3.1</jaxb-api.version>
-        <jooq.version>3.16.6</jooq.version>
+        <jooq.version>3.18.6</jooq.version>
 
         <!-- Test dependencies -->
-        <junit-jupiter.version>5.9.2</junit-jupiter.version>
+        <junit-jupiter.version>5.10.0</junit-jupiter.version>
         <junit-platform.version>1.8.2</junit-platform.version>
-        <assertj.version>3.23.1</assertj.version>
+        <assertj.version>3.24.2</assertj.version>
         <mockito-kotlin.version>4.0.0</mockito-kotlin.version>
-        <testcontainers.version>1.17.3</testcontainers.version>
-        <jackson.version>2.13.3</jackson.version>
+        <testcontainers.version>1.19.0</testcontainers.version>
+        <jackson.version>2.15.2</jackson.version>
 
         <!-- Plugins -->
-        <maven-source-plugin.version>3.2.1</maven-source-plugin.version>
+        <maven-source-plugin.version>3.3.0</maven-source-plugin.version>
         <maven-surefire-plugin.version>2.22.2</maven-surefire-plugin.version>
     </properties>
 
@@ -184,7 +184,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-javadoc-plugin</artifactId>
-                    <version>3.4.0</version>
+                    <version>3.5.0</version>
                     <executions>
                         <execution>
                             <id>attach-javadocs</id>
@@ -198,7 +198,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-gpg-plugin</artifactId>
-                    <version>3.0.1</version>
+                    <version>3.1.0</version>
                     <executions>
                         <execution>
                             <id>sign-artifacts</id>
