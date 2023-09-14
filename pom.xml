@@ -101,13 +101,6 @@
                 <version>${mockito-kotlin.version}</version>
                 <scope>test</scope>
             </dependency>
-
-            <!-- Dependency CVEs fixing -->
-            <dependency>
-                <groupId>org.codehaus.plexus</groupId>
-                <artifactId>plexus-utils</artifactId>
-                <version>3.4.2</version>
-            </dependency>
         </dependencies>
     </dependencyManagement>
 
