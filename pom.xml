@@ -41,7 +41,7 @@
         <kotlin.compiler.incremental>true</kotlin.compiler.incremental>
 
         <java.version>11</java.version>
-        <kotlin.version>1.6.20</kotlin.version>
+        <kotlin.version>1.7.22</kotlin.version>
 
         <maven-plugin.version>3.9.0</maven-plugin.version>
         <mojo-executor.version>2.4.0</mojo-executor.version>
