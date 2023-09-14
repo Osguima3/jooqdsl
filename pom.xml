@@ -40,7 +40,7 @@
         <kotlin.code.style>official</kotlin.code.style>
         <kotlin.compiler.incremental>true</kotlin.compiler.incremental>
 
-        <java.version>11</java.version>
+        <java.version>17</java.version>
         <kotlin.version>1.7.22</kotlin.version>
 
         <maven-plugin.version>3.9.0</maven-plugin.version>
@@ -130,7 +130,7 @@
                         </execution>
                     </executions>
                     <configuration>
-                        <jvmTarget>11</jvmTarget>
+                        <jvmTarget>17</jvmTarget>
                     </configuration>
                 </plugin>
                 <plugin>
