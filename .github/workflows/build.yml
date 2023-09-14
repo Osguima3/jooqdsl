@@ -16,5 +16,10 @@ jobs:
         distribution: adopt
         java-version: 11
 
-    - name: Build project
+    - name: Build maven project
       run: mvn -B clean compile verify
+      working-directory: maven
+
+    - name: Build gradle project
+      run: ./gradlew clean build
+      working-directory: gradle

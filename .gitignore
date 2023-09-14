@@ -8,3 +8,6 @@
 # Compiled class files
 target
 *.class
+
+.gradle
+build
