@@ -26,7 +26,7 @@ private fun precompileKotlin(sources: AdditionalSources, environment: ExecutionE
         ),
         goal("compile"),
         configuration(
-            element("jvmTarget", environment.mavenProject.properties.getProperty("maven.compiler.target", "1.8")),
+            element("jvmTarget", environment.mavenProject.properties.getProperty("maven.compiler.target", "11")),
             element("sourceDirs", *sources
                 .map { element("sourceDir", it) }
                 .toTypedArray())
@@ -40,7 +40,7 @@ private fun precompileJava(sources: AdditionalSources, environment: ExecutionEnv
         plugin(
             groupId("org.apache.maven.plugins"),
             artifactId("maven-compiler-plugin"),
-            version("3.8.0")
+            version("3.11.0")
         ),
         goal("compile"),
         configuration(
