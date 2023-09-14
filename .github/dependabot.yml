@@ -5,7 +5,14 @@
 
 version: 2
 updates:
-  - package-ecosystem: "maven" # See documentation for possible values
-    directory: "/" # Location of package manifests
+  - package-ecosystem: maven
+    directory: /
     schedule:
-      interval: "daily"
+      interval: daily
+    groups:
+      all-minor-and-patch:
+        patterns:
+          - *
+        update-types:
+          - minor
+          - patch
