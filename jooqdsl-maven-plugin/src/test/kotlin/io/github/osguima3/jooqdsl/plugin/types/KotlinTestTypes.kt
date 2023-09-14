@@ -14,13 +14,15 @@ data class KotlinUnsupportedObject(val field1: String, val field2: String)
 object KotlinConverter : SimpleConverter<Int, String>(Int::toString, String::toInt)
 
 object KotlinJooqConverter : JooqConverter<Int, String> {
+
     override fun from(databaseObject: Int): String = ""
     override fun to(userObject: String): Int = 0
     override fun fromType() = Int::class.java
     override fun toType() = String::class.java
+    private fun readResolve(): Any = KotlinJooqConverter
 }
 
-object KotlinInvalidConverter : Converter<Int, String> {
+class KotlinInvalidConverter : Converter<Int, String> {
     override fun from(databaseObject: Int): String = ""
     override fun to(userObject: String): Int = 0
 }
