@@ -16,6 +16,8 @@
 
     <properties>
         <skipJooq>false</skipJooq>
+        <maven-invoker-plugin.version>3.6.0</maven-invoker-plugin.version>
+        <maven-compiler-plugin.version>3.11.0</maven-compiler-plugin.version>
     </properties>
 
     <dependencies>
@@ -169,7 +171,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-invoker-plugin</artifactId>
-                <version>3.6.0</version>
+                <version>${maven-invoker-plugin.version}</version>
                 <configuration>
                     <goals>clean install</goals>
                     <postBuildHookScript>verify</postBuildHookScript>
@@ -191,10 +193,10 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.11.0</version>
+                <version>${maven-compiler-plugin.version}</version>
                 <configuration>
-                    <source>17</source>
-                    <target>17</target>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
                 </configuration>
             </plugin>
         </plugins>
