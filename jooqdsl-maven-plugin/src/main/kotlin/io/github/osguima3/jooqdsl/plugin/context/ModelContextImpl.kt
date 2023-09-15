@@ -39,7 +39,7 @@ class ModelContextImpl(override val targetPackage: String, private val forcedTyp
         forcedTypes += forcedType
     }
 
-    internal fun generate(configure: ModelContext.() -> Unit) {
+    fun generate(configure: ModelContext.() -> Unit) {
         configure()
     }
 }
