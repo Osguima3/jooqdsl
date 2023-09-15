@@ -40,6 +40,7 @@ import org.apache.maven.plugins.annotations.Mojo
 import org.apache.maven.plugins.annotations.Parameter
 import org.apache.maven.plugins.annotations.ResolutionScope
 import org.apache.maven.project.MavenProject
+import org.jooq.codegen.GenerationTool
 import org.jooq.codegen.GenerationTool.DEFAULT_TARGET_DIRECTORY
 import org.jooq.meta.jaxb.Configuration
 import org.jooq.meta.jaxb.Generator
@@ -121,7 +122,8 @@ class JooqDslGenerateMojo : AbstractMojo() {
 
         container?.start(configuration, path)
 
-        ModelContextImpl(configuration).generate(modelDefinition.configure)
+        ModelContextImpl(generator).generate(modelDefinition.configure)
+        GenerationTool.generate(configuration)
     }
 
     private fun DefinitionFile.load(path: File): ModelDefinition {

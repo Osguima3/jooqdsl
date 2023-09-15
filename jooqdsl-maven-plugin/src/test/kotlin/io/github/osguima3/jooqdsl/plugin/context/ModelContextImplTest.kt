@@ -44,17 +44,16 @@ import java.time.Instant
 class ModelContextImplTest {
 
     private val expression = ".*\\.table\\.field"
-    private val targetPackage = "io.osguima3.project.package"
+    private val sourcePackage = "io.github.osguima3.jooqdsl.plugin.types"
+    private val targetPackage = "io.github.osguima3.target.package"
 
     private val forcedTypes = mutableListOf<ForcedType>()
-    private val configuration = Configuration().apply {
-        generator = Generator().apply {
-            database = Database().also { it.forcedTypes = forcedTypes }
-            target = Target().apply { packageName = targetPackage }
-        }
+    private val generator = Generator().apply {
+        database = Database().also { it.forcedTypes = forcedTypes }
+        target = Target().apply { packageName = targetPackage }
     }
 
-    private val context = ModelContextImpl(configuration)
+    private val context = ModelContextImpl(generator)
 
     @Test
     fun `should correctly register enum`() {
@@ -65,9 +64,9 @@ class ModelContextImplTest {
 
         assertThat(forcedTypes).containsExactly(ForcedType().also {
             it.includeExpression = expression
-            it.userType = KotlinEnum::class.qualified
+            it.userType = "$sourcePackage.KotlinEnum"
             it.converter = "new org.jooq.impl.EnumConverter<>(" +
-                "$targetPackage.enums.KotlinEnum.class, ${KotlinEnum::class.qualified}.class)"
+                "$targetPackage.enums.KotlinEnum.class, $sourcePackage.KotlinEnum.class)"
         })
     }
 
@@ -80,8 +79,8 @@ class ModelContextImplTest {
 
         assertThat(forcedTypes).containsExactly(ForcedType().also {
             it.includeExpression = expression
-            it.userType = KotlinEnum::class.qualified
-            it.converter = "new org.jooq.impl.EnumConverter<>(String.class, ${KotlinEnum::class.qualified}.class)"
+            it.userType = "$sourcePackage.KotlinEnum"
+            it.converter = "new org.jooq.impl.EnumConverter<>(String.class, $sourcePackage.KotlinEnum.class)"
         })
     }
 
@@ -110,11 +109,11 @@ class ModelContextImplTest {
 
         assertThat(forcedTypes).containsExactly(ForcedType().also {
             it.includeExpression = expression
-            it.userType = KotlinStringValueObject::class.qualified
+            it.userType = "$sourcePackage.KotlinStringValueObject"
             it.converter = "org.jooq.Converter.ofNullable(" +
-                "java.lang.String.class, ${KotlinStringValueObject::class.qualified}.class, " +
-                "${KotlinStringValueObject::class.qualified}::new, " +
-                "${KotlinStringValueObject::class.qualified}::getValue)"
+                "java.lang.String.class, $sourcePackage.KotlinStringValueObject.class, " +
+                "$sourcePackage.KotlinStringValueObject::new, " +
+                "$sourcePackage.KotlinStringValueObject::getValue)"
         })
     }
 
@@ -129,8 +128,8 @@ class ModelContextImplTest {
             it.includeExpression = expression
             it.userType = String::class.qualified
             it.converter = "org.jooq.Converter.ofNullable(java.lang.Integer.class, java.lang.String.class, " +
-                "${KotlinConverter::class.qualified}.INSTANCE::from, " +
-                "${KotlinConverter::class.qualified}.INSTANCE::to)"
+                "$sourcePackage.KotlinConverter.INSTANCE::from, " +
+                "$sourcePackage.KotlinConverter.INSTANCE::to)"
         })
     }
 
@@ -146,14 +145,14 @@ class ModelContextImplTest {
 
         assertThat(forcedTypes).containsExactly(ForcedType().also {
             it.includeExpression = expression
-            it.userType = KotlinInstantValueObject::class.qualified
+            it.userType = "$sourcePackage.KotlinInstantValueObject"
             it.converter = "org.jooq.Converters.of(" +
                 "org.jooq.Converter.ofNullable(java.time.OffsetDateTime.class, ${Instant::class.qualified}.class, " +
                 "java.time.OffsetDateTime::toInstant, " +
                 "i -> java.time.OffsetDateTime.ofInstant(i, java.time.ZoneOffset.UTC)), " +
-                "org.jooq.Converter.ofNullable(java.time.Instant.class, ${KotlinInstantValueObject::class.qualified}.class, " +
-                "${KotlinInstantValueObject::class.qualified}::new, " +
-                "${KotlinInstantValueObject::class.qualified}::getValue))"
+                "org.jooq.Converter.ofNullable(java.time.Instant.class, $sourcePackage.KotlinInstantValueObject.class, " +
+                "$sourcePackage.KotlinInstantValueObject::new, " +
+                "$sourcePackage.KotlinInstantValueObject::getValue))"
         })
     }
 
@@ -169,14 +168,14 @@ class ModelContextImplTest {
 
         assertThat(forcedTypes).containsExactly(ForcedType().also {
             it.includeExpression = expression
-            it.userType = KotlinStringValueObject::class.qualified
+            it.userType = "$sourcePackage.KotlinStringValueObject"
             it.converter = "org.jooq.Converters.of(" +
                 "org.jooq.Converter.ofNullable(java.lang.Integer.class, java.lang.String.class, " +
-                "${KotlinConverter::class.qualified}.INSTANCE::from, " +
-                "${KotlinConverter::class.qualified}.INSTANCE::to), " +
-                "org.jooq.Converter.ofNullable(java.lang.String.class, ${KotlinStringValueObject::class.qualified}.class, " +
-                "${KotlinStringValueObject::class.qualified}::new, " +
-                "${KotlinStringValueObject::class.qualified}::getValue))"
+                "$sourcePackage.KotlinConverter.INSTANCE::from, " +
+                "$sourcePackage.KotlinConverter.INSTANCE::to), " +
+                "org.jooq.Converter.ofNullable(java.lang.String.class, $sourcePackage.KotlinStringValueObject.class, " +
+                "$sourcePackage.KotlinStringValueObject::new, " +
+                "$sourcePackage.KotlinStringValueObject::getValue))"
         })
     }
 }
