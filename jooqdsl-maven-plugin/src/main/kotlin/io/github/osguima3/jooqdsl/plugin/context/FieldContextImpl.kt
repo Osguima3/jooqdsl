@@ -25,8 +25,8 @@ package io.github.osguima3.jooqdsl.plugin.context
 import io.github.osguima3.jooqdsl.model.context.FieldContext
 import io.github.osguima3.jooqdsl.model.converter.Converter
 import io.github.osguima3.jooqdsl.plugin.converter.CompositeDefinition
-import io.github.osguima3.jooqdsl.plugin.converter.ConverterDefinition
 import io.github.osguima3.jooqdsl.plugin.converter.CustomConverterDefinition
+import io.github.osguima3.jooqdsl.plugin.converter.SkippedDefinition
 import io.github.osguima3.jooqdsl.plugin.converter.EnumDefinition
 import io.github.osguima3.jooqdsl.plugin.converter.InstantConverterDefinition
 import io.github.osguima3.jooqdsl.plugin.converter.SimpleConverterDefinition
@@ -40,17 +40,15 @@ import kotlin.reflect.KClass
 import org.jooq.Converter as JooqConverter
 
 class FieldContextImpl(
-    private val context: JooqContext,
-    private val tableName: String,
-    private val name: String
+    private val targetPackage: String
 ) : FieldContext {
 
     override fun type(userType: KClass<*>) =
         resolve(userType)
 
     override fun enum(userType: KClass<out Enum<*>>, databaseType: String?) = when (databaseType) {
-        null -> register(EnumDefinition(context, userType))
-        else -> register(EnumDefinition(databaseType, userType))
+        null -> EnumDefinition(userType, targetPackage)
+        else -> EnumDefinition(databaseType, userType)
     }
 
     override fun <T : Any, U : Any> valueObject(
@@ -58,45 +56,34 @@ class FieldContextImpl(
         userType: KClass<*>,
         databaseType: KClass<T>,
         valueType: KClass<U>
-    ) {
-        register(CompositeDefinition(
-            SimpleConverterDefinition(databaseType, valueType, converter),
-            ValueObjectDefinition(valueType, userType)
-        ))
-    }
+    ) = CompositeDefinition(
+        SimpleConverterDefinition(databaseType, valueType, converter),
+        ValueObjectDefinition(valueType, userType)
+    )
 
     override fun <T : Any, U : Any> converter(
         converter: KClass<out Converter<T, U>>,
         databaseType: KClass<T>,
         userType: KClass<U>
-    ) {
-        register(SimpleConverterDefinition(databaseType, userType, converter))
-    }
+    ) = SimpleConverterDefinition(databaseType, userType, converter)
 
-    override fun <U : Any> converter(converter: KClass<out JooqConverter<*, U>>, userType: KClass<U>) {
-        register(CustomConverterDefinition(converter, userType))
-    }
+    override fun <U : Any> converter(converter: KClass<out JooqConverter<*, U>>, userType: KClass<U>) =
+        CustomConverterDefinition(converter, userType)
 
-    override fun custom(userType: KClass<*>, converter: String) {
-        register(CustomConverterDefinition(converter, userType))
-    }
+    override fun custom(userType: KClass<*>, converter: String) =
+        CustomConverterDefinition(converter, userType)
 
     private fun resolve(userType: KClass<*>) = when {
-        userType.isPrimitive -> Unit // No need to register
-        userType.isEnum -> register(EnumDefinition(context, userType))
+        userType.isPrimitive -> SkippedDefinition // No need to register
+        userType.isEnum -> EnumDefinition(userType, targetPackage)
         userType.isValueObject -> resolveValueObject(userType)
-        userType == Instant::class -> register(InstantConverterDefinition)
+        userType == Instant::class -> InstantConverterDefinition
         else -> throw IllegalArgumentException("No default mapper available for $userType")
     }
 
     private fun resolveValueObject(userType: KClass<*>, value: KClass<*> = userType.valueType) = when {
-        value.isPrimitive -> register(ValueObjectDefinition(userType))
-        value == Instant::class -> register(
-            CompositeDefinition(InstantConverterDefinition, ValueObjectDefinition(userType)))
+        value.isPrimitive -> ValueObjectDefinition(userType)
+        value == Instant::class -> CompositeDefinition(InstantConverterDefinition, ValueObjectDefinition(userType))
         else -> throw IllegalArgumentException("No default mapper available for $userType")
-    }
-
-    private fun register(definition: ConverterDefinition) {
-        context.registerForcedType(definition.toForcedType(".*\\.$tableName\\.$name"))
     }
 }

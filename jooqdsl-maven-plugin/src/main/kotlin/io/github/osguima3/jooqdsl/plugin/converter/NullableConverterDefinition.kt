@@ -3,7 +3,7 @@ package io.github.osguima3.jooqdsl.plugin.converter
 import io.github.osguima3.jooqdsl.plugin.qualified
 import kotlin.reflect.KClass
 
-interface NullableConverterDefinition : ConverterDefinition {
+interface NullableConverterDefinition : ForcedTypeDefinition {
 
     val toType: KClass<*>
 

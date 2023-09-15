@@ -23,6 +23,7 @@
 package io.github.osguima3.jooqdsl.model
 
 import io.github.osguima3.jooqdsl.model.context.FieldContext
+import io.github.osguima3.jooqdsl.model.context.FieldDefinition
 import io.github.osguima3.jooqdsl.model.context.TableContext
 import io.github.osguima3.jooqdsl.model.context.converter
 import io.github.osguima3.jooqdsl.model.context.valueObject
@@ -32,7 +33,7 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 
-typealias ConverterConfig = (FieldContext) -> Unit
+typealias ConverterConfig = (FieldContext) -> FieldDefinition
 
 class ModelDefinitionTest {
 

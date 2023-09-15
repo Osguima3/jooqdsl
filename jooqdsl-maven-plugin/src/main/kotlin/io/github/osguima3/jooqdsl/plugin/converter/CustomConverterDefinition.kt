@@ -5,7 +5,7 @@ import org.jooq.Converter
 import kotlin.reflect.KClass
 
 data class CustomConverterDefinition(override val converter: String, private val userClass: KClass<*>) :
-    ConverterDefinition {
+    ForcedTypeDefinition {
 
     constructor(converterClass: KClass<out Converter<*, *>>, userClass: KClass<*>) :
         this(converterClass.qualified, userClass)

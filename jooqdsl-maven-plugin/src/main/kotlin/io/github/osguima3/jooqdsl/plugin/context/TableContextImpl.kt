@@ -22,8 +22,12 @@
 
 package io.github.osguima3.jooqdsl.plugin.context
 
+import io.github.osguima3.jooqdsl.model.context.FieldDefinition
 import io.github.osguima3.jooqdsl.model.context.FieldContext
 import io.github.osguima3.jooqdsl.model.context.TableContext
+import io.github.osguima3.jooqdsl.plugin.converter.ForcedTypeDefinition
+import io.github.osguima3.jooqdsl.plugin.converter.SkippedDefinition
+import io.github.osguima3.jooqdsl.plugin.qualified
 import kotlin.reflect.KClass
 
 class TableContextImpl(private val context: JooqContext, private val tableName: String) : TableContext {
@@ -32,11 +36,14 @@ class TableContextImpl(private val context: JooqContext, private val tableName: 
 
     override fun field(name: String, type: KClass<*>) = field(name) { type(type) }
 
-    override fun field(name: String, configure: FieldContext.() -> Unit) {
-        if (fields.add(name)) {
-            FieldContextImpl(context, tableName, name).run(configure)
-        } else {
-            throw IllegalArgumentException("Field $name already initialized")
-        }
+    override fun field(name: String, configure: FieldContext.() -> FieldDefinition) = when {
+        fields.add(name) -> with(FieldContextImpl(context.targetPackage)) { register(name, configure()) }
+        else -> throw IllegalArgumentException("Field $name already initialized")
+    }
+
+    private fun register(name: String, definition: FieldDefinition) = when (definition) {
+        is SkippedDefinition -> Unit
+        is ForcedTypeDefinition -> context.registerForcedType(definition.toForcedType(".*\\.$tableName\\.$name"))
+        else -> throw IllegalArgumentException("Unexpected definition of type ${definition::class::qualified}")
     }
 }

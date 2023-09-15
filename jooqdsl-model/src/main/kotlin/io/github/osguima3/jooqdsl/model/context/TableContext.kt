@@ -48,5 +48,5 @@ interface TableContext {
      * @param name The database field's name
      * @param configure Field configuration block
      */
-    fun field(name: String, configure: FieldContext.() -> Unit)
+    fun field(name: String, configure: FieldContext.() -> FieldDefinition)
 }

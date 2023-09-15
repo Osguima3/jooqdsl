@@ -33,7 +33,6 @@ import io.github.osguima3.jooqdsl.plugin.types.KotlinEnum
 import io.github.osguima3.jooqdsl.plugin.types.KotlinInstantValueObject
 import io.github.osguima3.jooqdsl.plugin.types.KotlinStringValueObject
 import org.assertj.core.api.Assertions.assertThat
-import org.jooq.meta.jaxb.Configuration
 import org.jooq.meta.jaxb.Database
 import org.jooq.meta.jaxb.ForcedType
 import org.jooq.meta.jaxb.Generator
@@ -57,7 +56,7 @@ class ModelContextImplTest {
 
     @Test
     fun `should correctly register enum`() {
-        val forcedType = EnumDefinition(context, KotlinEnum::class)
+        val forcedType = EnumDefinition(KotlinEnum::class, context.targetPackage)
         context.registerForcedType(
             forcedType = forcedType.toForcedType(expression)
         )

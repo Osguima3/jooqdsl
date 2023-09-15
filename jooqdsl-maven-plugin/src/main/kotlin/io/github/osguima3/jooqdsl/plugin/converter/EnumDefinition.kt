@@ -1,14 +1,13 @@
 package io.github.osguima3.jooqdsl.plugin.converter
 
-import io.github.osguima3.jooqdsl.plugin.context.JooqContext
 import io.github.osguima3.jooqdsl.plugin.qualified
 import io.github.osguima3.jooqdsl.plugin.simple
 import kotlin.reflect.KClass
 
-data class EnumDefinition(private val fromClass: String, private val toType: KClass<*>) : ConverterDefinition {
+data class EnumDefinition(private val fromClass: String, private val toType: KClass<*>) : ForcedTypeDefinition {
 
-    constructor(context: JooqContext, toClass: KClass<*>) :
-        this("${context.targetPackage}.enums.${toClass.simple}", toClass)
+    constructor(toClass: KClass<*>, targetPackage: String) :
+        this("$targetPackage.enums.${toClass.simple}", toClass)
 
     override val userType = toType.qualified
 

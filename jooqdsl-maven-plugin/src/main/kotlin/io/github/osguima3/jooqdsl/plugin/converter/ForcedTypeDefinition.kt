@@ -1,8 +1,9 @@
 package io.github.osguima3.jooqdsl.plugin.converter
 
+import io.github.osguima3.jooqdsl.model.context.FieldDefinition
 import org.jooq.meta.jaxb.ForcedType
 
-interface ConverterDefinition {
+interface ForcedTypeDefinition : FieldDefinition {
 
     val userType: String
 
