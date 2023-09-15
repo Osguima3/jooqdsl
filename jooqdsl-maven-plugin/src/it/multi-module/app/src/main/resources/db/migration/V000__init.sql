@@ -10,6 +10,7 @@ CREATE TABLE test
     instant      TIMESTAMP WITH TIME ZONE,
     int          INT,
     big_decimal  NUMERIC(10, 4),
+    json         JSONB,
     custom_enum  CUSTOM_ENUM,
     string_enum  TEXT,
     value_object TEXT,

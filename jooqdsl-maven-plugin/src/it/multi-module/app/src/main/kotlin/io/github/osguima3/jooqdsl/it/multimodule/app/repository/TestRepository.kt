@@ -41,6 +41,7 @@ class TestRepository(private val context: DSLContext) {
             .set(TEST.INSTANT, test.instant)
             .set(TEST.INT, test.int)
             .set(TEST.BIG_DECIMAL, test.bigDecimal)
+            .set(TEST.JSON, test.json)
             .set(TEST.CUSTOM_ENUM, test.customEnum)
             .set(TEST.STRING_ENUM, test.stringEnum)
             .set(TEST.VALUE_OBJECT, test.valueObject)
@@ -54,6 +55,7 @@ class TestRepository(private val context: DSLContext) {
         record[TEST.INSTANT]!!,
         record[TEST.INT]!!,
         record[TEST.BIG_DECIMAL]!!,
+        record[TEST.JSON]!!,
         record[TEST.CUSTOM_ENUM]!!,
         record[TEST.STRING_ENUM]!!,
         record[TEST.VALUE_OBJECT]!!,

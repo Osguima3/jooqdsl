@@ -59,6 +59,7 @@ class TestRepositoryTest {
             InstantValueObject(Instant.now()),
             IntValueObject(0),
             BigDecimalValueObject(BigDecimal.ZERO),
+            "{}",
             CustomEnum.ENABLED,
             StringEnum.OTHER,
             DateValueObject(Date.from(Instant.now())),

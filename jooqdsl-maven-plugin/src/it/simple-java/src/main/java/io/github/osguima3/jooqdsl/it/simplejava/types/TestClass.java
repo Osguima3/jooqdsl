@@ -39,6 +39,8 @@ public class TestClass {
 
     private final BigDecimal bigDecimal;
 
+    private final String json;
+
     private final CustomEnum customEnum;
 
     private final StringEnum stringEnum;
@@ -48,7 +50,7 @@ public class TestClass {
     private final String custom;
 
     public TestClass(
-            UUID id, String string, Instant instant, Integer integer, BigDecimal bigDecimal, CustomEnum customEnum,
+            UUID id, String string, Instant instant, Integer integer, BigDecimal bigDecimal, String json, CustomEnum customEnum,
             StringEnum stringEnum, Date converter, String custom
     ) {
         this.id = id;
@@ -56,6 +58,7 @@ public class TestClass {
         this.instant = instant;
         this.integer = integer;
         this.bigDecimal = bigDecimal;
+        this.json = json;
         this.customEnum = customEnum;
         this.stringEnum = stringEnum;
         this.converter = converter;
@@ -80,6 +83,10 @@ public class TestClass {
 
     public BigDecimal getBigDecimal() {
         return bigDecimal;
+    }
+
+    public String getJson() {
+        return json;
     }
 
     public CustomEnum getCustomEnum() {

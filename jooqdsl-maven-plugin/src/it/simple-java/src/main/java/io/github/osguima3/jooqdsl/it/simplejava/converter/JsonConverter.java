@@ -20,20 +20,23 @@
  * For more information, please visit: http://www.jooq.org/licenses
  */
 
-package io.github.osguima3.jooqdsl.it.multimodule.model.types
+package io.github.osguima3.jooqdsl.it.simplejava.converter;
 
-import java.util.Date
+import io.github.osguima3.jooqdsl.model.converter.Converter;
+import org.jooq.JSONB;
 
-data class TestClass(
-    val id: IdValueObject,
-    val string: StringValueObject,
-    val instant: InstantValueObject,
-    val int: IntValueObject,
-    val bigDecimal: BigDecimalValueObject,
-    val json: String,
-    val customEnum: CustomEnum,
-    val stringEnum: StringEnum,
-    val valueObject: DateValueObject,
-    val converter: Date,
-    val custom: String
-)
+public class JsonConverter implements Converter<JSONB, String> {
+
+    @SuppressWarnings("unused")
+    public static final JsonConverter INSTANCE = new JsonConverter();
+
+    @Override
+    public String from(JSONB databaseObject) {
+        return databaseObject.toString();
+    }
+
+    @Override
+    public JSONB to(String userObject) {
+        return JSONB.valueOf(userObject);
+    }
+}

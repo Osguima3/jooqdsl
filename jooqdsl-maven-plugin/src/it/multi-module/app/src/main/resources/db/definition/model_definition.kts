@@ -20,6 +20,7 @@
  * For more information, please visit: http://www.jooq.org/licenses
  */
 
+import io.github.osguima3.jooqdsl.it.multimodule.app.converter.JsonConverter
 import io.github.osguima3.jooqdsl.it.multimodule.app.converter.SimpleDateConverter
 import io.github.osguima3.jooqdsl.it.multimodule.model.types.BigDecimalValueObject
 import io.github.osguima3.jooqdsl.it.multimodule.model.types.CustomEnum
@@ -41,6 +42,7 @@ ModelDefinition {
             field("instant", InstantValueObject::class)
             field("int", IntValueObject::class)
             field("big_decimal", BigDecimalValueObject::class)
+            field("json") { converter(JsonConverter::class) }
             field("custom_enum", CustomEnum::class)
             field("string_enum") { enum(StringEnum::class, "String") }
             field("value_object") { valueObject(SimpleDateConverter::class, DateValueObject::class) }

@@ -50,6 +50,7 @@ public class TestRepository {
             record.get(TEST.INSTANT),
             record.get(TEST.INT),
             record.get(TEST.BIG_DECIMAL),
+            record.get(TEST.JSON),
             record.get(TEST.CUSTOM_ENUM),
             record.get(TEST.STRING_ENUM),
             record.get(TEST.CONVERTER),

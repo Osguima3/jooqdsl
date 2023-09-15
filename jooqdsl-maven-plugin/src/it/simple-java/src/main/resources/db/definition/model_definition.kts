@@ -20,6 +20,7 @@
  * For more information, please visit: http://www.jooq.org/licenses
  */
 
+import io.github.osguima3.jooqdsl.it.simplejava.converter.JsonConverter
 import io.github.osguima3.jooqdsl.it.simplejava.converter.SimpleDateConverter
 import io.github.osguima3.jooqdsl.it.simplejava.types.CustomEnum
 import io.github.osguima3.jooqdsl.it.simplejava.types.StringEnum
@@ -37,6 +38,7 @@ ModelDefinition {
             field("instant", Instant::class)
             field("int", Integer::class)
             field("big_decimal", BigDecimal::class)
+            field("json") { converter(JsonConverter::class) }
             field("custom_enum", CustomEnum::class)
             field("string_enum") { enum(StringEnum::class, "String") }
             field("converter") { converter(SimpleDateConverter::class) }
