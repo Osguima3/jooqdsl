@@ -17,7 +17,6 @@
     <properties>
         <skipJooq>false</skipJooq>
         <maven-invoker-plugin.version>3.6.0</maven-invoker-plugin.version>
-        <maven-compiler-plugin.version>3.11.0</maven-compiler-plugin.version>
     </properties>
 
     <dependencies>
@@ -44,7 +43,7 @@
         </dependency>
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>
-            <artifactId>kotlin-stdlib-jdk8</artifactId>
+            <artifactId>kotlin-stdlib</artifactId>
         </dependency>
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>
@@ -189,15 +188,6 @@
                         </goals>
                     </execution>
                 </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>${maven-compiler-plugin.version}</version>
-                <configuration>
-                    <source>${java.version}</source>
-                    <target>${java.version}</target>
-                </configuration>
             </plugin>
         </plugins>
     </build>

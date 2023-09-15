@@ -42,6 +42,8 @@
 
         <java.version>17</java.version>
         <kotlin.version>1.8.0</kotlin.version>
+        <maven.compiler.source>${java.version}</maven.compiler.source>
+        <maven.compiler.target>${java.version}</maven.compiler.target>
 
         <maven-plugin.version>3.9.0</maven-plugin.version>
         <mojo-executor.version>2.4.0</mojo-executor.version>
@@ -66,7 +68,7 @@
         <dependencies>
             <dependency>
                 <groupId>org.jetbrains.kotlin</groupId>
-                <artifactId>kotlin-stdlib-jdk8</artifactId>
+                <artifactId>kotlin-stdlib</artifactId>
                 <version>${kotlin.version}</version>
             </dependency>
 
@@ -175,6 +177,7 @@
                         </execution>
                     </executions>
                 </plugin>
+
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-javadoc-plugin</artifactId>
