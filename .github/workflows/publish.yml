@@ -1,31 +1,36 @@
-name: Publish jOOQ DSL to maven repository
+name: Publish jOOQ DSL to Maven Central
 
 on:
+#  release:
+#    types: [ published ]
   push:
-    branches: [ main ]
-
+    tags:
+      - v*
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-    - name: Setup Java
-      uses: actions/setup-java@v2
-      with:
-        cache: maven
-        distribution: adopt
-        java-version: 17
-        server-id: ossrh
-        server-username: MAVEN_USERNAME
-        server-password: MAVEN_PASSWORD
-        gpg-private-key: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
-        gpg-passphrase: MAVEN_GPG_PASSPHRASE
+      - name: Setup Java
+        uses: actions/setup-java@v3
+        with:
+          cache: maven
+          distribution: adopt
+          java-version: 17
+          server-id: ossrh
+          server-username: MAVEN_USERNAME
+          server-password: MAVEN_PASSWORD
 
-    - name: Deploy to Maven Central
-      run: mvn -B clean deploy
-      env:
-        MAVEN_USERNAME: ${{ secrets.OSSRH_USERNAME }}
-        MAVEN_PASSWORD: ${{ secrets.OSSRH_TOKEN }}
-        MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
+      - id: install-secret-key
+        name: Install GPG secret key
+        run: |
+          cat <(echo -e "${{ secrets.GPG_PRIVATE_KEY }}") | gpg --batch --import
+
+      - name: Deploy
+        run: mvn -B -Prelease -Dgpg.passphrase="${{ secrets.GPG_PASSPHRASE }}" clean deploy
+        env:
+          MAVEN_USERNAME: ${{ secrets.OSSRH_USERNAME }}
+          MAVEN_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
+          MAVEN_GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
