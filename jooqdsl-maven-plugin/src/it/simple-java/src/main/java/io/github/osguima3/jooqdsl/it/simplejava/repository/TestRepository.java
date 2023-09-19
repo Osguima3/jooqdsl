@@ -19,6 +19,7 @@
  *
  * For more information, please visit: http://www.jooq.org/licenses
  */
+
 package io.github.osguima3.jooqdsl.it.simplejava.repository;
 
 import io.github.osguima3.jooqdsl.it.simplejava.types.TestClass;

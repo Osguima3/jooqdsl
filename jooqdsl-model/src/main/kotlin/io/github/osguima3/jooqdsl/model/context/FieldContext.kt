@@ -27,6 +27,11 @@ import io.github.osguima3.jooqdsl.model.converter.Converter
 import kotlin.reflect.KClass
 
 /**
+ * Represents the definition of a jOOQ field once configured.
+ */
+interface FieldDefinition
+
+/**
  * Provides the DSL context for a jOOQ field.
  */
 interface FieldContext {
@@ -86,5 +91,3 @@ interface FieldContext {
      */
     fun custom(userType: KClass<*>, converter: String): FieldDefinition
 }
-
-interface FieldDefinition

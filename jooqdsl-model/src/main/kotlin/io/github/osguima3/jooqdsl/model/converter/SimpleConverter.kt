@@ -22,7 +22,29 @@
 
 package io.github.osguima3.jooqdsl.model.converter
 
+/**
+ * A simple [Converter] using two expressions to convert between user and database types.
+ *
+ * @param <T> The database type - i.e. any type available from [org.jooq.impl.SQLDataType]
+ * @param <U> The user type
+ * @param from the expression used to convert from database type to user type
+ * @param to the expression used to convert from user type to database type
+ */
 open class SimpleConverter<T, U>(private val from: (T) -> U, private val to: (U) -> T) : Converter<T, U> {
+
+    /**
+     * Convert a database object to a user object
+     *
+     * @param databaseObject The database object
+     * @return The user object
+     */
     override fun from(databaseObject: T) = from.invoke(databaseObject)
+
+    /**
+     * Convert a user object to a database object
+     *
+     * @param userObject The user object
+     * @return The database object
+     */
     override fun to(userObject: U) = to.invoke(userObject)
 }
