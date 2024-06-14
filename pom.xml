@@ -41,28 +41,28 @@
         <kotlin.compiler.incremental>true</kotlin.compiler.incremental>
 
         <java.version>17</java.version>
-        <kotlin.version>1.8.0</kotlin.version>
+        <kotlin.version>1.8.22</kotlin.version>
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
 
         <maven-plugin.version>3.9.0</maven-plugin.version>
         <mojo-executor.version>2.4.0</mojo-executor.version>
         <jaxb-api.version>2.3.1</jaxb-api.version>
-        <jooq.version>3.19.7</jooq.version>
+        <jooq.version>3.19.10</jooq.version>
 
         <!-- Test dependencies -->
         <junit.version>5.10.2</junit.version>
-        <assertj.version>3.25.3</assertj.version>
+        <assertj.version>3.26.0</assertj.version>
         <mockito-kotlin.version>5.3.1</mockito-kotlin.version>
-        <testcontainers.version>1.19.7</testcontainers.version>
-        <jackson.version>2.17.0</jackson.version>
+        <testcontainers.version>1.19.8</testcontainers.version>
+        <jackson.version>2.17.1</jackson.version>
 
         <!-- Plugins -->
         <maven-source-plugin.version>3.3.1</maven-source-plugin.version>
-        <maven-surefire-plugin.version>3.2.5</maven-surefire-plugin.version>
-        <maven-gpg-plugin.version>3.2.2</maven-gpg-plugin.version>
+        <maven-surefire-plugin.version>3.3.0</maven-surefire-plugin.version>
+        <maven-gpg-plugin.version>3.2.4</maven-gpg-plugin.version>
         <dokka-maven-plugin.version>1.9.20</dokka-maven-plugin.version>
-        <nexus-staging-maven-plugin.version>1.6.13</nexus-staging-maven-plugin.version>
+        <nexus-staging-maven-plugin.version>1.7.0</nexus-staging-maven-plugin.version>
     </properties>
 
     <dependencyManagement>
