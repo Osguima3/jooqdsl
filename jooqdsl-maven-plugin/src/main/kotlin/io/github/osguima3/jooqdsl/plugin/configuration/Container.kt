@@ -22,6 +22,12 @@
 
 package io.github.osguima3.jooqdsl.plugin.configuration
 
+import jakarta.xml.bind.annotation.XmlAccessType
+import jakarta.xml.bind.annotation.XmlAccessorType
+import jakarta.xml.bind.annotation.XmlElement
+import jakarta.xml.bind.annotation.XmlType
+import jakarta.xml.bind.annotation.adapters.NormalizedStringAdapter
+import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter
 import org.apache.maven.plugin.MojoExecutionException
 import org.jooq.meta.jaxb.Configuration
 import org.jooq.meta.jaxb.Jdbc
@@ -30,12 +36,6 @@ import org.testcontainers.containers.JdbcDatabaseContainer
 import org.testcontainers.containers.JdbcDatabaseContainerProvider
 import java.io.File
 import java.io.Serializable
-import javax.xml.bind.annotation.XmlAccessType
-import javax.xml.bind.annotation.XmlAccessorType
-import javax.xml.bind.annotation.XmlElement
-import javax.xml.bind.annotation.XmlType
-import javax.xml.bind.annotation.adapters.NormalizedStringAdapter
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter
 
 private const val CONTAINER_PATH = "/docker-entrypoint-initdb.d/"
 
