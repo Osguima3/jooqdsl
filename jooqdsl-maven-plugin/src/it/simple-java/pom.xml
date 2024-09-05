@@ -20,7 +20,7 @@
         <!-- Database -->
         <postgresql.version>42.6.1</postgresql.version>
         <postgresql-engine.version>10.3</postgresql-engine.version>
-        <testcontainers.version>1.19.0</testcontainers.version>
+        <testcontainers.version>1.20.1</testcontainers.version>
         <jooqdsl.version>@project.version@</jooqdsl.version>
 
         <!-- Plugins -->
