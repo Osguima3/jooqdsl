@@ -9,10 +9,3 @@ updates:
     directory: /
     schedule:
       interval: daily
-    groups:
-      all-minor-and-patch:
-        patterns:
-          - "*"
-        update-types:
-          - "minor"
-          - "patch"
