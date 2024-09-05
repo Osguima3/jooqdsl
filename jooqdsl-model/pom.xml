@@ -5,11 +5,11 @@
     <parent>
         <groupId>io.github.osguima3.jooqdsl</groupId>
         <artifactId>jooqdsl-parent</artifactId>
-        <version>1.0.2</version>
+        <version>1.0.3-SNAPSHOT</version>
     </parent>
 
     <artifactId>jooqdsl-model</artifactId>
-    <version>1.0.2</version>
+    <version>1.0.3-SNAPSHOT</version>
 
     <name>JooqDSL model</name>
     <packaging>jar</packaging>
