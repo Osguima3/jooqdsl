@@ -135,6 +135,7 @@ class JooqDslGenerateMojo : AbstractMojo() {
         try {
             map { File(project.basedir, it) }.forEach { log.info("Precompiling sources from $it") }
             precompile(executionEnvironment(project, session, pluginManager))
+            log.info("Sources precompiled successfully!")
         } catch (e: MojoExecutionException) {
             log.error(e)
             throw MojoExecutionException("Could not precompile sources. Make sure all dependencies are included", e)
