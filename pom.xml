@@ -41,11 +41,11 @@
         <kotlin.compiler.incremental>true</kotlin.compiler.incremental>
 
         <java.version>17</java.version>
-        <kotlin.version>1.8.0</kotlin.version>
+        <kotlin.version>2.0.0</kotlin.version>
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
 
-        <maven-plugin.version>3.9.0</maven-plugin.version>
+        <maven.version>3.9.8</maven.version>
         <mojo-executor.version>2.4.0</mojo-executor.version>
         <jakarta-xml.version>4.0.2</jakarta-xml.version>
         <jooq.version>3.19.13</jooq.version>
@@ -58,6 +58,7 @@
         <jackson.version>2.18.0</jackson.version>
 
         <!-- Plugins -->
+        <maven-plugin-plugin.version>3.13.1</maven-plugin-plugin.version>
         <maven-source-plugin.version>3.3.1</maven-source-plugin.version>
         <maven-surefire-plugin.version>3.5.0</maven-surefire-plugin.version>
         <maven-gpg-plugin.version>3.2.7</maven-gpg-plugin.version>
@@ -152,7 +153,7 @@
                                 <goal>javadocJar</goal>
                             </goals>
                             <configuration>
-                                <jdkVersion>${java.version}</jdkVersion>
+                                <jdkVersion>${maven.compiler.source}</jdkVersion>
                             </configuration>
                         </execution>
                     </executions>
