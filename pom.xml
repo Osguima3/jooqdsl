@@ -48,7 +48,7 @@
         <maven-plugin.version>3.9.0</maven-plugin.version>
         <mojo-executor.version>2.4.0</mojo-executor.version>
         <jakarta-xml.version>4.0.2</jakarta-xml.version>
-        <jooq.version>3.19.13</jooq.version>
+        <jooq.version>3.19.14</jooq.version>
 
         <!-- Test dependencies -->
         <junit.version>5.11.2</junit.version>
