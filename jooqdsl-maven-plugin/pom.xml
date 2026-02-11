@@ -15,7 +15,7 @@
 
     <properties>
         <skipJooq>false</skipJooq>
-        <maven-invoker-plugin.version>3.8.0</maven-invoker-plugin.version>
+        <maven-invoker-plugin.version>3.9.0</maven-invoker-plugin.version>
     </properties>
 
     <dependencies>
