@@ -32,6 +32,7 @@
 
     <modules>
         <module>jooqdsl-model</module>
+        <module>jooqdsl-core</module>
         <module>jooqdsl-maven-plugin</module>
     </modules>
 
@@ -40,28 +41,28 @@
         <kotlin.code.style>official</kotlin.code.style>
         <kotlin.compiler.incremental>true</kotlin.compiler.incremental>
 
-        <java.version>17</java.version>
-        <kotlin.version>1.8.0</kotlin.version>
+        <java.version>21</java.version>
+        <kotlin.version>2.0.21</kotlin.version>
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
 
         <maven-plugin.version>3.9.0</maven-plugin.version>
-        <mojo-executor.version>2.4.0</mojo-executor.version>
-        <jakarta-xml.version>4.0.2</jakarta-xml.version>
-        <jooq.version>3.19.13</jooq.version>
+        <mojo-executor.version>2.4.1</mojo-executor.version>
+        <jakarta-xml.version>4.0.5</jakarta-xml.version>
+        <jooq.version>3.19.14</jooq.version>
 
         <!-- Test dependencies -->
-        <junit.version>5.11.2</junit.version>
-        <assertj.version>3.26.3</assertj.version>
-        <mockito-kotlin.version>5.4.0</mockito-kotlin.version>
-        <testcontainers.version>1.20.2</testcontainers.version>
-        <jackson.version>2.18.0</jackson.version>
+        <junit.version>5.11.4</junit.version>
+        <assertj.version>3.27.3</assertj.version>
+        <mockito-kotlin.version>6.2.3</mockito-kotlin.version>
+        <testcontainers.version>1.21.4</testcontainers.version>
+        <jackson.version>2.18.2</jackson.version>
 
         <!-- Plugins -->
-        <maven-source-plugin.version>3.3.1</maven-source-plugin.version>
-        <maven-surefire-plugin.version>3.5.0</maven-surefire-plugin.version>
-        <maven-gpg-plugin.version>3.2.7</maven-gpg-plugin.version>
-        <dokka-maven-plugin.version>1.9.20</dokka-maven-plugin.version>
+        <maven-source-plugin.version>3.4.0</maven-source-plugin.version>
+        <maven-surefire-plugin.version>3.5.4</maven-surefire-plugin.version>
+        <maven-gpg-plugin.version>3.2.8</maven-gpg-plugin.version>
+        <dokka-maven-plugin.version>2.1.0</dokka-maven-plugin.version>
         <nexus-staging-maven-plugin.version>1.7.0</nexus-staging-maven-plugin.version>
     </properties>
 

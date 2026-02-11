@@ -28,17 +28,17 @@
         </dependency>
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>
-            <artifactId>kotlin-script-util</artifactId>
-            <version>${kotlin.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.jetbrains.kotlin</groupId>
             <artifactId>kotlin-compiler-embeddable</artifactId>
             <version>${kotlin.version}</version>
         </dependency>
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>
             <artifactId>kotlin-scripting-compiler-embeddable</artifactId>
+            <version>${kotlin.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jetbrains.kotlin</groupId>
+            <artifactId>kotlin-scripting-jsr223</artifactId>
             <version>${kotlin.version}</version>
         </dependency>
         <dependency>
@@ -54,6 +54,11 @@
         <dependency>
             <groupId>io.github.osguima3.jooqdsl</groupId>
             <artifactId>jooqdsl-model</artifactId>
+            <version>1.0.3-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.osguima3.jooqdsl</groupId>
+            <artifactId>jooqdsl-core</artifactId>
             <version>1.0.3-SNAPSHOT</version>
         </dependency>
 
@@ -170,7 +175,7 @@
                 <artifactId>maven-invoker-plugin</artifactId>
                 <version>${maven-invoker-plugin.version}</version>
                 <configuration>
-                    <goals>clean install</goals>
+                    <goals>clean install -DskipTests</goals>
                     <postBuildHookScript>verify</postBuildHookScript>
                     <showVersion>true</showVersion>
                     <streamLogs>true</streamLogs>

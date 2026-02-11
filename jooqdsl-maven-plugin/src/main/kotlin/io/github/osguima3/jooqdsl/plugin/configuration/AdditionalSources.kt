@@ -40,21 +40,35 @@ fun AdditionalSources.precompile(environment: ExecutionEnvironment) {
 }
 
 private fun precompileKotlin(sources: AdditionalSources, environment: ExecutionEnvironment) {
-    executeMojo(
-        plugin(
-            groupId("org.jetbrains.kotlin"),
-            artifactId("kotlin-maven-plugin"),
-            version(KotlinVersion.CURRENT.toString())
-        ),
-        goal("compile"),
-        configuration(
-            element("jvmTarget", environment.mavenProject.properties.getProperty("maven.compiler.target", "17")),
-            element("sourceDirs", *sources
-                .map { element("sourceDir", it) }
-                .toTypedArray())
-        ),
-        environment
-    )
+    val javaVersion = environment.mavenProject.properties.getProperty("maven.compiler.target")
+        ?: environment.mavenProject.properties.getProperty("java.version")
+        ?: "21"
+
+    // Temporarily clear compile source roots to prevent Kotlin from compiling default sources
+    val originalSourceRoots = environment.mavenProject.compileSourceRoots.toList()
+    environment.mavenProject.compileSourceRoots.clear()
+
+    try {
+        executeMojo(
+            plugin(
+                groupId("org.jetbrains.kotlin"),
+                artifactId("kotlin-maven-plugin"),
+                version(KotlinVersion.CURRENT.toString())
+            ),
+            goal("compile"),
+            configuration(
+                element("jvmTarget", javaVersion),
+                element("sourceDirs", *sources
+                    .map { element("sourceDir", it) }
+                    .toTypedArray())
+            ),
+            environment
+        )
+    } finally {
+        // Restore original source roots
+        environment.mavenProject.compileSourceRoots.clear()
+        environment.mavenProject.compileSourceRoots.addAll(originalSourceRoots)
+    }
 }
 
 private fun precompileJava(sources: AdditionalSources, environment: ExecutionEnvironment) {

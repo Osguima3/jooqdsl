@@ -119,7 +119,7 @@
                     </additionalSources>
                     <container>
                         <provider>org.testcontainers.containers.PostgreSQLContainerProvider</provider>
-                        <version>10.3</version>
+                        <version>16</version>
                         <migrationPath>src/main/resources/db/migration</migrationPath>
                     </container>
                 </configuration>

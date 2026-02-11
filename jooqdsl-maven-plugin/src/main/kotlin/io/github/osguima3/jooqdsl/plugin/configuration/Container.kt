@@ -28,7 +28,6 @@ import jakarta.xml.bind.annotation.XmlElement
 import jakarta.xml.bind.annotation.XmlType
 import jakarta.xml.bind.annotation.adapters.NormalizedStringAdapter
 import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter
-import org.apache.maven.plugin.MojoExecutionException
 import org.jooq.meta.jaxb.Configuration
 import org.jooq.meta.jaxb.Jdbc
 import org.testcontainers.containers.BindMode.READ_ONLY
@@ -36,6 +35,8 @@ import org.testcontainers.containers.JdbcDatabaseContainer
 import org.testcontainers.containers.JdbcDatabaseContainerProvider
 import java.io.File
 import java.io.Serializable
+import java.sql.DriverManager
+import java.sql.SQLException
 
 private const val CONTAINER_PATH = "/docker-entrypoint-initdb.d/"
 
@@ -68,7 +69,7 @@ class Container : Serializable {
         if (JdbcDatabaseContainerProvider::class.java.isAssignableFrom(clazz)) {
             clazz.getConstructor().newInstance() as JdbcDatabaseContainerProvider
         } else {
-            throw MojoExecutionException("Container provider class ${clazz.canonicalName} not valid, " +
+            throw IllegalArgumentException("Container provider class ${clazz.canonicalName} not valid, " +
                 "must implement ${JdbcDatabaseContainerProvider::class.qualifiedName}"
             )
         }
@@ -80,6 +81,27 @@ class Container : Serializable {
 
         start()
 
+        // Wait for the database to actually be ready to accept connections
+        waitForDatabaseReady(jdbcUrl, username, password)
+
         configuration.jdbc = jdbc.apply { url = jdbcUrl }
+    }
+
+    private fun waitForDatabaseReady(url: String, user: String, password: String, maxAttempts: Int = 10) {
+        repeat(maxAttempts) { attempt ->
+            try {
+                DriverManager.getConnection(url, user, password).use { connection ->
+                    if (connection.isValid(5)) {
+                        return
+                    }
+                }
+            } catch (e: SQLException) {
+                if (attempt < maxAttempts - 1) {
+                    Thread.sleep(500)
+                } else {
+                    throw e
+                }
+            }
+        }
     }
 }

@@ -22,13 +22,13 @@
 
 package io.github.osguima3.jooqdsl.plugin.mojo
 
-import io.github.osguima3.jooqdsl.model.ModelDefinition
+import io.github.osguima3.jooqdsl.core.context.ModelContextImpl
+import io.github.osguima3.jooqdsl.core.loader.DefinitionFile
+import io.github.osguima3.jooqdsl.core.loader.ScriptLoadingException
+import io.github.osguima3.jooqdsl.core.loader.loadDefinition
 import io.github.osguima3.jooqdsl.plugin.configuration.AdditionalSources
 import io.github.osguima3.jooqdsl.plugin.configuration.Container
-import io.github.osguima3.jooqdsl.plugin.configuration.DefinitionFile
-import io.github.osguima3.jooqdsl.plugin.configuration.loadDefinition
 import io.github.osguima3.jooqdsl.plugin.configuration.precompile
-import io.github.osguima3.jooqdsl.plugin.context.ModelContextImpl
 import org.apache.maven.execution.MavenSession
 import org.apache.maven.plugin.AbstractMojo
 import org.apache.maven.plugin.BuildPluginManager
@@ -99,36 +99,35 @@ class JooqDslGenerateMojo : AbstractMojo() {
             return
         }
 
-        val path = project.basedir
-        val classRealm = descriptor.classRealm
+        try {
+            project.runtimeClasspathElements
+                .map(::File)
+                .map(File::toURI)
+                .map(URI::toURL)
+                .forEach(descriptor.classRealm::addURL)
 
-        project.runtimeClasspathElements
-            .map(::File)
-            .map(File::toURI)
-            .map(URI::toURL)
-            .forEach(classRealm::addURL)
+            additionalSources?.precompile()
 
-        additionalSources?.precompile()
+            log.info("Loading jOOQ model definition from ${project.basedir}/$definitionFile")
+            val modelDefinition = definitionFile.loadDefinition(project.basedir)
 
-        val modelDefinition = definitionFile.load(path)
-
-        val configuration = Configuration().also {
-            it.logging = logging
-            it.jdbc = jdbc
-            it.generator = generator.apply {
-                target.directory = "${path.absolutePath}/${target.directory ?: DEFAULT_TARGET_DIRECTORY}"
+            val configuration = Configuration().also {
+                it.logging = logging
+                it.jdbc = jdbc
+                it.generator = generator.apply {
+                    target.directory = "${project.basedir.absolutePath}/${target.directory ?: DEFAULT_TARGET_DIRECTORY}"
+                }
             }
+
+            container?.start(configuration)
+
+            ModelContextImpl(generator).generate(modelDefinition.configure)
+            GenerationTool.generate(configuration)
+        } catch (e: ScriptLoadingException) {
+            throw MojoExecutionException("Cannot load script", e)
+        } catch (e: IllegalArgumentException) {
+            throw MojoExecutionException(e.message, e)
         }
-
-        container?.start(configuration, path)
-
-        ModelContextImpl(generator).generate(modelDefinition.configure)
-        GenerationTool.generate(configuration)
-    }
-
-    private fun DefinitionFile.load(path: File): ModelDefinition {
-        log.info("Loading jOOQ model definition from $path/$this")
-        return loadDefinition(path)
     }
 
     private fun AdditionalSources.precompile() {
@@ -141,12 +140,12 @@ class JooqDslGenerateMojo : AbstractMojo() {
         }
     }
 
-    private fun Container.start(configuration: Configuration, path: File) {
+    private fun Container.start(configuration: Configuration) {
         log.info("Starting container from $provider")
         if (jdbc?.url != null) {
             log.warn("Provided jdbc url (${jdbc?.url}) will be replaced with container generated one")
         }
 
-        startContainer(configuration, path)
+        startContainer(configuration, project.basedir)
     }
 }
