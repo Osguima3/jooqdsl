@@ -5,7 +5,7 @@
     <parent>
         <groupId>io.github.osguima3.jooqdsl</groupId>
         <artifactId>jooqdsl-parent</artifactId>
-        <version>1.1.0</version>
+        <version>1.1.1-SNAPSHOT</version>
     </parent>
 
     <artifactId>jooqdsl-maven-plugin</artifactId>
@@ -53,12 +53,12 @@
         <dependency>
             <groupId>io.github.osguima3.jooqdsl</groupId>
             <artifactId>jooqdsl-model</artifactId>
-            <version>1.1.0</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>io.github.osguima3.jooqdsl</groupId>
             <artifactId>jooqdsl-core</artifactId>
-            <version>1.1.0</version>
+            <version>${project.version}</version>
         </dependency>
 
         <!-- Maven -->
