@@ -6,11 +6,10 @@
     <parent>
         <groupId>io.github.osguima3.jooqdsl</groupId>
         <artifactId>jooqdsl-parent</artifactId>
-        <version>1.0.3-SNAPSHOT</version>
+        <version>1.1.0</version>
     </parent>
 
     <artifactId>jooqdsl-core</artifactId>
-    <version>1.0.3-SNAPSHOT</version>
 
     <name>JooqDSL Core</name>
     <packaging>jar</packaging>
@@ -51,7 +50,7 @@
         <dependency>
             <groupId>io.github.osguima3.jooqdsl</groupId>
             <artifactId>jooqdsl-model</artifactId>
-            <version>1.0.3-SNAPSHOT</version>
+            <version>1.1.0</version>
         </dependency>
 
         <dependency>
