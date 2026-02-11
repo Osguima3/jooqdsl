@@ -18,8 +18,8 @@ jobs:
         with:
           cache: maven
           distribution: adopt
-          java-version: 17
-          server-id: ossrh
+          java-version: 21
+          server-id: central
           server-username: MAVEN_USERNAME
           server-password: MAVEN_PASSWORD
 
@@ -31,6 +31,6 @@ jobs:
       - name: Deploy
         run: mvn -B -Prelease -Dgpg.passphrase="${{ secrets.GPG_PASSPHRASE }}" clean deploy
         env:
-          MAVEN_USERNAME: ${{ secrets.OSSRH_USERNAME }}
-          MAVEN_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
+          MAVEN_USERNAME: ${{ secrets.CENTRAL_USERNAME }}
+          MAVEN_PASSWORD: ${{ secrets.CENTRAL_PASSWORD }}
           MAVEN_GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
