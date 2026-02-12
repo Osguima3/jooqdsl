@@ -1,0 +1,64 @@
+[versions]
+kotlin = "2.0.21"
+jooq = "3.19.14"
+junit = "5.11.4"
+assertj = "3.27.7"
+mockito-kotlin = "6.2.3"
+testcontainers = "1.21.4"
+jackson = "2.18.2"
+maven-plugin-api = "3.9.0"
+maven-embedder = "3.9.0"
+mojo-executor = "2.4.1"
+jakarta-xml = "4.0.5"
+dokka = "2.1.0"
+maven-plugin-development = "1.0.3"
+
+[libraries]
+kotlin-stdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib", version.ref = "kotlin" }
+kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref = "kotlin" }
+kotlin-test-junit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin" }
+kotlin-script-runtime = { module = "org.jetbrains.kotlin:kotlin-script-runtime", version.ref = "kotlin" }
+kotlin-compiler-embeddable = { module = "org.jetbrains.kotlin:kotlin-compiler-embeddable", version.ref = "kotlin" }
+kotlin-scripting-compiler-embeddable = { module = "org.jetbrains.kotlin:kotlin-scripting-compiler-embeddable", version.ref = "kotlin" }
+kotlin-scripting-jsr223 = { module = "org.jetbrains.kotlin:kotlin-scripting-jsr223", version.ref = "kotlin" }
+
+jooq = { module = "org.jooq:jooq", version.ref = "jooq" }
+jooq-meta = { module = "org.jooq:jooq-meta", version.ref = "jooq" }
+jooq-codegen = { module = "org.jooq:jooq-codegen", version.ref = "jooq" }
+
+junit-jupiter-api = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "junit" }
+junit-jupiter-engine = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "junit" }
+assertj-core = { module = "org.assertj:assertj-core", version.ref = "assertj" }
+mockito-kotlin = { module = "org.mockito.kotlin:mockito-kotlin", version.ref = "mockito-kotlin" }
+
+testcontainers = { module = "org.testcontainers:testcontainers", version.ref = "testcontainers" }
+testcontainers-jdbc = { module = "org.testcontainers:jdbc", version.ref = "testcontainers" }
+testcontainers-postgresql = { module = "org.testcontainers:postgresql", version.ref = "testcontainers" }
+
+jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "jackson" }
+jackson-module-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin", version.ref = "jackson" }
+
+maven-plugin-api = { module = "org.apache.maven:maven-plugin-api", version.ref = "maven-plugin-api" }
+maven-core = { module = "org.apache.maven:maven-core", version.ref = "maven-plugin-api" }
+maven-plugin-annotations = { module = "org.apache.maven.plugin-tools:maven-plugin-annotations", version.ref = "maven-plugin-api" }
+maven-compat = { module = "org.apache.maven:maven-compat", version.ref = "maven-plugin-api" }
+maven-embedder = { module = "org.apache.maven:maven-embedder", version.ref = "maven-embedder" }
+maven-resolver-provider = { module = "org.apache.maven:maven-resolver-provider", version.ref = "maven-embedder" }
+slf4j-simple = { module = "org.slf4j:slf4j-simple", version = "2.0.16" }
+mojo-executor = { module = "org.twdata.maven:mojo-executor", version.ref = "mojo-executor" }
+jakarta-xml-bind-api = { module = "jakarta.xml.bind:jakarta.xml.bind-api", version.ref = "jakarta-xml" }
+
+[bundles]
+kotlin = ["kotlin-stdlib", "kotlin-reflect"]
+kotlin-scripting = ["kotlin-script-runtime", "kotlin-compiler-embeddable", "kotlin-scripting-compiler-embeddable", "kotlin-scripting-jsr223"]
+jooq = ["jooq", "jooq-meta", "jooq-codegen"]
+jackson = ["jackson-databind", "jackson-module-kotlin"]
+testcontainers = ["testcontainers", "testcontainers-jdbc"]
+maven-plugin = ["maven-plugin-api", "maven-core", "maven-plugin-annotations"]
+maven-test = ["maven-embedder", "maven-resolver-provider", "maven-compat"]
+testing = ["junit-jupiter-api", "kotlin-test-junit", "assertj-core", "mockito-kotlin"]
+
+[plugins]
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
+maven-plugin-development = { id = "org.gradlex.maven-plugin-development", version.ref = "maven-plugin-development" }

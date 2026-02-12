@@ -5,6 +5,11 @@
 # Log files
 *.log
 
-# Compiled class files
-target
+# Maven build artifacts
+target/
 *.class
+
+# Gradle build artifacts
+.gradle/
+build/
+.gradletasknamecache

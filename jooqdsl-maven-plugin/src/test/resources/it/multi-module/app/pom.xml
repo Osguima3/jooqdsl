@@ -3,37 +3,40 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>io.github.osguima3.jooqdsl.it</groupId>
-    <artifactId>simple-java</artifactId>
-    <version>1.0.0</version>
+    <parent>
+        <groupId>io.github.osguima3.jooqdsl.it</groupId>
+        <artifactId>multimodule-parent</artifactId>
+        <version>1.0.0</version>
+    </parent>
 
-    <name>Simple Java project</name>
-    <description>A simple java project consisting of a single module</description>
+    <artifactId>multimodule-app</artifactId>
+    <name>Multi Module app module</name>
+    <description>Invokes the jOOQ DSL plugin to generate code</description>
     <packaging>jar</packaging>
-
-    <properties>
-        <java.version>21</java.version>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.source>${java.version}</maven.compiler.source>
-        <maven.compiler.target>${java.version}</maven.compiler.target>
-
-        <annotation-api.version>3.0.0</annotation-api.version>
-
-        <!-- Database -->
-        <postgresql.version>42.6.1</postgresql.version>
-        <postgresql-engine.version>16</postgresql-engine.version>
-        <testcontainers.version>1.21.4</testcontainers.version>
-        <jooqdsl.version>@project.version@</jooqdsl.version>
-
-        <!-- Plugins -->
-        <build-helper-maven-plugin.version>3.6.1</build-helper-maven-plugin.version>
-    </properties>
 
     <dependencies>
         <dependency>
-            <groupId>jakarta.annotation</groupId>
-            <artifactId>jakarta.annotation-api</artifactId>
-            <version>${annotation-api.version}</version>
+            <groupId>org.jetbrains.kotlin</groupId>
+            <artifactId>kotlin-stdlib</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jetbrains.kotlin</groupId>
+            <artifactId>kotlin-script-runtime</artifactId>
+            <version>${kotlin.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.github.osguima3.jooqdsl.it</groupId>
+            <artifactId>multimodule-model</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.module</groupId>
+            <artifactId>jackson-module-kotlin</artifactId>
         </dependency>
 
         <!-- Database -->
@@ -46,6 +49,22 @@
             <groupId>io.github.osguima3.jooqdsl</groupId>
             <artifactId>jooqdsl-model</artifactId>
             <version>${jooqdsl.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jooq</groupId>
+            <artifactId>jooq</artifactId>
+            <version>${jooq.version}</version>
+        </dependency>
+
+        <!-- Test dependencies -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 
@@ -92,16 +111,15 @@
                             <recordVersionFields>version</recordVersionFields>
                         </database>
                         <target>
-                            <packageName>io.github.osguima3.jooqdsl.it.simplejava.model</packageName>
+                            <packageName>io.github.osguima3.jooqdsl.it.multimodule.app.model</packageName>
                         </target>
                     </generator>
                     <additionalSources>
-                        <additionalSource>io/github/osguima3/jooqdsl/it/simplejava/types</additionalSource>
-                        <additionalSource>io/github/osguima3/jooqdsl/it/simplejava/converter</additionalSource>
+                        <additionalSource>src/main/kotlin/io/github/osguima3/jooqdsl/it/multimodule/app/converter</additionalSource>
                     </additionalSources>
                     <container>
                         <provider>org.testcontainers.containers.PostgreSQLContainerProvider</provider>
-                        <version>${postgresql-engine.version}</version>
+                        <version>16</version>
                         <migrationPath>src/main/resources/db/migration</migrationPath>
                     </container>
                 </configuration>
@@ -109,7 +127,7 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>build-helper-maven-plugin</artifactId>
-                <version>${build-helper-maven-plugin.version}</version>
+                <version>3.0.0</version>
                 <executions>
                     <execution>
                         <id>add-source</id>
@@ -124,6 +142,10 @@
                         </configuration>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.jetbrains.kotlin</groupId>
+                <artifactId>kotlin-maven-plugin</artifactId>
             </plugin>
         </plugins>
     </build>

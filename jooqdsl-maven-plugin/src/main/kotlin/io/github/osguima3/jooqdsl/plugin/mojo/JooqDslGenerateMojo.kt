@@ -51,8 +51,9 @@ import java.io.File
 import java.net.URI
 
 @Mojo(
-    name = "generate-jooq", defaultPhase = LifecyclePhase.GENERATE_SOURCES,
-    requiresDependencyResolution = ResolutionScope.TEST
+    name = "generate-jooq",
+    defaultPhase = LifecyclePhase.GENERATE_SOURCES,
+    requiresDependencyResolution = ResolutionScope.TEST,
 )
 class JooqDslGenerateMojo : AbstractMojo() {
 

@@ -30,9 +30,9 @@ import jakarta.xml.bind.annotation.adapters.NormalizedStringAdapter
 import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter
 import org.jooq.meta.jaxb.Configuration
 import org.jooq.meta.jaxb.Jdbc
-import org.testcontainers.containers.BindMode.READ_ONLY
 import org.testcontainers.containers.JdbcDatabaseContainer
 import org.testcontainers.containers.JdbcDatabaseContainerProvider
+import org.testcontainers.utility.MountableFile.forHostPath
 import java.io.File
 import java.io.Serializable
 import java.sql.DriverManager
@@ -61,7 +61,12 @@ class Container : Serializable {
     internal fun startContainer(configuration: Configuration, path: File) =
         getContainerProvider(Class.forName(provider)).newInstance(version).apply {
             initScript?.let { withInitScript("${path.absolutePath}/$it") }
-            migrationPath?.let { withFileSystemBind("${path.absolutePath}/$it", CONTAINER_PATH, READ_ONLY) }
+            migrationPath?.let {
+                File("${path.absolutePath}/$it").listFiles()?.forEach { f ->
+                    withCopyFileToContainer(forHostPath(f.absolutePath), "$CONTAINER_PATH${f.name}")
+                }
+            }
+
             bind(configuration)
         }
 
@@ -69,8 +74,9 @@ class Container : Serializable {
         if (JdbcDatabaseContainerProvider::class.java.isAssignableFrom(clazz)) {
             clazz.getConstructor().newInstance() as JdbcDatabaseContainerProvider
         } else {
-            throw IllegalArgumentException("Container provider class ${clazz.canonicalName} not valid, " +
-                "must implement ${JdbcDatabaseContainerProvider::class.qualifiedName}"
+            throw IllegalArgumentException(
+                "Container provider class ${clazz.canonicalName} not valid, must implement" +
+                    " ${JdbcDatabaseContainerProvider::class.qualifiedName}"
             )
         }
 
