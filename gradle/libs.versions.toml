@@ -74,3 +74,4 @@ testing-runtime = ["junit-jupiter-engine", "junit-platform-launcher"]
 dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 maven-plugin-development = { id = "org.gradlex.maven-plugin-development", version.ref = "maven-plugin-development" }
+central-portal-publisher = { id = "com.vanniktech.maven.publish", version = "0.30.0" }
