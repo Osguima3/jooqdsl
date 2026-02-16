@@ -22,44 +22,45 @@
 
 package io.github.osguima3.jooqdsl.it.multimodule.app.repository
 
-import io.github.osguima3.jooqdsl.it.multimodule.app.model.Tables.TEST
+import io.github.osguima3.jooqdsl.it.multimodule.app.model.tables.records.TestRecord
+import io.github.osguima3.jooqdsl.it.multimodule.app.model.tables.references.TEST
 import io.github.osguima3.jooqdsl.it.multimodule.model.types.TestClass
 import org.jooq.DSLContext
-import org.jooq.Record
 
 class TestRepository(private val context: DSLContext) {
 
     fun findAll(): List<TestClass> =
-        context.select(TEST.fields().toList())
-            .from(TEST)
-            .fetch(::toObject)
+        context.selectFrom(TEST)
+            .fetchInto(TEST)
+            .map(::toObject)
 
-    fun save(test: TestClass): Int =
+    fun save(test: TestClass) {
         context.insertInto(TEST)
-            .set(TEST.UUID, test.id)
-            .set(TEST.STRING, test.string)
-            .set(TEST.INSTANT, test.instant)
             .set(TEST.INT, test.int)
+            .set(TEST.STRING, test.string)
             .set(TEST.BIG_DECIMAL, test.bigDecimal)
+            .set(TEST.VALUE_OBJECT, test.valueObject)
+            .set(TEST.INSTANT_OBJECT, test.instantObject)
             .set(TEST.JSON, test.json)
             .set(TEST.CUSTOM_ENUM, test.customEnum)
             .set(TEST.STRING_ENUM, test.stringEnum)
-            .set(TEST.VALUE_OBJECT, test.valueObject)
+            .set(TEST.COMPOSITE, test.composite)
             .set(TEST.CONVERTER, test.converter)
             .set(TEST.CUSTOM, test.custom)
             .execute()
+    }
 
-    private fun toObject(record: Record): TestClass = TestClass(
-        record[TEST.UUID]!!,
-        record[TEST.STRING]!!,
-        record[TEST.INSTANT]!!,
-        record[TEST.INT]!!,
-        record[TEST.BIG_DECIMAL]!!,
-        record[TEST.JSON]!!,
-        record[TEST.CUSTOM_ENUM]!!,
-        record[TEST.STRING_ENUM]!!,
-        record[TEST.VALUE_OBJECT]!!,
-        record[TEST.CONVERTER]!!,
-        record[TEST.CUSTOM]!!
+    private fun toObject(record: TestRecord) = TestClass(
+        record.int!!,
+        record.string!!,
+        record.bigDecimal!!,
+        record.valueObject!!,
+        record.instantObject!!,
+        record.json!!,
+        record.customEnum!!,
+        record.stringEnum!!,
+        record.composite!!,
+        record.converter!!,
+        record.custom!!
     )
 }

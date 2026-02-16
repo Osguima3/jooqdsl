@@ -7,9 +7,7 @@ import org.junit.jupiter.api.io.TempDir
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.PrintStream
-import java.nio.file.Files
 import java.nio.file.Path
-import java.nio.file.StandardCopyOption
 
 class MavenPluginIntegrationTest {
 
@@ -23,48 +21,69 @@ class MavenPluginIntegrationTest {
             "help:describe",
             "-Dplugin=io.github.osguima3.jooqdsl:jooqdsl-maven-plugin"
         ) {
-            assertThat(exitCode).isEqualTo(0)
+            assertThat(exitCode).withFailMessage { "Task failed: $output" }.isEqualTo(0)
             assertThat(output).contains("jooqdsl-maven-plugin")
             assertThat(output).contains("generate-jooq")
         }
 
     @Test
     fun `simple-java project code generation works`(@TempDir tempDir: Path) =
-        runTest(tempDir, "simple-java", "clean", "generate-sources") {
-            assertThat(exitCode).isEqualTo(0)
+        runTest(tempDir, "simple-java", "clean", "test") {
+            assertThat(exitCode).withFailMessage { "Task failed: $output" }.isEqualTo(0)
             assertThat(output).contains("BUILD SUCCESS")
             assertThat(output).contains("generate-jooq")
 
-            assertThat(getTableFields("io/github/osguima3/jooqdsl/it/simplejava/model"))
-                .contains("java.util.UUID" to "UUID")
-                .contains("String" to "STRING")
-                .contains("Instant" to "INSTANT")
-                .contains("Integer" to "INT")
-                .contains("BigDecimal" to "BIG_DECIMAL")
-                .contains("CustomEnum" to "CUSTOM_ENUM")
-                .contains("StringEnum" to "STRING_ENUM")
-                .contains("Date" to "CONVERTER")
-                .contains("String" to "CUSTOM")
+            val regex = """public final TableField<TestRecord, (.+?)> (\w+) =""".toRegex()
+            val actual = getTableFile("io/github/osguima3/jooqdsl/it/simplejava/model", "Test.java")
+            val fields = actual.mapNotNull { regex.find(it.trim())?.destructured }
+                .map { (fieldType, fieldName) -> fieldType to fieldName }
+            assertThat(fields)
+                .withFailMessage { "Fields not found. File content: ${actual.joinToString("\n")}" }
+                .isNotEmpty
+
+            assertThat(fields).containsExactly(
+                "Integer" to "INT",
+                "String" to "STRING",
+                "BigDecimal" to "BIG_DECIMAL",
+                "StringValueObject" to "VALUE_OBJECT",
+                "InstantValueObject" to "INSTANT_OBJECT",
+                "String" to "JSON",
+                "CustomEnum" to "CUSTOM_ENUM",
+                "StringEnum" to "STRING_ENUM",
+                "DateValueObject" to "COMPOSITE",
+                "Date" to "CONVERTER",
+                "String" to "CUSTOM",
+            )
         }
 
     @Test
     fun `multi-module project code generation works`(@TempDir tempDir: Path) =
-        runTest(tempDir, "multi-module", "clean", "generate-sources") {
-            assertThat(exitCode).isEqualTo(0)
+        runTest(tempDir, "multi-module", "clean", "test") {
+            assertThat(exitCode).withFailMessage { "Task failed: $output" }.isEqualTo(0)
             assertThat(output).contains("BUILD SUCCESS")
             assertThat(output).contains("generate-jooq")
 
-            assertThat(getTableFields("io/github/osguima3/jooqdsl/it/multimodule/app/model", "app"))
-                .contains("IdValueObject" to "UUID")
-                .contains("StringValueObject" to "STRING")
-                .contains("InstantValueObject" to "INSTANT")
-                .contains("IntValueObject" to "INT")
-                .contains("BigDecimalValueObject" to "BIG_DECIMAL")
-                .contains("CustomEnum" to "CUSTOM_ENUM")
-                .contains("StringEnum" to "STRING_ENUM")
-                .contains("DateValueObject" to "VALUE_OBJECT")
-                .contains("Date" to "CONVERTER")
-                .contains("String" to "CUSTOM")
+            val regex = """val (\w+): TableField<TestRecord, (.+?)\?> =""".toRegex()
+            val actual = getTableFile("io/github/osguima3/jooqdsl/it/multimodule/app/model", "Test.kt", "app")
+            val fields = actual.mapNotNull { regex.find(it.trim())?.destructured }
+                .map { (fieldName, fieldType) -> fieldType to fieldName }
+            assertThat(fields)
+                .withFailMessage { "Fields not found. File content: ${actual.joinToString("\n")}" }
+                .isNotEmpty
+
+            assertThat(fields).containsExactly(
+                "Int" to "INT",
+                "String" to "STRING",
+                "BigDecimal" to "BIG_DECIMAL",
+                "StringValueObject" to "VALUE_OBJECT",
+                "InstantValueObject" to "INSTANT_OBJECT",
+                "String" to "JSON",
+                "CustomEnum" to "CUSTOM_ENUM",
+                "StringEnum" to "STRING_ENUM",
+                "DateValueObject" to "COMPOSITE",
+                "Date" to "CONVERTER",
+                "String" to "CUSTOM",
+            )
         }
 
     fun runTest(tempDir: Path, testProjectName: String, vararg goals: String, block: MavenResult.() -> Unit) {
@@ -74,42 +93,14 @@ class MavenPluginIntegrationTest {
         )
 
         val workingDir = tempDir.resolve(testProjectName).toFile()
-        copyDirectory(sourceDir, workingDir)
+        sourceDir.copyRecursively(workingDir, overwrite = true)
         replacePlaceholders(workingDir)
         val result = runMaven(workingDir, goals)
         block(result)
     }
 
-    private fun copyDirectory(source: File, target: File) {
-        if (!source.exists()) {
-            throw IllegalArgumentException("Source directory does not exist: ${source.absolutePath}")
-        }
-
-        target.mkdirs()
-
-        source.walkTopDown().forEach { file ->
-            val relativePath = file.relativeTo(source)
-            val targetFile = target.resolve(relativePath)
-
-            when {
-                file.isDirectory -> targetFile.mkdirs()
-                file.isFile -> {
-                    targetFile.parentFile.mkdirs()
-                    Files.copy(file.toPath(), targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING)
-                }
-            }
-        }
-    }
-
-    private fun replacePlaceholders(directory: File) {
-        directory.walkTopDown()
-            .filter { it.isFile && it.name == "pom.xml" }
-            .forEach { pomFile ->
-                val content = pomFile.readText()
-                val updated = content.replace("@project.version@", projectVersion)
-                pomFile.writeText(updated)
-            }
-    }
+    private fun replacePlaceholders(directory: File) = directory.walkTopDown().filter { it.name == "pom.xml" }
+        .forEach { it.writeText(it.readText().replace("@project.version@", projectVersion)) }
 
     private fun runMaven(workingDir: File, args: Array<out String>): MavenResult {
         System.setProperty("maven.multiModuleProjectDirectory", workingDir.absolutePath)
@@ -131,16 +122,16 @@ class MavenPluginIntegrationTest {
         )
     }
 
-    fun MavenResult.getTableFields(packagePath: String, subModule: String = ""): List<Pair<String, String>> {
+    private fun MavenResult.getTableFile(packagePath: String, fileName: String, subModule: String = ""): List<String> {
         val modulePrefix = if (subModule.isNotEmpty()) "$subModule/" else ""
-        val file = workingDir.resolve("${modulePrefix}target/generated-sources/jooq/$packagePath/tables/Test.java")
-        assertThat(file).exists().isFile()
-
-        val regex = """public final TableField<TestRecord, (.+?)> (\w+) =""".toRegex()
+        val packageFolder = workingDir.resolve("${modulePrefix}target/generated-sources/jooq/$packagePath")
+        val file = packageFolder.resolve("tables/$fileName")
+        assertThat(file).withFailMessage {
+            "Expected generated file not found: ${file.absolutePath}\n Generated files:\n" +
+                packageFolder.walkTopDown().filter { it.isFile }.joinToString("\n") { it.absolutePath }
+        }.exists().isFile()
 
         return file.readText().lines()
-            .mapNotNull { regex.find(it.trim())?.destructured }
-            .map { (fieldType, fieldName) -> fieldType to fieldName }
     }
 
     data class MavenResult(

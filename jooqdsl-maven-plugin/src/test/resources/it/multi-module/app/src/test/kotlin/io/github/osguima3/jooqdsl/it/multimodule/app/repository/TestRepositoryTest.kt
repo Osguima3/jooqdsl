@@ -22,48 +22,50 @@
 
 package io.github.osguima3.jooqdsl.it.multimodule.app.repository
 
-import io.github.osguima3.jooqdsl.it.multimodule.model.types.BigDecimalValueObject
 import io.github.osguima3.jooqdsl.it.multimodule.model.types.CustomEnum
 import io.github.osguima3.jooqdsl.it.multimodule.model.types.DateValueObject
-import io.github.osguima3.jooqdsl.it.multimodule.model.types.IdValueObject
 import io.github.osguima3.jooqdsl.it.multimodule.model.types.InstantValueObject
-import io.github.osguima3.jooqdsl.it.multimodule.model.types.IntValueObject
 import io.github.osguima3.jooqdsl.it.multimodule.model.types.StringEnum
 import io.github.osguima3.jooqdsl.it.multimodule.model.types.StringValueObject
 import io.github.osguima3.jooqdsl.it.multimodule.model.types.TestClass
-import junit.framework.TestCase.assertEquals
 import org.jooq.impl.DSL.using
 import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-import org.testcontainers.containers.PostgreSQLContainer
+import org.testcontainers.containers.wait.strategy.Wait.forListeningPort
+import org.testcontainers.postgresql.PostgreSQLContainer
+import org.testcontainers.utility.MountableFile
 import java.math.BigDecimal
 import java.time.Instant
+import java.time.temporal.ChronoUnit
 import java.util.Date
-import java.util.UUID
 
 class TestRepositoryTest {
 
     private val migrationPath = this::class.java.getResource("/db/migration")!!.path
 
-    private var postgresContainer = PostgresContainer()
-        .withFileSystemBind(migrationPath, "/docker-entrypoint-initdb.d/")
+    private var postgresContainer = PostgreSQLContainer("postgres:16.11")
+        .withCopyFileToContainer(MountableFile.forHostPath(migrationPath), "/docker-entrypoint-initdb.d/")
+        .waitingFor(forListeningPort())
         .apply { start() }
 
     private var testRepository = with(postgresContainer) { TestRepository(using(jdbcUrl, username, password)) }
 
+    private val now = Instant.now().truncatedTo(ChronoUnit.SECONDS)
+
     @Test
     fun `should return stored items`() {
         val value = TestClass(
-            IdValueObject(UUID.randomUUID()),
-            StringValueObject("value"),
-            InstantValueObject(Instant.now()),
-            IntValueObject(0),
-            BigDecimalValueObject(BigDecimal.ZERO),
+            3,
+            "string",
+            BigDecimal("0.0000"),
+            StringValueObject("date"),
+            InstantValueObject(now),
             "{}",
             CustomEnum.ENABLED,
             StringEnum.OTHER,
-            DateValueObject(Date.from(Instant.now())),
-            Date.from(Instant.now()),
+            DateValueObject(Date.from(now)),
+            Date.from(now),
             "custom"
         )
 
@@ -79,6 +81,3 @@ class TestRepositoryTest {
         postgresContainer.stop()
     }
 }
-
-class PostgresContainer : PostgreSQLContainer<PostgresContainer>("postgres:10.6")
-

@@ -23,24 +23,27 @@
 import io.github.osguima3.jooqdsl.it.simplejava.converter.JsonConverter
 import io.github.osguima3.jooqdsl.it.simplejava.converter.SimpleDateConverter
 import io.github.osguima3.jooqdsl.it.simplejava.types.CustomEnum
+import io.github.osguima3.jooqdsl.it.simplejava.types.DateValueObject
+import io.github.osguima3.jooqdsl.it.simplejava.types.InstantValueObject
 import io.github.osguima3.jooqdsl.it.simplejava.types.StringEnum
+import io.github.osguima3.jooqdsl.it.simplejava.types.StringValueObject
 import io.github.osguima3.jooqdsl.model.ModelDefinition
 import io.github.osguima3.jooqdsl.model.context.converter
+import io.github.osguima3.jooqdsl.model.context.valueObject
 import java.math.BigDecimal
-import java.time.Instant
-import java.util.UUID
 
 ModelDefinition {
     tables {
         table("test") {
-            field("uuid", UUID::class)
+            field("int", Int::class)
             field("string", String::class)
-            field("instant", Instant::class)
-            field("int", Integer::class)
             field("big_decimal", BigDecimal::class)
+            field("value_object", StringValueObject::class)
+            field("instant_object", InstantValueObject::class)
             field("json") { converter(JsonConverter::class) }
             field("custom_enum", CustomEnum::class)
             field("string_enum") { enum(StringEnum::class, "String") }
+            field("composite") { valueObject(SimpleDateConverter::class, DateValueObject::class) }
             field("converter") { converter(SimpleDateConverter::class) }
             field("custom") { custom(String::class, "org.jooq.Converters.identity(String.class)") }
         }

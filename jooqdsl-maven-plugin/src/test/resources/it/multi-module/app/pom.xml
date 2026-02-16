@@ -31,11 +31,11 @@
             <version>${project.parent.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
+            <groupId>tools.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.fasterxml.jackson.module</groupId>
+            <groupId>tools.jackson.module</groupId>
             <artifactId>jackson-module-kotlin</artifactId>
         </dependency>
 
@@ -63,7 +63,7 @@
         </dependency>
         <dependency>
             <groupId>org.testcontainers</groupId>
-            <artifactId>postgresql</artifactId>
+            <artifactId>testcontainers-postgresql</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -86,7 +86,7 @@
                 <dependencies>
                     <dependency>
                         <groupId>org.testcontainers</groupId>
-                        <artifactId>postgresql</artifactId>
+                        <artifactId>testcontainers-postgresql</artifactId>
                         <version>${testcontainers.version}</version>
                     </dependency>
                 </dependencies>
@@ -97,6 +97,7 @@
                         <password>mysecret</password>
                     </jdbc>
                     <generator>
+                        <name>org.jooq.codegen.KotlinGenerator</name>
                         <generate>
                             <routines>false</routines>
                             <pojos>false</pojos>
@@ -119,7 +120,7 @@
                     </additionalSources>
                     <container>
                         <provider>org.testcontainers.containers.PostgreSQLContainerProvider</provider>
-                        <version>16</version>
+                        <version>16.11</version>
                         <migrationPath>src/main/resources/db/migration</migrationPath>
                     </container>
                 </configuration>

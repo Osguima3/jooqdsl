@@ -22,9 +22,9 @@
 
 package io.github.osguima3.jooqdsl.it.simplejava.repository;
 
+import io.github.osguima3.jooqdsl.it.simplejava.model.tables.records.TestRecord;
 import io.github.osguima3.jooqdsl.it.simplejava.types.TestClass;
 import org.jooq.DSLContext;
-import org.jooq.Record;
 
 import java.util.List;
 
@@ -39,23 +39,40 @@ public class TestRepository {
     }
 
     public List<TestClass> findAll() {
-        return context.select(TEST.fields())
-            .from(TEST)
-            .fetch(this::toObject);
+        return context.selectFrom(TEST)
+            .fetchInto(TEST)
+            .map(this::toObject);
     }
 
-    private TestClass toObject(Record record) {
+    public void save(TestClass test) {
+        context.insertInto(TEST)
+            .set(TEST.INT, test.integer())
+            .set(TEST.STRING, test.string())
+            .set(TEST.BIG_DECIMAL, test.bigDecimal())
+            .set(TEST.VALUE_OBJECT, test.valueObject())
+            .set(TEST.INSTANT_OBJECT, test.instantObject())
+            .set(TEST.JSON, test.json())
+            .set(TEST.CUSTOM_ENUM, test.customEnum())
+            .set(TEST.STRING_ENUM, test.stringEnum())
+            .set(TEST.COMPOSITE, test.composite())
+            .set(TEST.CONVERTER, test.converter())
+            .set(TEST.CUSTOM, test.custom())
+            .execute();
+    }
+
+    private TestClass toObject(TestRecord record) {
         return new TestClass(
-            record.get(TEST.UUID),
-            record.get(TEST.STRING),
-            record.get(TEST.INSTANT),
-            record.get(TEST.INT),
-            record.get(TEST.BIG_DECIMAL),
-            record.get(TEST.JSON),
-            record.get(TEST.CUSTOM_ENUM),
-            record.get(TEST.STRING_ENUM),
-            record.get(TEST.CONVERTER),
-            record.get(TEST.CUSTOM)
+            record.getInt(),
+            record.getString(),
+            record.getBigDecimal(),
+            record.getValueObject(),
+            record.getInstantObject(),
+            record.getJson(),
+            record.getCustomEnum(),
+            record.getStringEnum(),
+            record.getComposite(),
+            record.getConverter(),
+            record.getCustom()
         );
     }
 }

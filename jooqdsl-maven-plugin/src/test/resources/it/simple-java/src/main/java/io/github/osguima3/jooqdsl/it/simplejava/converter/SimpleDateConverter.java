@@ -30,7 +30,7 @@ import java.util.Date;
 
 public class SimpleDateConverter implements Converter<String, Date> {
 
-    private final SimpleDateFormat formatter = new SimpleDateFormat();
+    private final SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     @SuppressWarnings("unused")
     public static final SimpleDateConverter INSTANCE = new SimpleDateConverter();

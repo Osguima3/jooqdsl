@@ -22,159 +22,95 @@
 
 package io.github.osguima3.jooqdsl.core.context
 
-import io.github.osguima3.jooqdsl.core.converter.CompositeDefinition
-import io.github.osguima3.jooqdsl.core.converter.EnumDefinition
-import io.github.osguima3.jooqdsl.core.converter.InstantConverterDefinition
-import io.github.osguima3.jooqdsl.core.converter.SimpleConverterDefinition
-import io.github.osguima3.jooqdsl.core.converter.ValueObjectDefinition
-import io.github.osguima3.jooqdsl.core.qualified
-import io.github.osguima3.jooqdsl.core.types.KotlinConverter
-import io.github.osguima3.jooqdsl.core.types.KotlinEnum
-import io.github.osguima3.jooqdsl.core.types.KotlinInstantValueObject
-import io.github.osguima3.jooqdsl.core.types.KotlinStringValueObject
-import org.assertj.core.api.Assertions.assertThat
-import org.jooq.meta.jaxb.Database
-import org.jooq.meta.jaxb.ForcedType
-import org.jooq.meta.jaxb.Generator
-import org.jooq.meta.jaxb.Target
+import io.github.osguima3.jooqdsl.core.converter.SkippedDefinition
+import io.github.osguima3.jooqdsl.model.ModelDefinition
+import org.assertj.core.api.AssertionsForClassTypes.assertThat
 import org.junit.jupiter.api.Test
-import java.time.Instant
+import org.junit.jupiter.api.assertThrows
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.verify
 
 class ModelContextImplTest {
 
-    private val expression = ".*\\.table\\.field"
-    private val sourcePackage = "io.github.osguima3.jooqdsl.core.types"
-    private val targetPackage = "io.github.osguima3.target.package"
+    private val jooqContext = mock<JooqContext>()
 
-    private val forcedTypes = mutableListOf<ForcedType>()
-    private val generator = Generator().apply {
-        database = Database().also { it.forcedTypes = forcedTypes }
-        target = Target().apply { packageName = targetPackage }
-    }
-
-    private val context = ModelContextImpl(generator)
+    private val context = ModelContextImpl(jooqContext)
 
     @Test
-    fun `should correctly register enum`() {
-        val forcedType = EnumDefinition(KotlinEnum::class, context.targetPackage)
-        context.registerForcedType(
-            forcedType = forcedType.toForcedType(expression)
-        )
+    fun `should call context from field(name, type)`() {
+        val definition = ModelDefinition {
+            tables {
+                table("table") {
+                    field("field", String::class)
+                }
+            }
+        }
 
-        assertThat(forcedTypes).containsExactly(ForcedType().also {
-            it.includeExpression = expression
-            it.userType = "$sourcePackage.KotlinEnum"
-            it.converter = "new org.jooq.impl.EnumConverter<>(" +
-                "$targetPackage.enums.KotlinEnum.class, $sourcePackage.KotlinEnum.class)"
-        })
+        definition.configure(context)
+
+        verify(jooqContext).configureField("table", "field", SkippedDefinition)
     }
 
     @Test
-    fun `should correctly register enum with custom database type`() {
-        val forcedType = EnumDefinition("String", KotlinEnum::class)
-        context.registerForcedType(
-            forcedType = forcedType.toForcedType(expression)
-        )
+    fun `should call context from field(name) { block }`() {
+        val definition = ModelDefinition {
+            tables {
+                table("table") {
+                    field("field") { type(String::class) }
+                }
+            }
+        }
 
-        assertThat(forcedTypes).containsExactly(ForcedType().also {
-            it.includeExpression = expression
-            it.userType = "$sourcePackage.KotlinEnum"
-            it.converter = "new org.jooq.impl.EnumConverter<>(String.class, $sourcePackage.KotlinEnum.class)"
-        })
+        definition.configure(context)
+
+        verify(jooqContext).configureField("table", "field", SkippedDefinition)
     }
 
     @Test
-    fun `should correctly register instant`() {
-        context.registerForcedType(
-            forcedType = InstantConverterDefinition.toForcedType(expression)
-        )
+    fun `should fail if tables block is duplicated`() {
+        val definition = ModelDefinition {
+            tables {}
+            tables {}
+        }
 
-        assertThat(forcedTypes).containsExactly(ForcedType().also {
-            it.includeExpression = expression
-            it.userType = Instant::class.qualified
-            it.converter = "org.jooq.Converter.ofNullable(" +
-                "java.time.OffsetDateTime.class, ${Instant::class.qualified}.class, " +
-                "java.time.OffsetDateTime::toInstant, " +
-                "i -> java.time.OffsetDateTime.ofInstant(i, java.time.ZoneOffset.UTC))"
-        })
+        val e = assertThrows<IllegalArgumentException> {
+            definition.configure(context)
+        }
+
+        assertThat(e.message).isEqualTo("Tables block already declared")
     }
 
     @Test
-    fun `should correctly register value object`() {
-        val forcedType = ValueObjectDefinition(KotlinStringValueObject::class)
-        context.registerForcedType(
-            forcedType = forcedType.toForcedType(expression)
-        )
+    fun `should fail if table name is duplicated`() {
+        val definition = ModelDefinition {
+            tables {
+                table("table") {}
+                table("table") {}
+            }
+        }
 
-        assertThat(forcedTypes).containsExactly(ForcedType().also {
-            it.includeExpression = expression
-            it.userType = "$sourcePackage.KotlinStringValueObject"
-            it.converter = "org.jooq.Converter.ofNullable(" +
-                "java.lang.String.class, $sourcePackage.KotlinStringValueObject.class, " +
-                "$sourcePackage.KotlinStringValueObject::new, " +
-                "$sourcePackage.KotlinStringValueObject::getValue)"
-        })
+        val e = assertThrows<IllegalArgumentException> {
+            definition.configure(context)
+        }
+
+        assertThat(e.message).isEqualTo("Table 'table' already declared")
     }
 
     @Test
-    fun `should correctly register converter`() {
-        val forcedType = SimpleConverterDefinition(Int::class, String::class, KotlinConverter::class)
-        context.registerForcedType(
-            forcedType = forcedType.toForcedType(expression)
-        )
+    fun `should fail if field name is duplicated`() {
+        val definition = ModelDefinition {
+            tables {
+                table("table") {
+                    field("field") {}
+                    field("field") {}
+                }
+            }
+        }
 
-        assertThat(forcedTypes).containsExactly(ForcedType().also {
-            it.includeExpression = expression
-            it.userType = String::class.qualified
-            it.converter = "org.jooq.Converter.ofNullable(java.lang.Integer.class, java.lang.String.class, " +
-                "$sourcePackage.KotlinConverter.INSTANCE::from, " +
-                "$sourcePackage.KotlinConverter.INSTANCE::to)"
-        })
-    }
+        val e = assertThrows<IllegalArgumentException> {
+            definition.configure(context)
+        }
 
-    @Test
-    fun `should correctly register composite value object + instant`() {
-        val forcedType = CompositeDefinition(
-            InstantConverterDefinition,
-            ValueObjectDefinition(KotlinInstantValueObject::class)
-        )
-        context.registerForcedType(
-            forcedType = forcedType.toForcedType(expression)
-        )
-
-        assertThat(forcedTypes).containsExactly(ForcedType().also {
-            it.includeExpression = expression
-            it.userType = "$sourcePackage.KotlinInstantValueObject"
-            it.converter = "org.jooq.Converters.of(" +
-                "org.jooq.Converter.ofNullable(java.time.OffsetDateTime.class, ${Instant::class.qualified}.class, " +
-                "java.time.OffsetDateTime::toInstant, " +
-                "i -> java.time.OffsetDateTime.ofInstant(i, java.time.ZoneOffset.UTC)), " +
-                "org.jooq.Converter.ofNullable(java.time.Instant.class, $sourcePackage.KotlinInstantValueObject.class, " +
-                "$sourcePackage.KotlinInstantValueObject::new, " +
-                "$sourcePackage.KotlinInstantValueObject::getValue))"
-        })
-    }
-
-    @Test
-    fun `should correctly register composite value object + converter`() {
-        val forcedType = CompositeDefinition(
-            SimpleConverterDefinition(Int::class, String::class, KotlinConverter::class),
-            ValueObjectDefinition(KotlinStringValueObject::class)
-        )
-        context.registerForcedType(
-            forcedType = forcedType.toForcedType(expression)
-        )
-
-        assertThat(forcedTypes).containsExactly(ForcedType().also {
-            it.includeExpression = expression
-            it.userType = "$sourcePackage.KotlinStringValueObject"
-            it.converter = "org.jooq.Converters.of(" +
-                "org.jooq.Converter.ofNullable(java.lang.Integer.class, java.lang.String.class, " +
-                "$sourcePackage.KotlinConverter.INSTANCE::from, " +
-                "$sourcePackage.KotlinConverter.INSTANCE::to), " +
-                "org.jooq.Converter.ofNullable(java.lang.String.class, $sourcePackage.KotlinStringValueObject.class, " +
-                "$sourcePackage.KotlinStringValueObject::new, " +
-                "$sourcePackage.KotlinStringValueObject::getValue))"
-        })
+        assertThat(e.message).isEqualTo("Field 'table.field' already declared")
     }
 }

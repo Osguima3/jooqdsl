@@ -26,6 +26,6 @@ import io.github.osguima3.jooqdsl.model.converter.SimpleConverter
 import java.text.SimpleDateFormat
 import java.util.Date
 
-private val formatter = SimpleDateFormat()
+private val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
 
 object SimpleDateConverter : SimpleConverter<String, Date>(formatter::parse, formatter::format)

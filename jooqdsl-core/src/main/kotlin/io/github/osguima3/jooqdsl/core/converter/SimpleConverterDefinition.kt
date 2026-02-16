@@ -23,7 +23,9 @@
 package io.github.osguima3.jooqdsl.core.converter
 
 import io.github.osguima3.jooqdsl.core.isObjectType
-import io.github.osguima3.jooqdsl.core.qualified
+import io.github.osguima3.jooqdsl.core.javaClassName
+import io.github.osguima3.jooqdsl.core.kotlinClassName
+import org.jooq.codegen.Language
 import kotlin.reflect.KClass
 
 internal const val INSTANCE_FIELD = "INSTANCE"
@@ -31,17 +33,29 @@ internal const val INSTANCE_FIELD = "INSTANCE"
 data class SimpleConverterDefinition(
     override val fromType: KClass<*>,
     override val toType: KClass<*>,
-    private val converterClass: KClass<*>
+    private val converterClass: KClass<*>,
 ) : NullableConverterDefinition {
 
     init {
         if (!converterClass.isObjectType) {
-            throw IllegalArgumentException("Converter $converterClass should be a kotlin `object` " +
-                "or have an $INSTANCE_FIELD singleton field.")
+            throw IllegalArgumentException(
+                "Converter $converterClass should be a kotlin `object` " +
+                    "or have an $INSTANCE_FIELD singleton field."
+            )
         }
     }
 
-    override val from = "${converterClass.qualified}.$INSTANCE_FIELD::from"
+    override val Language.from
+        get() = when (this) {
+            Language.JAVA -> "${converterClass.javaClassName}.$INSTANCE_FIELD::from"
+            Language.KOTLIN -> "${converterClass.kotlinClassName}::from"
+            else -> throw IllegalArgumentException("Unsupported language: $this")
+        }
 
-    override val to = "${converterClass.qualified}.$INSTANCE_FIELD::to"
+    override val Language.to
+        get() = when (this) {
+            Language.JAVA -> "${converterClass.javaClassName}.$INSTANCE_FIELD::to"
+            Language.KOTLIN -> "${converterClass.kotlinClassName}::to"
+            else -> throw IllegalArgumentException("Unsupported language: $this")
+        }
 }

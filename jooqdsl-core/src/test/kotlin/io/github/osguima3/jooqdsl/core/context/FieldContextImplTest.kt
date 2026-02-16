@@ -22,19 +22,21 @@
 
 package io.github.osguima3.jooqdsl.core.context
 
-import io.github.osguima3.jooqdsl.model.context.converter
-import io.github.osguima3.jooqdsl.model.context.valueObject
 import io.github.osguima3.jooqdsl.core.converter.CompositeDefinition
 import io.github.osguima3.jooqdsl.core.converter.CustomConverterDefinition
 import io.github.osguima3.jooqdsl.core.converter.EnumDefinition
+import io.github.osguima3.jooqdsl.core.converter.FieldDefinition
 import io.github.osguima3.jooqdsl.core.converter.InstantConverterDefinition
 import io.github.osguima3.jooqdsl.core.converter.SimpleConverterDefinition
 import io.github.osguima3.jooqdsl.core.converter.SkippedDefinition
 import io.github.osguima3.jooqdsl.core.converter.ValueObjectDefinition
 import io.github.osguima3.jooqdsl.core.types.JavaConverter
 import io.github.osguima3.jooqdsl.core.types.JavaInvalidConverter
+import io.github.osguima3.jooqdsl.core.types.JavaRecord
+import io.github.osguima3.jooqdsl.core.types.JavaRecordWithMethods
 import io.github.osguima3.jooqdsl.core.types.JavaUnsupportedObject
 import io.github.osguima3.jooqdsl.core.types.JavaValueObject
+import io.github.osguima3.jooqdsl.core.types.JavaValueObjectWithMethods
 import io.github.osguima3.jooqdsl.core.types.KotlinConverter
 import io.github.osguima3.jooqdsl.core.types.KotlinEnum
 import io.github.osguima3.jooqdsl.core.types.KotlinInstantValueObject
@@ -43,69 +45,70 @@ import io.github.osguima3.jooqdsl.core.types.KotlinJooqConverter
 import io.github.osguima3.jooqdsl.core.types.KotlinStringValueObject
 import io.github.osguima3.jooqdsl.core.types.KotlinUnsupportedObject
 import io.github.osguima3.jooqdsl.core.types.KotlinUnsupportedValueObject
+import io.github.osguima3.jooqdsl.core.types.KotlinValueObjectWithMethods
+import io.github.osguima3.jooqdsl.model.context.converter
+import io.github.osguima3.jooqdsl.model.context.valueObject
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.verify
 import java.math.BigDecimal
 import java.time.Instant
 import java.util.UUID
-import kotlin.test.assertEquals
 
 class FieldContextImplTest {
 
-    private val targetPackage = "io.osguima3.project.package"
+    private val tableName = "table"
+    private val fieldName = "field"
 
-    private val jooqContext = mock<JooqContext> {
-        on { it.targetPackage } doReturn targetPackage
-    }
+    private val jooqContext = mock<JooqContext>()
 
-    private val context = FieldContextImpl(jooqContext.targetPackage)
+    private val context = FieldContextImpl(jooqContext, tableName, fieldName)
 
     @Nested
     inner class `Type (native)` {
 
         @Test
         fun `should skip primitive types`() {
-            val definition = context.type(Int::class)
+            context.type(Int::class)
 
-            assertEquals(SkippedDefinition, definition)
+            verifyDefinition(SkippedDefinition)
         }
 
         @Test
         fun `should skip boxed primitive types`() {
-            val definition = context.type(Integer::class)
+            context.type(Integer::class)
 
-            assertEquals(SkippedDefinition, definition)
+            verifyDefinition(SkippedDefinition)
         }
 
         @Test
         fun `should skip BigDecimal type`() {
-            val definition = context.type(BigDecimal::class)
+            context.type(BigDecimal::class)
 
-            assertEquals(SkippedDefinition, definition)
+            verifyDefinition(SkippedDefinition)
         }
 
         @Test
         fun `should skip String type`() {
-            val definition = context.type(String::class)
+            context.type(String::class)
 
-            assertEquals(SkippedDefinition, definition)
+            verifyDefinition(SkippedDefinition)
         }
 
         @Test
         fun `should skip UUID type`() {
-            val definition = context.type(UUID::class)
+            context.type(UUID::class)
 
-            assertEquals(SkippedDefinition, definition)
+            verifyDefinition(SkippedDefinition)
         }
 
         @Test
         fun `should correctly register Instant type`() {
-            val definition = context.type(Instant::class)
+            context.type(Instant::class)
 
-            assertEquals(InstantConverterDefinition, definition)
+            verifyDefinition(InstantConverterDefinition)
         }
     }
 
@@ -113,10 +116,31 @@ class FieldContextImplTest {
     inner class TypeJava {
 
         @Test
-        fun `should throw IllegalArgumentException for java value object types`() {
-            assertThrows<IllegalArgumentException> {
-                context.type(JavaValueObject::class)
-            }
+        fun `should correctly register class value object types`() {
+            context.type(JavaValueObject::class)
+
+            verifyDefinition(ValueObjectDefinition(JavaValueObject::class))
+        }
+
+        @Test
+        fun `should correctly register class value object types with additional methods`() {
+            context.type(JavaValueObjectWithMethods::class)
+
+            verifyDefinition(ValueObjectDefinition(JavaValueObjectWithMethods::class))
+        }
+
+        @Test
+        fun `should correctly register record value object types`() {
+            context.type(JavaRecord::class)
+
+            verifyDefinition(ValueObjectDefinition(JavaRecord::class))
+        }
+
+        @Test
+        fun `should correctly register record value object types with additional methods`() {
+            context.type(JavaRecordWithMethods::class)
+
+            verifyDefinition(ValueObjectDefinition(JavaRecordWithMethods::class))
         }
 
         @Test
@@ -132,25 +156,31 @@ class FieldContextImplTest {
 
         @Test
         fun `should correctly register enum types`() {
-            val definition = context.type(KotlinEnum::class)
+            context.type(KotlinEnum::class)
 
-            assertEquals(EnumDefinition("$targetPackage.enums.KotlinEnum", KotlinEnum::class), definition)
+            verifyDefinition(EnumDefinition(KotlinEnum::class))
         }
 
         @Test
-        fun `should correctly register simple value object types`() {
-            val definition = context.type(KotlinStringValueObject::class)
+        fun `should correctly register value object types`() {
+            context.type(KotlinStringValueObject::class)
 
-            assertEquals(ValueObjectDefinition(KotlinStringValueObject::class), definition)
+            verifyDefinition(ValueObjectDefinition(KotlinStringValueObject::class))
         }
 
         @Test
-        fun `should correctly register Instant value object type`() {
-            val definition = context.type(KotlinInstantValueObject::class)
+        fun `should correctly register value object types with additional methods`() {
+            context.type(KotlinValueObjectWithMethods::class)
 
-            assertEquals(
-                CompositeDefinition(InstantConverterDefinition, ValueObjectDefinition(KotlinInstantValueObject::class)),
-                definition
+            verifyDefinition(ValueObjectDefinition(KotlinValueObjectWithMethods::class))
+        }
+
+        @Test
+        fun `should correctly register Instant value object types`() {
+            context.type(KotlinInstantValueObject::class)
+
+            verifyDefinition(
+                CompositeDefinition(InstantConverterDefinition, ValueObjectDefinition(KotlinInstantValueObject::class))
             )
         }
 
@@ -174,9 +204,9 @@ class FieldContextImplTest {
 
         @Test
         fun `should correctly register enum type with custom database type`() {
-            val definition = context.enum(KotlinEnum::class, "String")
+            context.enum(KotlinEnum::class, "String")
 
-            assertEquals(EnumDefinition("String", KotlinEnum::class), definition)
+            verifyDefinition(EnumDefinition(KotlinEnum::class, "String"))
         }
     }
 
@@ -185,14 +215,37 @@ class FieldContextImplTest {
 
         @Test
         fun `should correctly register kotlin value object type with custom converter`() {
-            val definition = context.valueObject(KotlinConverter::class, KotlinStringValueObject::class)
+            context.valueObject(KotlinConverter::class, KotlinStringValueObject::class)
 
-            assertEquals(
+            verifyDefinition(
                 CompositeDefinition(
                     SimpleConverterDefinition(Int::class, String::class, KotlinConverter::class),
                     ValueObjectDefinition(KotlinStringValueObject::class)
-                ),
-                definition
+                )
+            )
+        }
+
+        @Test
+        fun `should correctly register java class value object type with custom converter`() {
+            context.valueObject(JavaConverter::class, JavaValueObject::class)
+
+            verifyDefinition(
+                CompositeDefinition(
+                    SimpleConverterDefinition(Int::class, String::class, JavaConverter::class),
+                    ValueObjectDefinition(JavaValueObject::class)
+                )
+            )
+        }
+
+        @Test
+        fun `should correctly register java record value object type with custom converter`() {
+            context.valueObject(JavaConverter::class, JavaRecord::class)
+
+            verifyDefinition(
+                CompositeDefinition(
+                    SimpleConverterDefinition(Int::class, String::class, JavaConverter::class),
+                    ValueObjectDefinition(JavaRecord::class)
+                )
             )
         }
 
@@ -200,13 +253,6 @@ class FieldContextImplTest {
         fun `should throw IllegalArgumentException if type is not a value type`() {
             assertThrows<IllegalArgumentException> {
                 context.valueObject(JavaConverter::class, String::class)
-            }
-        }
-
-        @Test
-        fun `should throw IllegalArgumentException for java value object types (not supported)`() {
-            assertThrows<IllegalArgumentException> {
-                context.valueObject(JavaConverter::class, JavaValueObject::class)
             }
         }
 
@@ -223,9 +269,9 @@ class FieldContextImplTest {
 
         @Test
         fun `should correctly register Kotlin converter`() {
-            val definition = context.converter(KotlinConverter::class)
+            context.converter(KotlinConverter::class)
 
-            assertEquals(SimpleConverterDefinition(Int::class, String::class, KotlinConverter::class), definition)
+            verifyDefinition(SimpleConverterDefinition(Int::class, String::class, KotlinConverter::class))
         }
 
         @Test
@@ -237,9 +283,9 @@ class FieldContextImplTest {
 
         @Test
         fun `should correctly register Java converter`() {
-            val definition = context.converter(JavaConverter::class)
+            context.converter(JavaConverter::class)
 
-            assertEquals(SimpleConverterDefinition(Int::class, String::class, JavaConverter::class), definition)
+            verifyDefinition(SimpleConverterDefinition(Int::class, String::class, JavaConverter::class))
         }
 
         @Test
@@ -255,9 +301,9 @@ class FieldContextImplTest {
 
         @Test
         fun `should correctly register jOOQ converter`() {
-            val definition = context.converter(KotlinJooqConverter::class)
+            context.converter(KotlinJooqConverter::class)
 
-            assertEquals(CustomConverterDefinition(KotlinJooqConverter::class, String::class), definition)
+            verifyDefinition(CustomConverterDefinition(KotlinJooqConverter::class, String::class))
         }
     }
 
@@ -266,9 +312,11 @@ class FieldContextImplTest {
 
         @Test
         fun `should correctly register custom converter`() {
-            val definition = context.custom(Int::class, "custom")
+            context.custom(Int::class, "custom")
 
-            assertEquals(CustomConverterDefinition("custom", Int::class), definition)
+            verifyDefinition(CustomConverterDefinition("custom", Int::class))
         }
     }
+
+    fun verifyDefinition(expected: FieldDefinition) = verify(jooqContext).configureField(tableName, fieldName, expected)
 }

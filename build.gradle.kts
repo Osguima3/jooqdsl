@@ -25,13 +25,13 @@ subprojects {
     apply(plugin = "signing")
 
     configure<JavaPluginExtension> {
-        sourceCompatibility = JavaVersion.VERSION_21
-        targetCompatibility = JavaVersion.VERSION_21
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 
     tasks.withType<KotlinCompile> {
         compilerOptions {
-            jvmTarget.set(JvmTarget.JVM_21)
+            jvmTarget.set(JvmTarget.JVM_17)
             freeCompilerArgs.add("-Xjsr305=strict")
         }
     }
@@ -40,15 +40,15 @@ subprojects {
         useJUnitPlatform()
     }
 
+    val sourcesJar by tasks.registering(Jar::class) {
+        from(project.the<SourceSetContainer>()["main"].allSource)
+        archiveClassifier.set("sources")
+    }
+
     val dokkaJar by tasks.registering(Jar::class) {
         dependsOn(tasks.named("dokkaGeneratePublicationHtml"))
         from(tasks.named("dokkaGeneratePublicationHtml").get().outputs)
         archiveClassifier.set("javadoc")
-    }
-
-    val sourcesJar by tasks.registering(Jar::class) {
-        from(project.the<SourceSetContainer>()["main"].allSource)
-        archiveClassifier.set("sources")
     }
 
     configure<PublishingExtension> {

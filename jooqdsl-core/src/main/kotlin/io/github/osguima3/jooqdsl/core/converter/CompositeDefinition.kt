@@ -22,12 +22,16 @@
 
 package io.github.osguima3.jooqdsl.core.converter
 
+import org.jooq.codegen.Language
+
 data class CompositeDefinition(private val components: List<NullableConverterDefinition>) : ForcedTypeDefinition {
 
     constructor(vararg components: NullableConverterDefinition) : this(components.asList())
 
-    override val userType = components.last().userType
+    override val Language.userType get() = with(components.last()) { userType }
 
-    override val converter =
-        "org.jooq.Converters.of(${components.joinToString(", ", transform = ForcedTypeDefinition::converter)})"
+    override fun Language.converter(targetPackage: String, root: Boolean): String =
+        "org.jooq.Converters.of(${components.joinToString(", ") { 
+            with(it) { converter(targetPackage, this == components.last()) } 
+        }})"
 }

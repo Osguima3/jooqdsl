@@ -20,14 +20,9 @@
  * For more information, please visit: http://www.jooq.org/licenses
  */
 
-package io.github.osguima3.jooqdsl.it.multimodule.model.types
+package io.github.osguima3.jooqdsl.core.converter
 
-import java.math.BigDecimal
-
-data class BigDecimalValueObject(val value: BigDecimal) {
-
-    override fun equals(other: Any?) =
-        (other as? BigDecimalValueObject)?.let { it.value.compareTo(value) == 0 } == true
-
-    override fun hashCode() = value.hashCode()
-}
+/**
+ * Represents the definition of a jOOQ field once configured.
+ */
+sealed interface FieldDefinition

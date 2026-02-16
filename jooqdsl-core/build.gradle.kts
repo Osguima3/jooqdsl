@@ -6,5 +6,5 @@ dependencies {
 
     // Test dependencies
     testImplementation(libs.bundles.testing)
-    testRuntimeOnly(libs.junit.jupiter.engine)
+    testRuntimeOnly(libs.bundles.testing.runtime)
 }

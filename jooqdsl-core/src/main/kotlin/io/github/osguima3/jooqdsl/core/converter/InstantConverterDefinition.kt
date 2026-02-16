@@ -22,11 +22,29 @@
 
 package io.github.osguima3.jooqdsl.core.converter
 
+import io.github.osguima3.jooqdsl.core.javaClassName
+import io.github.osguima3.jooqdsl.core.kotlinClassName
+import org.jooq.codegen.Language
 import java.time.Instant
 import java.time.OffsetDateTime
 
-object InstantConverterDefinition : FromToConverterDefinition(
-    fromType = OffsetDateTime::class, toType = Instant::class,
-    from = "java.time.OffsetDateTime::toInstant",
-    to = "i -> java.time.OffsetDateTime.ofInstant(i, java.time.ZoneOffset.UTC)"
-)
+object InstantConverterDefinition : NullableConverterDefinition {
+
+    override val fromType = OffsetDateTime::class
+
+    override val toType = Instant::class
+
+    override val Language.from: String
+        get() = when (this) {
+            Language.JAVA -> "${OffsetDateTime::class.javaClassName}::toInstant"
+            Language.KOTLIN -> "${OffsetDateTime::class.kotlinClassName}::toInstant"
+            else -> throw IllegalArgumentException("Unsupported language: $this")
+        }
+
+    override val Language.to: String
+        get() = when (this) {
+            Language.JAVA -> "i -> ${OffsetDateTime::class.javaClassName}.ofInstant(i, java.time.ZoneOffset.UTC)"
+            Language.KOTLIN -> "{ ${OffsetDateTime::class.kotlinClassName}.ofInstant(it, java.time.ZoneOffset.UTC) }"
+            else -> throw IllegalArgumentException("Unsupported language: $this")
+        }
+}

@@ -22,7 +22,6 @@
 
 package io.github.osguima3.jooqdsl.plugin.mojo
 
-import io.github.osguima3.jooqdsl.core.context.ModelContextImpl
 import io.github.osguima3.jooqdsl.core.loader.DefinitionFile
 import io.github.osguima3.jooqdsl.core.loader.ScriptLoadingException
 import io.github.osguima3.jooqdsl.core.loader.loadDefinition
@@ -34,7 +33,7 @@ import org.apache.maven.plugin.AbstractMojo
 import org.apache.maven.plugin.BuildPluginManager
 import org.apache.maven.plugin.MojoExecutionException
 import org.apache.maven.plugin.descriptor.PluginDescriptor
-import org.apache.maven.plugins.annotations.Component
+import javax.inject.Inject
 import org.apache.maven.plugins.annotations.LifecyclePhase
 import org.apache.maven.plugins.annotations.Mojo
 import org.apache.maven.plugins.annotations.Parameter
@@ -42,6 +41,7 @@ import org.apache.maven.plugins.annotations.ResolutionScope
 import org.apache.maven.project.MavenProject
 import org.jooq.codegen.GenerationTool
 import org.jooq.codegen.GenerationTool.DEFAULT_TARGET_DIRECTORY
+import org.jooq.codegen.JooqConfigurator
 import org.jooq.meta.jaxb.Configuration
 import org.jooq.meta.jaxb.Generator
 import org.jooq.meta.jaxb.Jdbc
@@ -57,21 +57,21 @@ import java.net.URI
 )
 class JooqDslGenerateMojo : AbstractMojo() {
 
-    @Parameter(defaultValue = "\${project}", readonly = true)
+    @Inject
+    private lateinit var pluginManager: BuildPluginManager
+
+    @Parameter(defaultValue = $$"${project}", readonly = true)
     private lateinit var project: MavenProject
 
-    @Parameter(defaultValue = "\${session}", readonly = true)
+    @Parameter(defaultValue = $$"${session}", readonly = true)
     private lateinit var session: MavenSession
 
-    @Parameter(defaultValue = "\${plugin}", readonly = true)
+    @Parameter(defaultValue = $$"${plugin}", readonly = true)
     private lateinit var descriptor: PluginDescriptor
-
-    @Component
-    private lateinit var pluginManager: BuildPluginManager
 
     // jOOQ configuration
 
-    @Parameter(defaultValue = "\${skipJooq}")
+    @Parameter(defaultValue = $$"${skipJooq}")
     private var disabled: Boolean? = null
 
     @Parameter(required = false)
@@ -122,8 +122,9 @@ class JooqDslGenerateMojo : AbstractMojo() {
 
             container?.start(configuration)
 
-            ModelContextImpl(generator).generate(modelDefinition.configure)
-            GenerationTool.generate(configuration)
+            val configurator = JooqConfigurator()
+            configurator.load(modelDefinition)
+            GenerationTool.generate(configurator.apply(configuration))
         } catch (e: ScriptLoadingException) {
             throw MojoExecutionException("Cannot load script", e)
         } catch (e: IllegalArgumentException) {

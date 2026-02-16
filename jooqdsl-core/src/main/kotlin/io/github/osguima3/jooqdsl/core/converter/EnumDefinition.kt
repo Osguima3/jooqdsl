@@ -22,16 +22,31 @@
 
 package io.github.osguima3.jooqdsl.core.converter
 
-import io.github.osguima3.jooqdsl.core.qualified
-import io.github.osguima3.jooqdsl.core.simple
+import io.github.osguima3.jooqdsl.core.javaClassName
+import io.github.osguima3.jooqdsl.core.javaClassRef
+import io.github.osguima3.jooqdsl.core.kotlinClassRef
+import org.jooq.codegen.Language
 import kotlin.reflect.KClass
 
-data class EnumDefinition(private val fromClass: String, private val toType: KClass<*>) : ForcedTypeDefinition {
+data class EnumDefinition(private val toType: KClass<*>, private val fromClass: String? = null) : ForcedTypeDefinition {
 
-    constructor(toClass: KClass<*>, targetPackage: String) :
-        this("$targetPackage.enums.${toClass.simple}", toClass)
+    override val Language.userType get() = toType.javaClassName
 
-    override val userType = toType.qualified
+    override fun Language.converter(targetPackage: String, root: Boolean): String = when (this) {
+        Language.JAVA -> "new org.jooq.impl.EnumConverter<>(${fromClass(targetPackage)}, ${toClass(root)})"
+        Language.KOTLIN -> "org.jooq.impl.EnumConverter(${fromClass(targetPackage)}, ${toClass(root)})"
+        else -> error("Unsupported language: $this")
+    }
 
-    override val converter = "new org.jooq.impl.EnumConverter<>($fromClass.class, $userType.class)"
+    fun Language.fromClass(targetPackage: String) = when (this) {
+        Language.JAVA -> fromClass?.let { "$it.class" } ?: "$targetPackage.enums.${toType.simpleName}.class"
+        Language.KOTLIN -> fromClass?.let { "$it::class.java" } ?: "$targetPackage.enums.${toType.simpleName}::class.java"
+        else -> error("Unsupported language: $this")
+    }
+
+    private fun Language.toClass(root: Boolean): String = when (this) {
+        Language.JAVA -> if (root) "${toType.javaObjectType.simpleName}.class" else toType.javaClassRef
+        Language.KOTLIN -> if (root) "${toType.simpleName}::class.java" else toType.kotlinClassRef
+        else -> error("Unsupported language: $this")
+    }
 }
