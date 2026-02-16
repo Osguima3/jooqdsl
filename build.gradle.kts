@@ -10,9 +10,6 @@ plugins {
 }
 
 allprojects {
-    group = "io.github.osguima3.jooqdsl"
-    version = "1.1.1-SNAPSHOT"
-
     repositories {
         mavenCentral()
     }
