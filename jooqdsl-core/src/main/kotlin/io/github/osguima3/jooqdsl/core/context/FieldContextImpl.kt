@@ -22,60 +22,60 @@
 
 package io.github.osguima3.jooqdsl.core.context
 
-import io.github.osguima3.jooqdsl.model.context.FieldContext
-import io.github.osguima3.jooqdsl.model.converter.Converter
 import io.github.osguima3.jooqdsl.core.converter.CompositeDefinition
 import io.github.osguima3.jooqdsl.core.converter.CustomConverterDefinition
-import io.github.osguima3.jooqdsl.core.converter.SkippedDefinition
 import io.github.osguima3.jooqdsl.core.converter.EnumDefinition
+import io.github.osguima3.jooqdsl.core.converter.FieldDefinition
 import io.github.osguima3.jooqdsl.core.converter.InstantConverterDefinition
 import io.github.osguima3.jooqdsl.core.converter.SimpleConverterDefinition
+import io.github.osguima3.jooqdsl.core.converter.SkippedDefinition
 import io.github.osguima3.jooqdsl.core.converter.ValueObjectDefinition
 import io.github.osguima3.jooqdsl.core.isEnum
 import io.github.osguima3.jooqdsl.core.isPrimitive
 import io.github.osguima3.jooqdsl.core.isValueObject
 import io.github.osguima3.jooqdsl.core.valueType
+import io.github.osguima3.jooqdsl.model.context.FieldContext
+import io.github.osguima3.jooqdsl.model.converter.Converter
 import java.time.Instant
 import kotlin.reflect.KClass
 import org.jooq.Converter as JooqConverter
 
 class FieldContextImpl(
-    private val targetPackage: String
+    private val context: JooqContext,
+    private val tableName: String,
+    private val fieldName: String,
 ) : FieldContext {
 
-    override fun type(userType: KClass<*>) =
-        resolve(userType)
+    override fun type(userType: KClass<*>) = resolve(userType).configure()
 
-    override fun enum(userType: KClass<out Enum<*>>, databaseType: String?) = when (databaseType) {
-        null -> EnumDefinition(userType, targetPackage)
-        else -> EnumDefinition(databaseType, userType)
-    }
+    override fun enum(userType: KClass<out Enum<*>>, databaseType: String?) =
+        EnumDefinition(userType, databaseType).configure()
 
     override fun <T : Any, U : Any> valueObject(
         converter: KClass<out Converter<T, U>>,
         userType: KClass<*>,
         databaseType: KClass<T>,
-        valueType: KClass<U>
+        valueType: KClass<U>,
     ) = CompositeDefinition(
         SimpleConverterDefinition(databaseType, valueType, converter),
         ValueObjectDefinition(valueType, userType)
-    )
+    ).configure()
 
     override fun <T : Any, U : Any> converter(
         converter: KClass<out Converter<T, U>>,
         databaseType: KClass<T>,
-        userType: KClass<U>
-    ) = SimpleConverterDefinition(databaseType, userType, converter)
+        userType: KClass<U>,
+    ) = SimpleConverterDefinition(databaseType, userType, converter).configure()
 
     override fun <U : Any> converter(converter: KClass<out JooqConverter<*, U>>, userType: KClass<U>) =
-        CustomConverterDefinition(converter, userType)
+        CustomConverterDefinition(converter, userType).configure()
 
     override fun custom(userType: KClass<*>, converter: String) =
-        CustomConverterDefinition(converter, userType)
+        CustomConverterDefinition(converter, userType).configure()
 
     private fun resolve(userType: KClass<*>) = when {
         userType.isPrimitive -> SkippedDefinition // No need to register
-        userType.isEnum -> EnumDefinition(userType, targetPackage)
+        userType.isEnum -> EnumDefinition(userType)
         userType.isValueObject -> resolveValueObject(userType)
         userType == Instant::class -> InstantConverterDefinition
         else -> throw IllegalArgumentException("No default mapper available for $userType")
@@ -86,4 +86,7 @@ class FieldContextImpl(
         value == Instant::class -> CompositeDefinition(InstantConverterDefinition, ValueObjectDefinition(userType))
         else -> throw IllegalArgumentException("No default mapper available for $userType")
     }
+
+    private fun FieldDefinition.configure() =
+        context.configureField(tableName, fieldName, this)
 }

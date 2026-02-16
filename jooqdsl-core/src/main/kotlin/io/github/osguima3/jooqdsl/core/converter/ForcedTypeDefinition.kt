@@ -22,18 +22,20 @@
 
 package io.github.osguima3.jooqdsl.core.converter
 
-import io.github.osguima3.jooqdsl.model.context.FieldDefinition
+import org.jooq.codegen.Language
 import org.jooq.meta.jaxb.ForcedType
 
 interface ForcedTypeDefinition : FieldDefinition {
 
-    val userType: String
+    val Language.userType: String
 
-    val converter: String
+    fun Language.converter(targetPackage: String, root: Boolean): String?
 
-    fun toForcedType(includeExpression: String) = ForcedType().also {
-        it.includeExpression = includeExpression
-        it.userType = userType
-        it.converter = converter
+    fun toForcedType(includeExpression: String, targetPackage: String, language: Language) = with(language) {
+        ForcedType().also {
+            it.includeExpression = includeExpression
+            it.userType = userType
+            it.converter = converter(targetPackage, root = true)
+        }
     }
 }

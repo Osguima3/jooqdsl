@@ -22,32 +22,30 @@
 
 import io.github.osguima3.jooqdsl.it.multimodule.app.converter.JsonConverter
 import io.github.osguima3.jooqdsl.it.multimodule.app.converter.SimpleDateConverter
-import io.github.osguima3.jooqdsl.it.multimodule.model.types.BigDecimalValueObject
 import io.github.osguima3.jooqdsl.it.multimodule.model.types.CustomEnum
 import io.github.osguima3.jooqdsl.it.multimodule.model.types.DateValueObject
-import io.github.osguima3.jooqdsl.it.multimodule.model.types.IdValueObject
 import io.github.osguima3.jooqdsl.it.multimodule.model.types.InstantValueObject
-import io.github.osguima3.jooqdsl.it.multimodule.model.types.IntValueObject
 import io.github.osguima3.jooqdsl.it.multimodule.model.types.StringEnum
 import io.github.osguima3.jooqdsl.it.multimodule.model.types.StringValueObject
 import io.github.osguima3.jooqdsl.model.ModelDefinition
 import io.github.osguima3.jooqdsl.model.context.converter
 import io.github.osguima3.jooqdsl.model.context.valueObject
+import java.math.BigDecimal
 
 ModelDefinition {
     tables {
         table("test") {
-            field("uuid", IdValueObject::class)
-            field("string", StringValueObject::class)
-            field("instant", InstantValueObject::class)
-            field("int", IntValueObject::class)
-            field("big_decimal", BigDecimalValueObject::class)
+            field("int", Int::class)
+            field("string", String::class)
+            field("big_decimal", BigDecimal::class)
+            field("value_object", StringValueObject::class)
+            field("instant_object", InstantValueObject::class)
             field("json") { converter(JsonConverter::class) }
             field("custom_enum", CustomEnum::class)
             field("string_enum") { enum(StringEnum::class, "String") }
-            field("value_object") { valueObject(SimpleDateConverter::class, DateValueObject::class) }
+            field("composite") { valueObject(SimpleDateConverter::class, DateValueObject::class) }
             field("converter") { converter(SimpleDateConverter::class) }
-            field("custom") { custom(String::class, "org.jooq.Converters.identity(String.class)") }
+            field("custom") { custom(String::class, "org.jooq.Converters.identity(String::class.java)") }
         }
     }
 }

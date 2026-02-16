@@ -27,9 +27,10 @@ import io.github.osguima3.jooqdsl.model.context.TablesContext
 
 class TablesContextImpl(private val context: JooqContext) : TablesContext {
 
-    private val tables = mutableMapOf<String, TableContext>()
+    private val tables = mutableSetOf<String>()
 
-    override fun table(name: String, configure: TableContext.() -> Unit) = tables
-        .getOrPut(name) { TableContextImpl(context, name) }
-        .configure()
+    override fun table(name: String, configure: TableContext.() -> Unit) {
+        require(tables.add(name)) { "Table '$name' already declared" }
+        TableContextImpl(context, name).configure()
+    }
 }

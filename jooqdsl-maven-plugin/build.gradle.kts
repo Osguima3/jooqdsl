@@ -1,3 +1,23 @@
+// Generate version properties file for runtime use
+val generateVersionProperties by tasks.registering {
+    val outputDir = layout.buildDirectory.dir("generated/resources")
+    outputs.dir(outputDir)
+
+    doLast {
+        val propsFile = outputDir.get().file("maven-versions.properties").asFile
+        propsFile.parentFile.mkdirs()
+        propsFile.writeText("maven.plugins.version=${libs.versions.maven.plugins.get()}")
+    }
+}
+
+tasks.named("processResources") {
+    dependsOn(generateVersionProperties)
+}
+
+sourceSets.main {
+    resources.srcDir(generateVersionProperties.map { it.outputs })
+}
+
 // Generate Maven plugin descriptor using Maven Wrapper
 val generateMavenPluginDescriptor by tasks.registering(Exec::class) {
     dependsOn(tasks.named("classes"))
@@ -24,7 +44,7 @@ val generateMavenPluginDescriptor by tasks.registering(Exec::class) {
     commandLine = listOf(
         rootProject.file(if (System.getProperty("os.name").lowercase().contains("windows")) "mvnw.cmd" else "mvnw").absolutePath,
         "-f", "descriptor-pom.xml",
-        "org.apache.maven.plugins:maven-plugin-plugin:3.15.0:descriptor"
+        "${libs.maven.plugin.plugin.get().module}:${libs.maven.plugin.plugin.get().version}:descriptor"
     )
 }
 
@@ -38,12 +58,11 @@ dependencies {
     implementation(libs.bundles.kotlin)
     implementation(libs.bundles.kotlin.scripting)
     implementation(libs.bundles.jooq)
+    implementation(libs.mojo.executor)
+    implementation(libs.jakarta.xml.bind.api)
 
     compileOnly(libs.bundles.maven.plugin)
     compileOnly(libs.bundles.testcontainers)
-
-    implementation(libs.mojo.executor)
-    implementation(libs.jakarta.xml.bind.api)
 
     // Test dependencies
     testImplementation(libs.bundles.testing)
@@ -51,13 +70,17 @@ dependencies {
     testImplementation(libs.bundles.maven.test)
     testImplementation(libs.testcontainers.postgresql)
 
-    testRuntimeOnly(libs.junit.jupiter.engine)
+    testRuntimeOnly(libs.bundles.testing.runtime)
     testRuntimeOnly(libs.slf4j.simple)
 }
 
 // Configure test task to publish to maven local first for integration tests
 tasks.test {
-    dependsOn("publishToMavenLocal")
+    dependsOn(
+        "publishToMavenLocal",
+        ":jooqdsl-model:publishToMavenLocal",
+        ":jooqdsl-core:publishToMavenLocal"
+    )
 
     // Capture and display test output
     testLogging {

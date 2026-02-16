@@ -1,15 +1,19 @@
 [versions]
-kotlin = "2.0.21"
-jooq = "3.19.14"
-junit = "5.11.4"
-assertj = "3.27.7"
-mockito-kotlin = "6.2.3"
-testcontainers = "1.21.4"
-jackson = "2.18.2"
-maven-plugin-api = "3.9.0"
-maven-embedder = "3.9.0"
-mojo-executor = "2.4.1"
+kotlin = "2.3.10"
+jackson = "3.0.4"
 jakarta-xml = "4.0.5"
+jooq = "3.20.11"
+maven = "3.9.12"
+maven-plugins = "3.15.0"
+maven-resolver = "1.9.25"
+mojo-executor = "2.4.1"
+
+assertj = "3.27.7"
+junit = "6.0.2"
+mockito-kotlin = "6.2.3"
+slf4j = "1.7.36"
+testcontainers = "2.0.3"
+
 dokka = "2.1.0"
 maven-plugin-development = "1.0.3"
 
@@ -22,43 +26,51 @@ kotlin-compiler-embeddable = { module = "org.jetbrains.kotlin:kotlin-compiler-em
 kotlin-scripting-compiler-embeddable = { module = "org.jetbrains.kotlin:kotlin-scripting-compiler-embeddable", version.ref = "kotlin" }
 kotlin-scripting-jsr223 = { module = "org.jetbrains.kotlin:kotlin-scripting-jsr223", version.ref = "kotlin" }
 
+jackson-databind = { module = "tools.jackson.core:jackson-databind", version.ref = "jackson" }
+jackson-module-kotlin = { module = "tools.jackson.module:jackson-module-kotlin", version.ref = "jackson" }
+jakarta-xml-bind-api = { module = "jakarta.xml.bind:jakarta.xml.bind-api", version.ref = "jakarta-xml" }
+
 jooq = { module = "org.jooq:jooq", version.ref = "jooq" }
 jooq-meta = { module = "org.jooq:jooq-meta", version.ref = "jooq" }
 jooq-codegen = { module = "org.jooq:jooq-codegen", version.ref = "jooq" }
 
+maven-core = { module = "org.apache.maven:maven-core", version.ref = "maven" }
+maven-compat = { module = "org.apache.maven:maven-compat", version.ref = "maven" }
+maven-embedder = { module = "org.apache.maven:maven-embedder", version.ref = "maven" }
+maven-plugin-api = { module = "org.apache.maven:maven-plugin-api", version.ref = "maven" }
+maven-resolver-provider = { module = "org.apache.maven:maven-resolver-provider", version.ref = "maven" }
+maven-plugin-plugin = { module = "org.apache.maven.plugins:maven-plugin-plugin", version.ref = "maven-plugins" }
+maven-plugin-annotations = { module = "org.apache.maven.plugin-tools:maven-plugin-annotations", version.ref = "maven-plugins" }
+maven-resolver-connector-basic = { module = "org.apache.maven.resolver:maven-resolver-connector-basic", version.ref = "maven-resolver" }
+maven-resolver-transport-http = { module = "org.apache.maven.resolver:maven-resolver-transport-http", version.ref = "maven-resolver" }
+mojo-executor = { module = "org.twdata.maven:mojo-executor", version.ref = "mojo-executor" }
+
+assertj-core = { module = "org.assertj:assertj-core", version.ref = "assertj" }
 junit-jupiter-api = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "junit" }
 junit-jupiter-engine = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "junit" }
-assertj-core = { module = "org.assertj:assertj-core", version.ref = "assertj" }
+junit-jupiter-params = { module = "org.junit.jupiter:junit-jupiter-params", version.ref = "junit" }
+junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher", version.ref = "junit" }
 mockito-kotlin = { module = "org.mockito.kotlin:mockito-kotlin", version.ref = "mockito-kotlin" }
+slf4j-simple = { module = "org.slf4j:slf4j-simple", version.ref = "slf4j" }
 
 testcontainers = { module = "org.testcontainers:testcontainers", version.ref = "testcontainers" }
-testcontainers-jdbc = { module = "org.testcontainers:jdbc", version.ref = "testcontainers" }
-testcontainers-postgresql = { module = "org.testcontainers:postgresql", version.ref = "testcontainers" }
+testcontainers-jdbc = { module = "org.testcontainers:testcontainers-jdbc", version.ref = "testcontainers" }
+testcontainers-postgresql = { module = "org.testcontainers:testcontainers-postgresql", version.ref = "testcontainers" }
 
-jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "jackson" }
-jackson-module-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin", version.ref = "jackson" }
-
-maven-plugin-api = { module = "org.apache.maven:maven-plugin-api", version.ref = "maven-plugin-api" }
-maven-core = { module = "org.apache.maven:maven-core", version.ref = "maven-plugin-api" }
-maven-plugin-annotations = { module = "org.apache.maven.plugin-tools:maven-plugin-annotations", version.ref = "maven-plugin-api" }
-maven-compat = { module = "org.apache.maven:maven-compat", version.ref = "maven-plugin-api" }
-maven-embedder = { module = "org.apache.maven:maven-embedder", version.ref = "maven-embedder" }
-maven-resolver-provider = { module = "org.apache.maven:maven-resolver-provider", version.ref = "maven-embedder" }
-slf4j-simple = { module = "org.slf4j:slf4j-simple", version = "2.0.16" }
-mojo-executor = { module = "org.twdata.maven:mojo-executor", version.ref = "mojo-executor" }
-jakarta-xml-bind-api = { module = "jakarta.xml.bind:jakarta.xml.bind-api", version.ref = "jakarta-xml" }
 
 [bundles]
+jackson = ["jackson-databind", "jackson-module-kotlin"]
+jooq = ["jooq", "jooq-meta", "jooq-codegen"]
 kotlin = ["kotlin-stdlib", "kotlin-reflect"]
 kotlin-scripting = ["kotlin-script-runtime", "kotlin-compiler-embeddable", "kotlin-scripting-compiler-embeddable", "kotlin-scripting-jsr223"]
-jooq = ["jooq", "jooq-meta", "jooq-codegen"]
-jackson = ["jackson-databind", "jackson-module-kotlin"]
+maven-plugin = ["maven-core", "maven-plugin-api", "maven-plugin-annotations"]
+maven-test = ["maven-embedder", "maven-compat", "maven-resolver-provider", "maven-resolver-connector-basic", "maven-resolver-transport-http"]
 testcontainers = ["testcontainers", "testcontainers-jdbc"]
-maven-plugin = ["maven-plugin-api", "maven-core", "maven-plugin-annotations"]
-maven-test = ["maven-embedder", "maven-resolver-provider", "maven-compat"]
-testing = ["junit-jupiter-api", "kotlin-test-junit", "assertj-core", "mockito-kotlin"]
+testing = ["junit-jupiter-api", "junit-jupiter-params", "kotlin-test-junit", "assertj-core", "mockito-kotlin"]
+testing-runtime = ["junit-jupiter-engine", "junit-platform-launcher"]
+
 
 [plugins]
-kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 maven-plugin-development = { id = "org.gradlex.maven-plugin-development", version.ref = "maven-plugin-development" }

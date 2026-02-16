@@ -5,15 +5,15 @@ CREATE TYPE custom_enum AS ENUM (
 
 CREATE TABLE test
 (
-    uuid         UUID PRIMARY KEY,
-    string       TEXT,
-    instant      TIMESTAMP WITH TIME ZONE,
-    int          INT,
-    big_decimal  NUMERIC(10, 4),
-    json         JSONB,
-    custom_enum  CUSTOM_ENUM,
-    string_enum  TEXT,
-    value_object TEXT,
-    converter    TEXT,
-    custom       TEXT
+    int            INT,
+    string         TEXT,
+    big_decimal    NUMERIC(10, 4),
+    value_object   TEXT,
+    instant_object TIMESTAMP WITH TIME ZONE,
+    json           JSONB,
+    custom_enum    CUSTOM_ENUM,
+    string_enum    TEXT,
+    composite      TEXT,
+    converter      TEXT,
+    custom         TEXT
 );

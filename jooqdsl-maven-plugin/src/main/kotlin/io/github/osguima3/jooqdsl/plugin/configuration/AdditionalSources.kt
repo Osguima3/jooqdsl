@@ -22,69 +22,69 @@
 
 package io.github.osguima3.jooqdsl.plugin.configuration
 
+import org.apache.maven.project.MavenProject
+import org.jetbrains.kotlin.com.intellij.util.lang.JavaVersion
 import org.twdata.maven.mojoexecutor.MojoExecutor.ExecutionEnvironment
-import org.twdata.maven.mojoexecutor.MojoExecutor.artifactId
 import org.twdata.maven.mojoexecutor.MojoExecutor.configuration
 import org.twdata.maven.mojoexecutor.MojoExecutor.element
 import org.twdata.maven.mojoexecutor.MojoExecutor.executeMojo
 import org.twdata.maven.mojoexecutor.MojoExecutor.goal
-import org.twdata.maven.mojoexecutor.MojoExecutor.groupId
 import org.twdata.maven.mojoexecutor.MojoExecutor.plugin
-import org.twdata.maven.mojoexecutor.MojoExecutor.version
+import java.util.Properties
 
 typealias AdditionalSources = List<String>
 
 fun AdditionalSources.precompile(environment: ExecutionEnvironment) {
-    precompileKotlin(this, environment)
-    precompileJava(this, environment)
+    environment.precompileKotlin(this)
+    environment.precompileJava(this)
 }
 
-private fun precompileKotlin(sources: AdditionalSources, environment: ExecutionEnvironment) {
-    val javaVersion = environment.mavenProject.properties.getProperty("maven.compiler.target")
-        ?: environment.mavenProject.properties.getProperty("java.version")
-        ?: "21"
+private fun ExecutionEnvironment.precompileKotlin(sourceRoots: AdditionalSources) {
+    val javaVersion = mavenProject.properties.getProperty("maven.compiler.target") ?: JavaVersion.current().toString()
+    val originalSourceRoots = mavenProject.replaceSourceRoots(sourceRoots)
 
-    // Temporarily clear compile source roots to prevent Kotlin from compiling default sources
-    val originalSourceRoots = environment.mavenProject.compileSourceRoots.toList()
-    environment.mavenProject.compileSourceRoots.clear()
-
-    try {
-        executeMojo(
-            plugin(
-                groupId("org.jetbrains.kotlin"),
-                artifactId("kotlin-maven-plugin"),
-                version(KotlinVersion.CURRENT.toString())
-            ),
-            goal("compile"),
-            configuration(
-                element("jvmTarget", javaVersion),
-                element("sourceDirs", *sources
-                    .map { element("sourceDir", it) }
-                    .toTypedArray())
-            ),
-            environment
-        )
-    } finally {
-        // Restore original source roots
-        environment.mavenProject.compileSourceRoots.clear()
-        environment.mavenProject.compileSourceRoots.addAll(originalSourceRoots)
-    }
-}
-
-private fun precompileJava(sources: AdditionalSources, environment: ExecutionEnvironment) {
     executeMojo(
-        plugin(
-            groupId("org.apache.maven.plugins"),
-            artifactId("maven-compiler-plugin"),
-            version("3.11.0")
-        ),
+        plugin("org.jetbrains.kotlin", "kotlin-maven-plugin", KotlinVersion.CURRENT.toString()),
         goal("compile"),
         configuration(
-            element("includes", *sources
-                .map { element("include", "$it/**/*.java") }
-                .toTypedArray()
+            element("jvmTarget", javaVersion),
+            element(
+                "sourceDirs",
+                *sourceRoots.map { element("sourceDir", it) }.toTypedArray()
             )
         ),
-        environment
+        this,
     )
+
+    mavenProject.replaceSourceRoots(originalSourceRoots)
+}
+
+private fun MavenProject.replaceSourceRoots(sourceRoots: List<String>): List<String> {
+    val currentSourceRoots = compileSourceRoots.toList()
+    compileSourceRoots.clear()
+    compileSourceRoots.addAll(sourceRoots)
+    return currentSourceRoots
+}
+
+private fun ExecutionEnvironment.precompileJava(sources: AdditionalSources) {
+    val mavenPluginsVersion = loadMavenPluginsVersion()
+
+    executeMojo(
+        plugin("org.apache.maven.plugins", "maven-compiler-plugin", mavenPluginsVersion),
+        goal("compile"),
+        configuration(
+            element("includes", *sources.map { element("include", "$it/**/*.java") }.toTypedArray())
+        ),
+        this,
+    )
+}
+
+private fun loadMavenPluginsVersion(): String {
+    val props = Properties()
+    val inputStream = object {}.javaClass.classLoader.getResourceAsStream("maven-versions.properties")
+        ?: throw IllegalStateException("maven-versions.properties not found in classpath")
+
+    inputStream.use(props::load)
+    return props.getProperty("maven.plugins.version")
+        ?: throw IllegalStateException("maven.plugins.version not found in maven-versions.properties")
 }

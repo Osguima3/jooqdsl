@@ -22,18 +22,19 @@
 
 package io.github.osguima3.jooqdsl.it.multimodule.model.types
 
+import java.math.BigDecimal
 import java.util.Date
 
 data class TestClass(
-    val id: IdValueObject,
-    val string: StringValueObject,
-    val instant: InstantValueObject,
-    val int: IntValueObject,
-    val bigDecimal: BigDecimalValueObject,
+    val int: Int,
+    val string: String,
+    val bigDecimal: BigDecimal,
+    val valueObject: StringValueObject,
+    val instantObject: InstantValueObject,
     val json: String,
     val customEnum: CustomEnum,
     val stringEnum: StringEnum,
-    val valueObject: DateValueObject,
+    val composite: DateValueObject,
     val converter: Date,
-    val custom: String
+    val custom: String,
 )

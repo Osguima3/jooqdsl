@@ -22,15 +22,24 @@
 
 package io.github.osguima3.jooqdsl.core.converter
 
-import io.github.osguima3.jooqdsl.core.qualified
+import io.github.osguima3.jooqdsl.core.javaClassName
+import io.github.osguima3.jooqdsl.core.kotlinClassName
 import org.jooq.Converter
+import org.jooq.codegen.Language
 import kotlin.reflect.KClass
 
-data class CustomConverterDefinition(override val converter: String, private val userClass: KClass<*>) :
+data class CustomConverterDefinition(private val converter: String, private val userClass: KClass<*>) :
     ForcedTypeDefinition {
 
     constructor(converterClass: KClass<out Converter<*, *>>, userClass: KClass<*>) :
-        this(converterClass.qualified, userClass)
+        this(converterClass.javaClassName, userClass)
 
-    override val userType = userClass.qualified
+    override val Language.userType
+        get() = when (this) {
+            Language.JAVA -> userClass.javaClassName
+            Language.KOTLIN -> userClass.kotlinClassName
+            else -> throw IllegalArgumentException("Unsupported language: $this")
+        }
+
+    override fun Language.converter(targetPackage: String, root: Boolean): String = converter
 }

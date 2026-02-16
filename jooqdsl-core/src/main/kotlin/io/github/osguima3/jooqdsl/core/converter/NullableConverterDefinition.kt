@@ -22,7 +22,11 @@
 
 package io.github.osguima3.jooqdsl.core.converter
 
-import io.github.osguima3.jooqdsl.core.qualified
+import io.github.osguima3.jooqdsl.core.javaClassName
+import io.github.osguima3.jooqdsl.core.javaClassRef
+import io.github.osguima3.jooqdsl.core.kotlinClassName
+import io.github.osguima3.jooqdsl.core.kotlinClassRef
+import org.jooq.codegen.Language
 import kotlin.reflect.KClass
 
 interface NullableConverterDefinition : ForcedTypeDefinition {
@@ -31,13 +35,28 @@ interface NullableConverterDefinition : ForcedTypeDefinition {
 
     val fromType: KClass<*>
 
-    val from: String
+    val Language.from: String
 
-    val to: String
+    val Language.to: String
 
-    override val userType
-        get() = toType.qualified
+    override val Language.userType
+        get() = when (this) {
+            Language.JAVA -> toType.javaClassName
+            Language.KOTLIN -> toType.kotlinClassName
+            else -> throw IllegalArgumentException("Unsupported language: $this")
+        }
 
-    override val converter
-        get() = "org.jooq.Converter.ofNullable(${fromType.qualified}.class, $userType.class, $from, $to)"
+    override fun Language.converter(targetPackage: String, root: Boolean): String =
+        "org.jooq.Converter.ofNullable(${asClass(fromType, false)}, ${asClass(toType, root)}, $from, $to)"
+
+    fun Language.asClass(type: KClass<*>, root: Boolean): String = when (this) {
+        Language.JAVA -> if (root) "${type.javaObjectType.simpleName}.class" else type.javaClassRef
+        Language.KOTLIN -> if (root || isBasicType(type)) "${type.simpleName}::class.java" else type.kotlinClassRef
+        else -> throw IllegalArgumentException("Unsupported language: $this")
+    }
+
+    fun isBasicType(type: KClass<*>): Boolean =
+        type == String::class || type == Int::class || type == Long::class || type == Short::class ||
+            type == Byte::class || type == Float::class || type == Double::class ||
+            type == Boolean::class || type == Char::class
 }

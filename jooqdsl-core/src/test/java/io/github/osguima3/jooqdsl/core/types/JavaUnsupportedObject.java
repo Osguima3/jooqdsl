@@ -20,18 +20,23 @@
  * For more information, please visit: http://www.jooq.org/licenses
  */
 
-package io.github.osguima3.jooqdsl.model
+package io.github.osguima3.jooqdsl.core.types;
 
-import io.github.osguima3.jooqdsl.model.context.ModelContext
-import io.github.osguima3.jooqdsl.model.context.TableContext
-import io.github.osguima3.jooqdsl.model.context.TablesContext
+public class JavaUnsupportedObject {
 
-class TestModelContext(tableContext: TableContext) : ModelContext {
+    private final String field1;
+    private final String field2;
 
-    private val tablesContext = object : TablesContext {
-
-        override fun table(name: String, configure: TableContext.() -> Unit) = tableContext.configure()
+    public JavaUnsupportedObject(String value1, String value2) {
+        this.field1 = value1;
+        this.field2 = value2;
     }
 
-    override fun tables(configure: TablesContext.() -> Unit) = tablesContext.configure()
+    public String getField1() {
+        return field1;
+    }
+
+    public String getField2() {
+        return field2;
+    }
 }

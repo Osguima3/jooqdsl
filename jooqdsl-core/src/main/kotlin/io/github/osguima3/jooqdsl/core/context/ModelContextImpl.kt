@@ -24,22 +24,13 @@ package io.github.osguima3.jooqdsl.core.context
 
 import io.github.osguima3.jooqdsl.model.context.ModelContext
 import io.github.osguima3.jooqdsl.model.context.TablesContext
-import org.jooq.meta.jaxb.ForcedType
-import org.jooq.meta.jaxb.Generator
 
-class ModelContextImpl(override val targetPackage: String, private val forcedTypes: MutableList<ForcedType>) : ModelContext, JooqContext {
+class ModelContextImpl(private val context: JooqContext) : ModelContext {
 
-    constructor(generator: Generator) : this(generator.target.packageName, generator.database.forcedTypes)
+    private var tablesContext: TablesContext? = null
 
-    private val tablesContext = TablesContextImpl(this)
-
-    override fun tables(configure: TablesContext.() -> Unit) = tablesContext.configure()
-
-    override fun registerForcedType(forcedType: ForcedType) {
-        forcedTypes += forcedType
-    }
-
-    fun generate(configure: ModelContext.() -> Unit) {
-        configure()
+    override fun tables(configure: TablesContext.() -> Unit) {
+        require(tablesContext == null) { "Tables block already declared" }
+        tablesContext = TablesContextImpl(context).apply(configure)
     }
 }

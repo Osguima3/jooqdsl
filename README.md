@@ -97,14 +97,14 @@ This is a sample setup for postgres:
   <dependencies>
     <dependency>
       <groupId>org.testcontainers</groupId>
-      <artifactId>postgresql</artifactId>
-      <version>1.10.6</version>
+      <artifactId>testcontainers-postgresql</artifactId>
+      <version>2.0.3</version>
     </dependency>
   </dependencies>
   <configuration>
     <container>
-      <provider>org.testcontainers.containers.PostgreSQLContainerProvider</provider>
-      <version>10.3</version>
+      <provider>org.testcontainers.postgresql.PostgreSQLContainerProvider</provider>
+      <version>16.11</version>
       <migrationPath>src/main/resources/db/migration</migrationPath>
     </container>
     <!-- ... -->

@@ -27,11 +27,6 @@ import io.github.osguima3.jooqdsl.model.converter.Converter
 import kotlin.reflect.KClass
 
 /**
- * Represents the definition of a jOOQ field once configured.
- */
-interface FieldDefinition
-
-/**
  * Provides the DSL context for a jOOQ field.
  */
 interface FieldContext {
@@ -40,7 +35,7 @@ interface FieldContext {
      * Maps this field to the specified user type using a default converter.
      * @param userType The type of the generated class field
      */
-    fun type(userType: KClass<*>): FieldDefinition
+    fun type(userType: KClass<*>)
 
     /**
      * Maps this field to the specified user enum using a default converter.
@@ -48,7 +43,7 @@ interface FieldContext {
      * @param databaseType The type of the database field. If not defined, a type with the same name as the user type
      * will be used
      */
-    fun enum(userType: KClass<out Enum<*>>, databaseType: String? = null): FieldDefinition
+    fun enum(userType: KClass<out Enum<*>>, databaseType: String? = null)
 
     /**
      * Maps this field to the specified user value object using the specified converter to map
@@ -63,7 +58,7 @@ interface FieldContext {
         userType: KClass<*>,
         databaseType: KClass<T>,
         valueType: KClass<U>
-    ): FieldDefinition
+    )
 
     /**
      * Maps this field to the specified user type using a custom converter.
@@ -75,19 +70,19 @@ interface FieldContext {
         converter: KClass<out Converter<T, U>>,
         databaseType: KClass<T>,
         userType: KClass<U>
-    ): FieldDefinition
+    )
 
     /**
      * Maps this field to the specified user type using a custom jOOQ converter.
      * @param converter The converter used to map between the user type and the database type
      * @param userType The user type, not required when using the inline overload
      */
-    fun <U : Any> converter(converter: KClass<out JooqConverter<*, U>>, userType: KClass<U>): FieldDefinition
+    fun <U : Any> converter(converter: KClass<out JooqConverter<*, U>>, userType: KClass<U>)
 
     /**
      * Maps this field to the specified user type using a custom jOOQ converter.
      * @param converter The converter used to map between the user type and the database type
      * @param userType The user type
      */
-    fun custom(userType: KClass<*>, converter: String): FieldDefinition
+    fun custom(userType: KClass<*>, converter: String)
 }

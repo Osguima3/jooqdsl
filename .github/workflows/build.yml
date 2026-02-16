@@ -12,9 +12,9 @@ jobs:
       - name: Setup Java
         uses: actions/setup-java@v3
         with:
-          cache: maven
+          cache: gradle
           distribution: adopt
-          java-version: 17
+          java-version: 21
 
       - name: Build project
-        run: mvn -B clean compile verify
+        run: ./gradlew clean build

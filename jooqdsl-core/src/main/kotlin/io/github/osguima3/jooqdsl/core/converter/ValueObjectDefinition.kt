@@ -22,9 +22,10 @@
 
 package io.github.osguima3.jooqdsl.core.converter
 
-import io.github.osguima3.jooqdsl.core.qualified
-import io.github.osguima3.jooqdsl.core.valueField
+import io.github.osguima3.jooqdsl.core.kotlinValueField
+import io.github.osguima3.jooqdsl.core.javaValueField
 import io.github.osguima3.jooqdsl.core.valueType
+import org.jooq.codegen.Language
 import kotlin.reflect.KClass
 
 data class ValueObjectDefinition(override val fromType: KClass<*>, override val toType: KClass<*>) :
@@ -34,12 +35,23 @@ data class ValueObjectDefinition(override val fromType: KClass<*>, override val 
 
     init {
         if (fromType != toType.valueType) {
-            throw IllegalArgumentException("$toType.${toType.valueField}(): ${toType.valueType} " +
-                "does not match expected type ($fromType).")
+            throw IllegalArgumentException(
+                "$toType.${toType.javaValueField}(): ${toType.valueType} does not match expected type ($fromType)."
+            )
         }
     }
 
-    override val from = "${toType.qualified}::new"
+    override val Language.from
+        get() = when (this) {
+            Language.JAVA -> "${toType.simpleName}::new"
+            Language.KOTLIN -> "::${toType.simpleName}"
+            else -> throw IllegalArgumentException("Unsupported language: $this")
+        }
 
-    override val to = "${toType.qualified}::${toType.valueField}"
+    override val Language.to
+        get() = when (this) {
+            Language.JAVA -> "${toType.simpleName}::${toType.javaValueField}"
+            Language.KOTLIN -> "${toType.simpleName}::${toType.kotlinValueField}"
+            else -> throw IllegalArgumentException("Unsupported language: $this")
+        }
 }

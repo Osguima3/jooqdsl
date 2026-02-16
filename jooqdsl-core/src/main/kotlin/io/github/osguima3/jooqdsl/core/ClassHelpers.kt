@@ -43,28 +43,46 @@ internal val KClass<*>.isEnum
     get() = isSubclassOf(Enum::class)
 
 internal val KClass<*>.isValueObject
-    get() = isData && declaredMemberProperties.size == 1
+    get() = when {
+        isData -> declaredMemberProperties.size == 1
+        java.isRecord -> java.recordComponents?.size == 1
+        else -> java.declaredFields.size == 1
+    }
 
 internal val KClass<*>.isObjectType
     get() = objectInstance != null || java.declaredFields.any {
         it.name == INSTANCE_FIELD && it.type == java && Modifier.isStatic(it.modifiers)
     }
 
-internal val KClass<*>.simple: String
-    get() = javaObjectType.simpleName
+internal val KClass<*>.javaClassName
+    get() = javaObjectType.canonicalName!!
 
-internal val KClass<*>.qualified: String
-    get() = javaObjectType.canonicalName
+internal val KClass<*>.javaClassRef
+    get() = "$javaClassName.class"
 
-internal val KClass<*>.valueField: String
+internal val KClass<*>.javaValueField: String
     get() = valueGetter.name
+
+internal val KClass<*>.kotlinClassName
+    get() = qualifiedName!!
+
+internal val KClass<*>.kotlinClassRef
+    get() = "$kotlinClassName::class.java"
+
+internal val KClass<*>.kotlinValueField: String
+    get() = when {
+        isData -> declaredMemberProperties.single().name
+        java.isRecord -> java.recordComponents!!.single().name
+        else -> java.declaredFields.single().name
+    }
 
 internal val KClass<*>.valueType: KClass<out Any>
     get() = valueGetter.returnType.kotlin
 
 internal val KClass<*>.valueGetter: Method
-    get() = if (!isValueObject) {
-        throw IllegalArgumentException("Type $this is not a value object.")
-    } else {
-        declaredMemberProperties.mapNotNull(KProperty<*>::javaGetter).single()
+    get() = when {
+        !isValueObject -> throw IllegalArgumentException("Type $this is not a value object.")
+        isData -> declaredMemberProperties.mapNotNull(KProperty<*>::javaGetter).single()
+        java.isRecord -> java.recordComponents!!.single().accessor
+        else -> java.methods.single { it.name.lowercase() == "get${kotlinValueField}" }
     }
