@@ -27,7 +27,7 @@
         <jackson.version>3.0.4</jackson.version>
 
         <!-- Database -->
-        <postgresql.version>42.7.10</postgresql.version>
+        <postgresql.version>42.7.12</postgresql.version>
         <testcontainers.version>2.0.3</testcontainers.version>
         <jooq.version>3.20.11</jooq.version>
         <jooqdsl.version>@project.version@</jooqdsl.version>
